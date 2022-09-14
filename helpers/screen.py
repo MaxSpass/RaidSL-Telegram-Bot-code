@@ -3,9 +3,54 @@ import cv2
 import numpy as np
 import pytesseract
 from constants.index import *
+import imutils
+from skimage.metrics import structural_similarity as ssim
+import numpy as np
+import cv2
+
+
+def mse(imageA, imageB):
+    # the 'Mean Squared Error' between the two images is the
+    # sum of the squared difference between the two images;
+    # NOTE: the two images must have the same dimension
+    err = np.sum((imageA.astype("float") - imageB.astype("float")) ** 2)
+    err /= float(imageA.shape[0] * imageA.shape[1])
+
+    # return the MSE, the lower the error, the more "similar"
+    # the two images are
+    return err
+
 
 def crop(img, *coordinates):
     return img[coordinates[1]:coordinates[3], coordinates[0]:coordinates[2]]
+
+
+def crop_percentage(img, *coordinates_percentage):
+    w = img.shape[1]
+    h = img.shape[0]
+
+    coordinates = list(map(round, [
+        coordinates_percentage[0] * w / 100,
+        coordinates_percentage[1] * h / 100,
+        coordinates_percentage[2] * w / 100,
+        coordinates_percentage[3] * h / 100,
+    ]))
+
+    return img[
+           coordinates[1]:coordinates[3],
+           coordinates[0]:coordinates[2]
+           ]
+
+
+def percentage_coordinates(img, *coordinates):
+    w = img.shape[1]
+    h = img.shape[0]
+    return list(map(round, [
+        coordinates[0] * 100 / w,
+        coordinates[1] * 100 / h,
+        coordinates[2] * 100 / w,
+        coordinates[3] * 100 / h
+    ]))
 
 
 def crop_matrix(img, cols, rows):
@@ -13,41 +58,21 @@ def crop_matrix(img, cols, rows):
     height = round(img.shape[0] / rows)
     # matrix = np.ones((rows, cols), dtype=np.int32)
     matrix = np.arange(cols * rows).reshape(rows, cols)
-
+    res_1 = []
     # print(width, height)
-
-    # Temp
-    dirname = 'sliced'
-    if not os.path.exists(dirname):
-        os.makedirs(dirname)
 
     for index_row, row in enumerate(matrix):
+        res_2 = []
         for index_col, col in enumerate(row):
-            # print(index_row, index_col)
             x1 = width * index_col
             y1 = height * index_row
-            # coordinates = (x1, y1, x1 + width, y1 + height)
             coordinates = (x1, y1, x1 + width, y1 + height)
-
-            # Temp
-            file_name = f'{index_row}-{index_col}.jpg'
             img_n = crop(img, *coordinates)
-            img_output = os.path.join(dirname, file_name)
-            cv2.imwrite(img_output, img_n)
+            res_2.append(img_n)
 
-            # cv2.imshow('Result 2', img_n)
-            # cv2.waitKey(0)
+        res_1.append(res_2)
 
-            # matrix[index_row][index_col] = coordinates
-            # matrix[index_row][index_col] = coordinates
-            # print(matrix[index_row][index_col])
-
-        # for y in x:
-        #     print(y)
-
-    # print(width, height)
-
-
+    return res_1
 
 
 def compare_two_images(img_1, img_2):
@@ -65,12 +90,121 @@ def compare_two_images(img_1, img_2):
     # hist_img2 = cv2.calcHist([img_2], [0, 1, 2], None, [256, 256, 256], [0, 256, 0, 256, 0, 256])
     # cv2.normalize(hist_img2, hist_img2, alpha=0, beta=1, norm_type=cv2.NORM_MINMAX)
 
-
     # Find the metric value
     # metric_val = cv2.compareHist(hist_img1, hist_img2, cv2.HISTCMP_CORREL)
     metric_val = abs(round(cv2.compareHist(hist_img1, hist_img2, cv2.HISTCMP_CORREL) * 100))
 
     return metric_val
+
+
+def compare_images(img_1, img_2):
+    # print(img_1.shape, img_2.shape)
+
+    img_1_grey = cv2.cvtColor(img_1, cv2.COLOR_BGR2GRAY)
+    # img_2_resized = imutils.resize(img_2, height=img_1.shape[0])
+    # img_2_resized = cv2.resize(img_2, (img_1.shape[1], img_1.shape[0]), interpolation=cv2.INTER_AREA)
+    img_2_resized = image_resize(img_2, width=img_1.shape[1])
+
+    # @TODO Should refactor
+    if img_1.shape[0] < img_2_resized.shape[0]:
+        diff = img_2_resized.shape[0] - img_1.shape[0]
+        coordinates = (0, 0, img_2_resized.shape[1], img_2_resized.shape[0] - diff)
+        img_2_resized = crop(img_2_resized, *coordinates)
+
+    img_2_grey = cv2.cvtColor(img_2_resized, cv2.COLOR_BGR2GRAY)
+
+    return round(ssim(img_1_grey, img_2_grey) * 100)
+
+
+def image_resize(image, width=None, height=None, inter=cv2.INTER_AREA):
+    # initialize the dimensions of the image to be resized and
+    # grab the image size
+    dim = None
+    (h, w) = image.shape[:2]
+
+    # if both the width and height are None, then return the
+    # original image
+    if width is None and height is None:
+        return image
+
+    # check to see if the width is None
+    if width is None:
+        # calculate the ratio of the height and construct the
+        # dimensions
+        r = height / float(h)
+        dim = (int(w * r), height)
+
+    # otherwise, the height is None
+    else:
+        # calculate the ratio of the width and construct the
+        # dimensions
+        r = width / float(w)
+        dim = (width, int(h * r))
+
+    # resize the image
+    resized = cv2.resize(image, dim, interpolation=inter)
+
+    # return the resized image
+    return resized
+
+
+def detect_hero(img_compared, *percentage_coordinates):
+    dir = os.path.join('images', 'avatars')
+    # dir = os.path.join('db', 'heroes')
+    # dir = os.path.join('db', 'heroes_from_game')
+    counter = 0
+    name = ""
+    for subdir, dirs, files in os.walk(dir):
+        for file_name in files:
+            frame = cv2.imread(os.path.join(subdir, file_name))
+            frame_changed = crop_percentage(frame, *percentage_coordinates)
+            metric_val = compare_images(img_compared, frame_changed)
+
+            if counter < metric_val:
+                counter = metric_val
+                name = file_name
+
+    return name
+
+
+def detect_heroes_from_matrix(matrix, *coordinates):
+    res_1 = []
+
+    for index_row, row in enumerate(matrix):
+        res_2 = []
+        for index_col, col in enumerate(row):
+            img = crop(matrix[index_row][index_col], *coordinates)
+            p_coordinates = percentage_coordinates(matrix[index_row][index_col], *coordinates)
+            hero = detect_hero(img, *p_coordinates)
+            res_2.append(hero)
+
+        res_1.append(res_2)
+
+    return np.array(res_1)
+
+
+def get_borders(image):
+    img = image
+    rsz_img = cv2.resize(img, None, fx=0.25, fy=0.25)  # resize since image is huge
+    gray = cv2.cvtColor(rsz_img, cv2.COLOR_BGR2GRAY)  # convert to grayscale
+
+    # threshold to get just the signature
+    retval, thresh_gray = cv2.threshold(gray, thresh=100, maxval=255, type=cv2.THRESH_BINARY)
+
+    # find where the signature is and make a cropped region
+    points = np.argwhere(thresh_gray == 0)  # find where the black pixels are
+    points = np.fliplr(points)  # store them in x,y coordinates instead of row,col indices
+    x, y, w, h = cv2.boundingRect(points)  # create a rectangle around those points
+    x, y, w, h = x - 10, y - 10, w + 20, h + 20  # make the box a little bigger
+    crop = gray[y:y + h, x:x + w]  # create a cropped region of the gray image
+
+    # get the thresholded crop
+    retval, thresh_crop = cv2.threshold(crop, thresh=200, maxval=255, type=cv2.THRESH_BINARY)
+
+    # display
+    cv2.imshow("Cropped and thresholded image", thresh_crop)
+    cv2.waitKey(0)
+
 
 def get_center_square(img, size=40):
     width = img.shape[1]
@@ -120,6 +254,7 @@ def get_percentage_of_occurrences(str, entry):
             counter += 1
 
     return round(counter * 100 / len(arr))
+
 
 # # get grayscale image
 def get_grayscale(image):
