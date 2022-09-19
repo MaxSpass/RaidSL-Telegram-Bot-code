@@ -7,20 +7,20 @@
 
 # Epics
 
-- Quests (Daily, Weekly, Monthly)
-- Demon lord
-- Hydra
-- Arena
-- Tag arena
-- Faction wars
-- Doom tower
-- Souls guard
+- [ ] Quests (Daily, Weekly, Monthly)
+- [ ] Demon lord
+- [ ] Hydra
+- [ ] Arena
+- [ ] Tag arena
+- [ ] Faction wars
+- [ ] Doom tower
+- [ ] Souls guard
 
 # System helpers
 
-- Cache system
-- Log system
+- [ ] Cache system
+- [ ] Log system
 
 # Services
 
--  Messaging assistant
+- [ ] Messaging assistant
