@@ -3,7 +3,6 @@ import cv2
 import numpy as np
 import pytesseract
 from constants.index import *
-import imutils
 from skimage.metrics import structural_similarity as ssim
 import numpy as np
 import cv2
@@ -101,7 +100,6 @@ def compare_images(img_1, img_2):
     # print(img_1.shape, img_2.shape)
 
     img_1_grey = cv2.cvtColor(img_1, cv2.COLOR_BGR2GRAY)
-    # img_2_resized = imutils.resize(img_2, height=img_1.shape[0])
     # img_2_resized = cv2.resize(img_2, (img_1.shape[1], img_1.shape[0]), interpolation=cv2.INTER_AREA)
     img_2_resized = image_resize(img_2, width=img_1.shape[1])
 
