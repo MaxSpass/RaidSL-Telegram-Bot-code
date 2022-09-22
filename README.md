@@ -2,7 +2,7 @@
 
 - install [Python](https://docs.opencv.org/4.x/d5/de5/tutorial_py_setup_in_windows.html)
 - install [OpenCV](https://github.com/opencv/opencv/releases)
-- install [Tesseract](https://tesseract-ocr.github.io/tessdoc/Installation.html)
+- install [Tesseract](https://tesseract-ocr.github.io/tessdoc/Downloads.html)
 - clone the repository
 - run inside the project: **pip install -r requirements.txt**
 
