@@ -95,6 +95,18 @@ def compare_two_images(img_1, img_2):
 
     return metric_val
 
+def cut_image_center(img, w, h):
+    img_w = img.shape[1]
+    img_h = img.shape[0]
+    x1 = round(img_w / 2 - w / 2)
+    y1 = round(img_h / 2 - h / 2)
+    x2 = round(img_w / 2 + w / 2)
+    y2 = round(img_h / 2 + h / 2)
+    coordinates = (x1, y1, x2, y2)
+
+    return crop(img, *coordinates)
+
+
 
 def compare_images(img_1, img_2):
     # print(img_1.shape, img_2.shape)

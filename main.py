@@ -16,13 +16,12 @@ def prepare_window():
 def main():
     pyautogui.FAILSAFE = True
 
-    # prepare_window()
+    prepare_window()
 
     # report_mouse_position()
 
-    time.sleep(1)
-    play('actions_test_01.json')
-
+    # time.sleep(1)
+    # play('actions_test_01.json')
 
 if __name__ == "__main__":
     main()
