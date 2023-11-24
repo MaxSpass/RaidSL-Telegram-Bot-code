@@ -1,4 +1,4 @@
-# Installation for Windows (test)
+# Installation for Windows
 
 - install [Python](https://docs.opencv.org/4.x/d5/de5/tutorial_py_setup_in_windows.html)
 - install [OpenCV](https://github.com/opencv/opencv/releases)
@@ -15,6 +15,8 @@ Every package should be installed by using the following command:
 [Tasks](https://trello.com/b/qdmlcWUO/main-board)
 
 [Notes](https://docs.google.com/document/d/1C7tJGxA2pyR1sg199nGUARYVfYpPSZ3VN1rhYFKvM1E/edit?usp=sharing)
+
+[Packaging Python](https://packaging.python.org/en/latest/tutorials/installing-packages/#requirements-files)
 
 # Epics
 

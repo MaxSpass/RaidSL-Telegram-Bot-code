@@ -21,6 +21,8 @@ class WindowMgr:
     def find_window_wildcard(self, wildcard):
         """find a window whose title matches the wildcard regex"""
         self._handle = None
+        # win32gui.EnumWindows(self._window_enum_callback, 'Raid: Shadow Legends')
+        # win32gui.EnumWindows(self._window_enum_callback, 'Plarium Play')
         win32gui.EnumWindows(self._window_enum_callback, wildcard)
 
     def set_foreground(self):
@@ -30,3 +32,6 @@ class WindowMgr:
     def adjust_window(self, x=0, y=0):
         """Windows 10 has an invisible border of 7 pixels"""
         win32gui.MoveWindow(self._handle, x - 7, y, 920, 540, True)
+
+    def get_rect(self):
+        return win32gui.GetWindowRect(self._handle)

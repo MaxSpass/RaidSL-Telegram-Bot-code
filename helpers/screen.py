@@ -2,11 +2,18 @@ import os
 import cv2
 import numpy as np
 import pytesseract
+from classes.window_mgr import *
 from constants.index import *
 from skimage.metrics import structural_similarity as ssim
 import numpy as np
 import cv2
 
+def prepare_window():
+    w = WindowMgr()
+    w.find_window_wildcard(".*%s*" % GAME_WINDOW)
+    w.adjust_window()
+    w.set_foreground()
+    return w
 
 def mse(imageA, imageB):
     # the 'Mean Squared Error' between the two images is the
@@ -265,6 +272,16 @@ def get_percentage_of_occurrences(str, entry):
 
     return round(counter * 100 / len(arr))
 
+def clear_folder(folder_path):
+    for filename in os.listdir(folder_path):
+        file_path = os.path.join(folder_path, filename)
+        try:
+            if os.path.isfile(file_path) or os.path.islink(file_path):
+                os.unlink(file_path)
+            elif os.path.isdir(file_path):
+                shutil.rmtree(file_path)
+        except Exception as e:
+            print('Failed to delete %s. Reason: %s' % (file_path, e))
 
 # # get grayscale image
 def get_grayscale(image):

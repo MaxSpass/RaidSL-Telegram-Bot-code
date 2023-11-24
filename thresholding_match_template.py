@@ -2,7 +2,7 @@ import os
 import numpy as np
 import cv2
 from helpers.screen import *
-
+# @TODO This file should be fixed
 screenshot = cv2.imread(os.path.join('images', 'screens', 'demon_lord_with_rewards_scrolled.png'))
 # needle_img = cv2.imread(os.path.join('images', 'sliced', 'lyudoed.png'))
 
