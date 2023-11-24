@@ -1,0 +1,101 @@
+[
+    {
+        "time": 1.858363151550293,
+        "type": "click",
+        "button": "Button.left",
+        "pos": [
+            321,
+            344
+        ]
+    },
+    {
+        "time": 2.8825035095214844,
+        "type": "click",
+        "button": "Button.left",
+        "pos": [
+            197,
+            697
+        ]
+    },
+    {
+        "time": 4.178258419036865,
+        "type": "click",
+        "button": "Button.left",
+        "pos": [
+            581,
+            550
+        ]
+    },
+    {
+        "time": 5.146485328674316,
+        "type": "click",
+        "button": "Button.left",
+        "pos": [
+            659,
+            292
+        ]
+    },
+    {
+        "time": 6.090874433517456,
+        "type": "click",
+        "button": "Button.left",
+        "pos": [
+            437,
+            454
+        ]
+    },
+    {
+        "time": 7.066966533660889,
+        "type": "click",
+        "button": "Button.left",
+        "pos": [
+            451,
+            729
+        ]
+    },
+    {
+        "time": 8.050460815429688,
+        "type": "click",
+        "button": "Button.left",
+        "pos": [
+            153,
+            281
+        ]
+    },
+    {
+        "time": 8.94658088684082,
+        "type": "click",
+        "button": "Button.left",
+        "pos": [
+            288,
+            901
+        ]
+    },
+    {
+        "time": 9.858700037002563,
+        "type": "click",
+        "button": "Button.left",
+        "pos": [
+            650,
+            871
+        ]
+    },
+    {
+        "time": 11.730703115463257,
+        "type": "click",
+        "button": "Button.left",
+        "pos": [
+            547,
+            72
+        ]
+    },
+    {
+        "time": 14.290273427963257,
+        "type": "click",
+        "button": "Button.left",
+        "pos": [
+            771,
+            1012
+        ]
+    }
+]
