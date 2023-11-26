@@ -3,17 +3,9 @@ import win32gui
 import win32api, win32con
 from classes.window_mgr import *
 from debug.functions import *
-from recorder.playback import play
-from constants.index import *
 from helpers.screen import *
 import pyautogui
 import random
-import cv2
-
-# import chilimangos
-# pyautogui.screenshot = chilimangos.grab_screen
-# pyautogui.pyscreeze.screenshot = chilimangos.grab_screen
-# pyautogui.size = lambda: chilimangos.screen_size
 
 # demon lord | levels for attack
 DEMON_LORD_LEVELS_FOR_ATTACK = [6, 5]
@@ -35,9 +27,6 @@ def log(message):
 def sleep(duration):
     time.sleep(duration)
 
-
-def axis_to_region(x1, y1, x2, y2):
-    return x1, y1, x2 - x1, y2 - y1
 
 
 def test_screenshot(region):
@@ -146,15 +135,8 @@ def battles_click():
     return position
 
 
-# TODO
 def waiting_battle_end_regular(msg, timeout=5):
     return pixel_wait(msg, 20, 46, [255, 255, 255], timeout)
-    # pixel = pyautogui.pixel(20, 46)
-    # while pixel[0] != 255 and pixel[1] != 255 and pixel[2] != 255:
-    #     log('Waiting an end of the battle: ' + battle)
-    #     sleep(timeout)
-    #     pixel = pyautogui.pixel(20, 46)
-    # log(battle + ' just finished')
 
 
 def tap_to_continue():
@@ -165,6 +147,7 @@ def tap_to_continue():
 
 
 def swipe(direction, x1, y1, distance, sleep_after_end=1.5):
+    # @TODO It does not work perfect
     sleep(1)
     click(x1, y1)
     sleep(0.2)
@@ -184,77 +167,102 @@ def swipe(direction, x1, y1, distance, sleep_after_end=1.5):
 
 
 def demon_lord():
-    global DEMON_LORD_LEVELS_FOR_ATTACK
-    global DEMON_LORD_REWARD_COORDINATES
+    def enter():
+        # moving to the Demon Lord
+        # click on the red button "Battles"
+        battles_click()
+        sleep(1)
+        # click on the clan boss
+        click(890, 300)
+        sleep(1)
+        # click on the Demon Lord
+        click(320, 290)
+        sleep(1)
 
-    # moving to the Demon Lord
-    # click on the red button "Battles"
-    battles_click()
-    sleep(1)
-    # click on the clan boss
-    click(890, 300)
-    sleep(1)
-    # click on the demon lord
-    click(320, 290)
-    sleep(1)
-
-    # swapping to the bottom @TODO
-    pyautogui.moveTo(580, 400, 1)
-    pyautogui.dragTo(580, 120, duration=1)
-    sleep(2)
-
-    # obtain rewards
-    for lvl in DEMON_LORD_REWARD_COORDINATES:
-        x = DEMON_LORD_REWARD_COORDINATES[lvl][0]
-        y = DEMON_LORD_REWARD_COORDINATES[lvl][1]
-        click(x, y)
-        sleep(0.5)
-        str_lvl = str(lvl)
-        if pixel_check(870, 457, [246, 0, 0]):
-            # click on the "Claim reward button"
-            click(870, 457)
-            sleep(1)
-            # click on the "Obtain reward button"
-            click(460, 444)
-            sleep(1)
-            # click on the "Obtain reward button"
-            click(460, 444)
-            log('Obtained reward from Demon Lord ' + str_lvl)
-        else:
-            log('No reward found from Demon Lord ' + str_lvl)
+        # swapping to the bottom @TODO
+        pyautogui.moveTo(580, 400, 1)
+        pyautogui.dragTo(580, 120, duration=1)
         sleep(2)
 
-    # attack
-    for lvl in DEMON_LORD_LEVELS_FOR_ATTACK:
-        x = DEMON_LORD_REWARD_COORDINATES[lvl][0]
-        y = DEMON_LORD_REWARD_COORDINATES[lvl][1]
-        # click on the certain demon lord
-        click(x, y)
-        # pyautogui.moveTo(x, y, 1)
-        sleep(.5)
-        # prepare to battle
-        click(860, 480)
-        sleep(.5)
-        # start battle
-        click(860, 480)
-        if pixel_wait('End of the battle with Demon Lord: ' + str(lvl) + 'level', 20, 112, [255, 255, 255], 3):
-            # return to the demon lord menu
-            click(420, 490)
-            close_popup()
+    def obtain():
+        global DEMON_LORD_LEVELS_FOR_ATTACK
+        global DEMON_LORD_REWARD_COORDINATES
+        # obtain rewards
+        for lvl in DEMON_LORD_REWARD_COORDINATES:
+            x = DEMON_LORD_REWARD_COORDINATES[lvl][0]
+            y = DEMON_LORD_REWARD_COORDINATES[lvl][1]
+            click(x, y)
+            sleep(0.5)
+            str_lvl = str(lvl)
+            if pixel_check(870, 457, [246, 0, 0]):
+                # click on the "Claim reward button"
+                click(870, 457)
+                sleep(1)
+                # click on the "Obtain reward button"
+                click(460, 444)
+                sleep(1)
+                # click on the "Obtain reward button"
+                click(460, 444)
+                log('Obtained reward from Demon Lord ' + str_lvl)
+            else:
+                log('No reward found from Demon Lord ' + str_lvl)
             sleep(2)
-            DEMON_LORD_LEVELS_FOR_ATTACK.remove(DEMON_LORD_LEVELS_FOR_ATTACK[0])
+
+    def attack():
+        global DEMON_LORD_LEVELS_FOR_ATTACK
+        global DEMON_LORD_REWARD_COORDINATES
+        # attack
+        for i in range(len(DEMON_LORD_LEVELS_FOR_ATTACK)):
+            # zero-indexed Demon Lord level is always next
+            lvl = DEMON_LORD_LEVELS_FOR_ATTACK[0]
+            x = DEMON_LORD_REWARD_COORDINATES[lvl][0]
+            y = DEMON_LORD_REWARD_COORDINATES[lvl][1]
+            # click on the certain demon lord
+            click(x, y)
+            # pyautogui.moveTo(x, y, 1)
+            # DEMON_LORD_LEVELS_FOR_ATTACK.remove(lvl)
+            sleep(.5)
+            # prepare to battle
+            click(860, 480)
+            sleep(.5)
+            # start battle
+            click(860, 480)
+            if pixel_wait('End of the battle with Demon Lord: ' + str(lvl) + ' level', 20, 112, [255, 255, 255], 3):
+                # return to the demon lord menu
+                click(420, 490)
+                close_popup()
+                sleep(2)
+                # removing already attacked Demon Lord from the array
+                DEMON_LORD_LEVELS_FOR_ATTACK.remove(lvl)
+
+    enter()
+    obtain()
+    attack()
 
 
 def tag_arena():
-    # @TODO Should add moving to the Tag arena page
+    # @TODO Should add moving to the Tag arena page, called "enter"
     sleep(2)
 
     def get_canvas():
         return capture_by_source('images/needles/tag_arena_weak_team.jpg', axis_to_region(425, 175, 882, 521),
                                  confidence=.9)
 
+    def enter():
+        # click on the red button "Battles"
+        battles_click()
+        sleep(1)
+        # click on arenas
+        click(700, 280)
+        sleep(1)
+        # click on the Tag Arena
+        click(710, 250)
+        sleep(1)
+
     def attack():
         global TAG_ARENA_MAX_REFILL
+        # @TODO Can be moved to the global scope
+        item_height = 100
         for i in range(7):
             team_for_attack = get_canvas()
 
@@ -265,6 +273,7 @@ def tag_arena():
 
             while team_for_attack is not None:
                 log('Found a team')
+                # The battle button is positioned at 135 pixels with an offset to the right
                 x = team_for_attack[0] + 135
                 y = team_for_attack[1]
                 # pyautogui.moveTo(team_for_attack[0] + 135, team_for_attack[1], 1, random_easying())
@@ -280,17 +289,18 @@ def tag_arena():
                     if should_refill_by_coins:
                         TAG_ARENA_MAX_REFILL = TAG_ARENA_MAX_REFILL - 1
 
+                # @TODO Might be in the "if" condition same nesting, above
                 click(x, y)
                 sleep(1)
 
                 click(860, 480)
-                waiting_battle_end_regular('Tag arena battle')
+                waiting_battle_end_regular('Tag Arena Battle end')
                 tap_to_continue()
                 sleep(2)
                 team_for_attack = get_canvas()
 
             log('No team found in this frame')
-            swipe('bottom', 580, 254, 100)
+            swipe('bottom', 580, 254, item_height)
 
     def refresh():
         if pixel_wait('Refresh button', 817, 133, [22, 124, 156], 10):
@@ -303,6 +313,7 @@ def tag_arena():
                 sleep(1.5)
             sleep(3)
 
+    enter()
     attack()
     log('No more teams for fighting...')
     refresh()
@@ -312,27 +323,167 @@ def tag_arena():
     return 0
 
 
+def classic_arena():
+    def enter():
+        # click on the red button "Battles"
+        battles_click()
+        sleep(1)
+        # click on arenas
+        click(700, 280)
+        sleep(1)
+        # click on the Classic Arena
+        click(200, 250)
+        sleep(1)
+
+    def attack():
+        # @TODO Can be moved to the global scope
+        item_height = 92
+
+        positions = {
+            1: (855, 200),
+            2: (855, 295),
+            3: (855, 380),
+            4: (855, 465),
+        }
+
+        # all swipes calculated based on item height: 92
+        dictionary_map = [
+            {
+                'swipes': 0,
+                'position': 1,
+            },
+            {
+                'swipes': 1,
+                'position': 1,
+            },
+            {
+                'swipes': 2,
+                'position': 1,
+            },
+            {
+                'swipes': 3,
+                'position': 1,
+            },
+            {
+                'swipes': 4,
+                'position': 1,
+            },
+            {
+                'swipes': 5,
+                'position': 1,
+            },
+            {
+                'swipes': 6,
+                'position': 1,
+            },
+            {
+                'swipes': 6,
+                'position': 2,
+            },
+            {
+                'swipes': 6,
+                'position': 3,
+            },
+            {
+                'swipes': 6,
+                'position': 4,
+            },
+        ]
+
+        tracker = []
+        should_use_multi_swipe = False
+
+        for i in range(len(dictionary_map)):
+            el = dictionary_map[i]
+            swipes = el['swipes']
+            position = el['position']
+
+            if should_use_multi_swipe:
+                for j in range(swipes):
+                    swipe('bottom', 580, 254, item_height)
+            elif 0 < i < 7:
+                swipe('bottom', 580, 254, item_height)
+
+            # pyautogui.moveTo(x, y, 1)
+
+            pos = positions[position]
+            x = pos[0]
+            y = pos[1]
+
+            # checking - is an enemy already attacked
+            is_not_attacked = len(tracker) - 1 < i
+            if pixel_check(x, y, [187, 130, 5]) and is_not_attacked:
+                print('Attacking Classic Arena battle')
+                # pyautogui.moveTo(x, y, 1)
+                # continue
+                click(x, y)
+                sleep(0.5)
+
+                # @TODO Should add should_refill_by_coins
+                should_refill_for_free = pixel_check(455, 380, [187, 130, 5])
+                should_refill = should_refill_for_free
+                if should_refill:
+                    click(439, 395)
+                    sleep(0.5)
+                    click(x, y)
+                    sleep(0.5)
+                    # if should_refill_by_coins:
+                    #     TAG_ARENA_MAX_REFILL = TAG_ARENA_MAX_REFILL - 1
+
+                click(860, 480)
+                sleep(0.5)
+                waiting_battle_end_regular('Classic Arena battle end')
+
+                # battle has been failed
+                if pixel_check(443, 51, [229, 40, 104]):
+                    log('Failed Classic Arena battle')
+                    tracker.append(False)
+                # battle has been won
+                else:
+                    log('Won  Classic Arena battle')
+                    tracker.append(True)
+
+                tap_to_continue()
+                sleep(1)
+                # tells to skip several teams by swiping
+                should_use_multi_swipe = True
+
+        log(tracker)
+
+    enter()
+    attack()
+
+
+def prepare():
+    prepare_window()
+    sleep(1)
+
+
+def start():
+    log('START')
+    demon_lord()
+    go_index_page()
+    tag_arena()
+    log('END')
+
+
+
 def main():
     pyautogui.FAILSAFE = True
 
-    # track_mouse_position()
-    # tag_arena()
-    # demon_lord()
+    track_mouse_position()
     return 0
 
-    def prepare():
-        prepare_window()
-        sleep(1)
+    # tag_arena()
+    # prepare()
+    # demon_lord()
 
-    def start():
-        log('START')
-        demon_lord()
-        go_index_page()
-        tag_arena()
-        log('END')
+    # classic_arena()
+    # return 0
 
-    prepare()
-    demon_lord()
+    # prepare()
+    # demon_lord()
+
     return 0
 
     if is_index_page() is True:

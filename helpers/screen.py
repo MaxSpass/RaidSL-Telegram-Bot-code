@@ -286,6 +286,9 @@ def clear_folder(folder_path):
 # # get grayscale image
 def get_grayscale(image):
     return cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+def axis_to_region(x1, y1, x2, y2):
+    return x1, y1, x2 - x1, y2 - y1
 #
 #
 # # noise removal
