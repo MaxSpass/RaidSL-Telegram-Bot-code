@@ -467,7 +467,6 @@ def start():
     log('END')
 
 
-
 def main():
     pyautogui.FAILSAFE = True
 
