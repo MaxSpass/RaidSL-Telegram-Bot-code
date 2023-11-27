@@ -28,7 +28,6 @@ def sleep(duration):
     time.sleep(duration)
 
 
-
 def test_screenshot(region):
     iml = pyautogui.screenshot(region=region)
     if iml is not None:
@@ -240,6 +239,18 @@ def demon_lord():
     attack()
 
 
+def refresh_arena():
+    if pixel_wait('Refresh button', 817, 133, [22, 124, 156], 10):
+        log('Refreshing...')
+        click(817, 133)
+        sleep(1)
+        for index in range(2):
+            pyautogui.moveTo(560, 185, .5, random_easying())
+            pyautogui.dragTo(560, 510, duration=.4)
+            sleep(1.5)
+        sleep(3)
+
+
 def tag_arena():
     # @TODO Should add moving to the Tag arena page, called "enter"
     sleep(2)
@@ -302,23 +313,12 @@ def tag_arena():
             log('No team found in this frame')
             swipe('bottom', 580, 254, item_height)
 
-    def refresh():
-        if pixel_wait('Refresh button', 817, 133, [22, 124, 156], 10):
-            log('Refreshing...')
-            click(817, 133)
-            sleep(1)
-            for index in range(2):
-                pyautogui.moveTo(560, 185, .5, random_easying())
-                pyautogui.dragTo(560, 510, duration=.4)
-                sleep(1.5)
-            sleep(3)
-
     enter()
+    refresh_arena()
     attack()
     log('No more teams for fighting...')
-    refresh()
     # @TODO Should check TAG_ARENA_MAX_REFILL and actual amount of available battles
-    tag_arena()
+    # tag_arena()
 
     return 0
 
@@ -451,6 +451,7 @@ def classic_arena():
         log(tracker)
 
     enter()
+    refresh_arena()
     attack()
 
 
@@ -461,7 +462,8 @@ def prepare():
 
 def start():
     log('START')
-    demon_lord()
+    classic_arena()
+    # demon_lord()
     go_index_page()
     tag_arena()
     log('END')
@@ -469,9 +471,10 @@ def start():
 
 def main():
     pyautogui.FAILSAFE = True
+    # prepare()
 
-    track_mouse_position()
-    return 0
+    # track_mouse_position()
+    # return 0
 
     # tag_arena()
     # prepare()
@@ -480,10 +483,9 @@ def main():
     # classic_arena()
     # return 0
 
-    # prepare()
     # demon_lord()
 
-    return 0
+    # return 0
 
     if is_index_page() is True:
         start()
