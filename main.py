@@ -100,21 +100,34 @@ def is_index_page():
 
 
 def close_popup():
+    # closes regular offer popup when it appears
     position = pyautogui.locateCenterOnScreen('dataset/test/close.png', confidence=.8)
     if position is None:
-        log('Popup close needle not found')
+        log('Regular popup was not found')
     else:
         x = position[0]
         y = position[1]
         pyautogui.moveTo(x, y, 1)
         pyautogui.click()
+
+    # closes special offer popup when it appears
+    sleep(0.3)
+    x = 300
+    y = 370
+    if pixel_check(x, y, [22, 124, 156]):
+        click(x, y)
+    else:
+        log('Special offer popup was not found')
+
     return position
 
 
 def go_index_page():
     log('Moving to the Index Page...')
-    click_alt(1, 1)
-    pyautogui.press('esc')
+    click_alt(5, 5)
+    sleep(1)
+    # pyautogui.press('esc')
+    close_popup()
     sleep(1)
     is_index = is_index_page()
     if is_index is False:
@@ -145,13 +158,37 @@ def tap_to_continue():
         sleep(1)
 
 
+def dungeons_scroll(direction='bottom', times=2):
+    x = 500
+    y_axis = [510, 90]
+
+    if direction == 'top':
+        y_axis.reverse()
+
+    for index in range(times):
+        pyautogui.moveTo(x, y_axis[0], .5, random_easying())
+        pyautogui.dragTo(x, y_axis[1], duration=.4)
+        sleep(1.5)
+
+    sleep(2)
+
+
+def dungeons_replay():
+    click(500, 480)
+    sleep(0.3)
+
+
 def swipe(direction, x1, y1, distance, sleep_after_end=1.5):
     # @TODO It does not work perfect
     sleep(1)
     click(x1, y1)
     sleep(0.2)
+
     pyautogui.mouseDown()
-    pyautogui.moveTo(x1, y1 - distance, 2)
+
+    if direction == 'bottom':
+        pyautogui.moveTo(x1, y1 - distance, 2)
+
     sleep(1)
     pyautogui.mouseUp()
     # pyautogui.moveTo(x1, y1, 1)
@@ -318,7 +355,7 @@ def tag_arena():
     attack()
     log('No more teams for fighting...')
     # @TODO Should check TAG_ARENA_MAX_REFILL and actual amount of available battles
-    # tag_arena()
+    tag_arena()
 
     return 0
 
@@ -455,23 +492,60 @@ def classic_arena():
     attack()
 
 
+def iron_twins_fortress():
+    def enter():
+        battles_click()
+        sleep(0.5)
+        # click on dungeons
+        click(306, 290)
+        sleep(0.5)
+        # click on iron twins fortress
+        click(280, 235)
+        sleep(0.5)
+        dungeons_scroll()
+
+    def attack():
+        click(830, 460)
+        sleep(.5)
+        click(830, 460)
+        sleep(.5)
+
+        # @TODO 6 value is depending on existing Fortress keys
+        for i in range(6):
+            waiting_battle_end_regular('Iron Twins Fortress')
+            dungeons_replay()
+            click(500, 480)
+
+    enter()
+    attack()
+
+
 def prepare():
     prepare_window()
     sleep(1)
 
 
 def start():
-    log('START')
-    classic_arena()
-    # demon_lord()
+    log('Executing an automatic scenarios...')
+
+    demon_lord()
     go_index_page()
+
+    iron_twins_fortress()
+    go_index_page()
+
+    classic_arena()
+    go_index_page()
+
     tag_arena()
-    log('END')
+    go_index_page()
+
+    log('All scenarios are done!')
 
 
 def main():
     pyautogui.FAILSAFE = True
-    # prepare()
+    prepare()
 
     # track_mouse_position()
     # return 0
@@ -482,9 +556,10 @@ def main():
 
     # classic_arena()
     # return 0
+    # return 0
 
     # demon_lord()
-
+    # go_index_page()
     # return 0
 
     if is_index_page() is True:
