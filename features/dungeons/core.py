@@ -207,14 +207,10 @@ class DungeonCore:
 
     def run(self):
         self.enter()
-        return
 
-        # while not self.done() and self.terminate is False:
-        #     log('Dungeon battle ' + str(self.counter + 1) + ' is starting')
-        #     self.attack()
-        #     self.counter += 1
-        #
-        # self.finish()
+        while not self.done() and self.terminate is False:
+            log('Dungeon battle ' + str(self.counter + 1) + ' is starting')
+            self.attack()
+            self.counter += 1
 
-
-DungeonCore(DUNGEON_PHANTOM, [0]).run()
+        self.finish()
