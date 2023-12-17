@@ -1,14 +1,17 @@
 import os
 import cv2
 
-screenshot = cv2.imread(os.path.join('images', 'screens', 'collection_1.png'))
-needle_img = cv2.imread(os.path.join('images', 'sliced', '1-0.jpg'))
+screenshot = cv2.imread(os.path.join('images', 'test.png'))
+# needle_img = cv2.imread(os.path.join('images', 'needles', 'battles.jpg'))
+# needle_img = cv2.imread(os.path.join('images', 'needles', 'quick_move.jpg'))
+# needle_img = cv2.imread(os.path.join('images', 'needles', 'quick_move_2.jpg'))
+needle_img = cv2.imread(os.path.join('images', 'needles', 'quick_move_2.jpg'))
 
 result = cv2.matchTemplate(screenshot, needle_img, cv2.TM_CCOEFF_NORMED)
 min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
 
 
-threshold = 0.8
+threshold = 0.3
 if max_val >= threshold:
     # get the best march position
     print('Best match top left position: %s' % str(max_loc))

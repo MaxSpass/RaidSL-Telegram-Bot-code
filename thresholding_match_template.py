@@ -3,13 +3,15 @@ import numpy as np
 import cv2
 from helpers.screen import *
 # @TODO This file should be fixed
-screenshot = cv2.imread(os.path.join('images', 'screens', 'demon_lord_with_rewards_scrolled.png'))
+# screenshot = cv2.imread(os.path.join('images', 'screens', 'demon_lord_with_rewards_scrolled.png'))
+screenshot = cv2.imread(os.path.join('images', 'test.png'))
 # needle_img = cv2.imread(os.path.join('images', 'sliced', 'lyudoed.png'))
 
 # needle_img_not_resized = cv2.imread(os.path.join('dataset', 'images', 'heroes', 'maneater_profile.png'))
 # needle_img_not_resized = cv2.imread(os.path.join('dataset', 'images', 'heroes', 'ninja_profile.png'))
 # needle_img_not_resized = cv2.imread(os.path.join('dataset', 'images', 'heroes', 'seeker_profile.png'))
-needle_img_not_resized = cv2.imread(os.path.join('dataset', 'images', 'heroes', 'painkeeper_profile.png'))
+# needle_img_not_resized = cv2.imread(os.path.join('dataset', 'images', 'heroes', 'painkeeper_profile.png'))
+needle_img_not_resized = cv2.imread(os.path.join('images', 'needles', 'quick_move.jpg'))
 
 
 
@@ -28,9 +30,9 @@ needle_img_aspect_ratio = needle_origin_w / needle_origin_h
 
 koeff_aspect_ratio = needle_img_aspect_ratio / needle_dataset_aspect_ratio
 
-print(needle_dataset_aspect_ratio, needle_img_aspect_ratio, koeff_aspect_ratio * needle_img_not_resized.shape[0])
+# print(needle_dataset_aspect_ratio, needle_img_aspect_ratio, koeff_aspect_ratio * needle_img_not_resized.shape[0])
 
-result = cv2.matchTemplate(screenshot, needle_img, cv2.TM_CCOEFF_NORMED)
+result = cv2.matchTemplate(screenshot, needle_img_not_resized, cv2.TM_CCOEFF_NORMED)
 
 def extend_coordinates(*arr):
     arr.append(needle_origin_w)
