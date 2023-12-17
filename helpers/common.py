@@ -20,6 +20,7 @@ def log(message):
 
     print(time + ' | ' + output)
 
+
 def sleep(duration):
     time.sleep(duration)
 
@@ -143,54 +144,6 @@ def is_index_page():
     else:
         log('Index Page is not detected')
     return flag
-
-
-def close_popup():
-    # closes regular offer popup when it appears
-    position = pyautogui.locateCenterOnScreen('images/needles/close.png', confidence=.8)
-    if position is None:
-        log('Regular popup was not found')
-    else:
-        x = position[0]
-        y = position[1]
-        pyautogui.moveTo(x, y, 1)
-        pyautogui.click()
-
-    # closes special offer popup when it appears
-    sleep(0.3)
-    x = 300
-    y = 370
-    if pixel_check_old(x, y, [22, 124, 156]):
-        click(x, y)
-    else:
-        log('Special offer popup was not found')
-
-    return position
-
-
-def go_index_page():
-    log('Moving to the Index Page...')
-    click_alt(5, 5)
-    sleep(1)
-    # pyautogui.press('esc')
-    close_popup()
-    sleep(1)
-    is_index = is_index_page()
-    if is_index is False:
-        go_index_page()
-    return is_index
-
-
-def battles_click():
-    position = pyautogui.locateCenterOnScreen('images/needles/battles.jpg', confidence=.9)
-    if position is None:
-        log('Battles needle is not found')
-    else:
-        x = position[0]
-        y = position[1]
-        pyautogui.moveTo(x, y, 1)
-        pyautogui.click()
-    return position
 
 
 def waiting_battle_end_regular(msg, timeout=5, x=20, y=46):
@@ -370,3 +323,53 @@ def find_needle(image_name, region=None, confidence=.8):
 
 def find_needle_refill_ruby():
     return find_needle('refill_ruby.jpg', axis_to_region(320, 320, 640, 440))
+
+
+def find_needle_battles():
+    return find_needle('battles.jpg', axis_to_region(730, 430, 900, 530))
+
+
+def find_needle_close_popup():
+    return find_needle('close.png')
+
+
+def battles_click():
+    battle_button = find_needle_battles()
+    if battle_button is not None:
+        x = battle_button[0]
+        y = battle_button[1]
+        pyautogui.click(x, y)
+    else:
+        log('Battle button is not found')
+
+
+def close_popup():
+    close_popup_button = find_needle_close_popup()
+
+    if close_popup is not None:
+        x = close_popup_button[0]
+        y = close_popup_button[1]
+        pyautogui.click(x, y)
+    else:
+        log('Regular popup was not found')
+
+    # closes special offer popup when it appears
+    sleep(0.3)
+    special_offer_popup = [300, 370, [22, 124, 156], 5]
+    if pixel_check_new(special_offer_popup):
+        click(x, y)
+    else:
+        log('Special offer popup was not found')
+
+
+def go_index_page():
+    log('Moving to the Index Page...')
+    click_alt(5, 5)
+    sleep(1)
+    # pyautogui.press('esc')
+    close_popup()
+    sleep(1)
+    is_index = is_index_page()
+    if is_index is False:
+        go_index_page()
+    return is_index
