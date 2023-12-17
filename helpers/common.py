@@ -314,7 +314,7 @@ def find_needle(image_name, region=None, confidence=.8):
     if region is None:
         region = [0, 0, 900, 530]
 
-    # @TODO Make it generic
+    # @TODO Replace hardcode by the system string
     path_root = 'E:/Main/BACKEND/core'
     path_image = os.path.join(path_root, 'images/needles/' + image_name)
     return capture_by_source(path_image, region,
