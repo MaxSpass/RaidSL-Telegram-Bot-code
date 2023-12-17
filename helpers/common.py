@@ -6,12 +6,19 @@ import os
 import glob
 import np
 import cv2
+import json
 from text_recognition import *
+from datetime import datetime
 
 
 def log(message):
-    print(message)
+    time = '{}'.format(str(datetime.now().strftime("%H:%M:%S")))
+    output = message
 
+    if type(message) is not str:
+        output = json.dumps(message)
+
+    print(time + ' | ' + output)
 
 def sleep(duration):
     time.sleep(duration)
@@ -63,7 +70,7 @@ def random_easying():
     ])
 
 
-def pixel_check(x, y, rgb, mistake=0):
+def pixel_check_old(x, y, rgb, mistake=0):
     pixel = pyautogui.pixel(x, y)
     if mistake == 0:
         return pixel[0] == rgb[0] and pixel[1] == rgb[1] and pixel[2] == rgb[2]
@@ -72,45 +79,40 @@ def pixel_check(x, y, rgb, mistake=0):
                rgb[2] - mistake < pixel[2] < rgb[2] + mistake
 
 
-def pixel_wait(msg, x, y, rgb, timeout=5):
+def pixel_check_new(pixel, mistake=10):
+    x = pixel[0]
+    y = pixel[1]
+    rgb = pixel[2]
+    p = pyautogui.pixel(x, y)
+    if mistake == 0:
+        return p[0] == rgb[0] and p[1] == rgb[1] and p[2] == rgb[2]
+    else:
+        return rgb[0] - mistake < p[0] < rgb[0] + mistake and rgb[1] - mistake < p[1] < rgb[1] + mistake and \
+               rgb[2] - mistake < p[2] < rgb[2] + mistake
+
+
+def pixels_check(msg, pixels, mistake=0):
+    length = len(pixels)
+    log('Checking some of ' + str(length) + ' pixels: ' + msg)
+    res = []
+
+    for i in range(len(pixels)):
+        res.append(pixel_check_new(pixels[i], mistake=mistake))
+
+    return res
+
+
+def pixel_wait(msg, x, y, rgb, timeout=5, mistake=0):
     log('Waiting pixel: ' + msg)
-    while pixel_check(x, y, rgb) is False:
+    while pixel_check_new([x, y, rgb], mistake=mistake) is False:
         sleep(timeout)
-    log(msg + ' just found requested pixel')
+    log('Found  pixel: ' + msg)
     return True
 
 
-# def pixels_wait(msg, list_1, list_2, timeout=5):
-#     log('Waiting pixels: ' + msg)
-#
-#     def restart():
-#         return [
-#             pixel_check(list_1[0], list_1[1], list_1[2]),
-#             pixel_check(list_2[0], list_2[1], list_2[2])
-#         ]
-#
-#     pixels = restart()
-#     pixel_index = False
-#     counter = 0
-#
-#     while pixels[0] is False and pixels[1] is False:
-#         sleep(timeout)
-#         counter += timeout
-#         pixels = restart()
-#         log(str(counter) + ' seconds left')
-#
-#     if pixels[0]:
-#         pixel_index = 1
-#     elif pixels[1]:
-#         pixel_index = 2
-#
-#     log(msg + ' just found requested pixel: ' + str(pixel_index))
-#
-#     return pixel_index
-
-def pixels_wait(msg, pixels, timeout=5, mistake=0):
+def pixels_wait(msg, pixels, timeout=5, mistake=0, wait_limit=120):
     length = len(pixels)
-    log('Waiting some of' + str(length) + ' pixels: ' + msg)
+    log('Waiting some of ' + str(length) + ' pixels: ' + msg)
 
     def restart():
         res = []
@@ -118,13 +120,13 @@ def pixels_wait(msg, pixels, timeout=5, mistake=0):
             x = pixels[i][0]
             y = pixels[i][1]
             rgb = pixels[i][2]
-            res.append(pixel_check(x, y, rgb, mistake=mistake))
+            res.append(pixel_check_old(x, y, rgb, mistake=mistake))
         return res
 
     checked_pixels = restart()
     counter = 0
 
-    while checked_pixels.count(False) == length:
+    while checked_pixels.count(False) == length and counter < wait_limit:
         sleep(timeout)
         counter += timeout
         checked_pixels = restart()
@@ -132,9 +134,10 @@ def pixels_wait(msg, pixels, timeout=5, mistake=0):
 
     return checked_pixels
 
+
 def is_index_page():
     flag = False
-    if pixel_check(756, 39, [179, 111, 26]):
+    if pixel_check_old(756, 39, [179, 111, 26], 5):
         flag = True
         log('Index Page detected')
     else:
@@ -144,7 +147,7 @@ def is_index_page():
 
 def close_popup():
     # closes regular offer popup when it appears
-    position = pyautogui.locateCenterOnScreen('dataset/test/close.png', confidence=.8)
+    position = pyautogui.locateCenterOnScreen('images/needles/close.png', confidence=.8)
     if position is None:
         log('Regular popup was not found')
     else:
@@ -157,7 +160,7 @@ def close_popup():
     sleep(0.3)
     x = 300
     y = 370
-    if pixel_check(x, y, [22, 124, 156]):
+    if pixel_check_old(x, y, [22, 124, 156]):
         click(x, y)
     else:
         log('Special offer popup was not found')
@@ -228,11 +231,12 @@ def dungeons_results_finish():
     sleep(0.5)
 
 
+# @TODO Should be fixed ASAP
 def swipe(direction, x1, y1, distance, sleep_after_end=1.5, speed=2):
     # @TODO It does not work perfect
     sleep(1)
     click(x1, y1)
-    sleep(0.2)
+    sleep(0.5)
 
     pyautogui.mouseDown()
 
@@ -256,6 +260,7 @@ def swipe(direction, x1, y1, distance, sleep_after_end=1.5, speed=2):
     sleep(sleep_after_end)
 
 
+# @TODO It's in used in outdated features only (classic_arena, tag_arena)
 def refresh_arena():
     if pixel_wait('Refresh button', 817, 133, [22, 124, 156], 10):
         log('Refreshing...')
@@ -291,7 +296,7 @@ def find_perfect_pixel():
     for x in range(913):
         for y in range(540):
             log('X: ' + str(x) + ' Y: ' + str(y))
-            if pixel_check(x, y, [222, 0, 0]):
+            if pixel_check_old(x, y, [222, 0, 0]):
                 log("Found")
                 tracker.append([x, y])
     log(tracker)
@@ -312,6 +317,16 @@ def recognize_text(region):
     bin_inverted = ~cv2.threshold(img, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
     text = pytesseract.image_to_string(bin_inverted)
     return text
+
+
+def click_on_progress_info(delay=0.5):
+    # keys/coins info
+    click(760, 46)
+    sleep(delay)
+
+
+def make_lambda(predicate, *args):
+    return lambda: predicate(*args)
 
 
 def get_progress():
@@ -340,3 +355,18 @@ def get_progress():
 
     else:
         log("Stopped! It's not an Index Page")
+
+
+def find_needle(image_name, region=None, confidence=.8):
+    if region is None:
+        region = [0, 0, 900, 530]
+
+    # @TODO Make it generic
+    path_root = 'E:/Main/BACKEND/core'
+    path_image = os.path.join(path_root, 'images/needles/' + image_name)
+    return capture_by_source(path_image, region,
+                             confidence=confidence)
+
+
+def find_needle_refill_ruby():
+    return find_needle('refill_ruby.jpg', axis_to_region(320, 320, 640, 440))
