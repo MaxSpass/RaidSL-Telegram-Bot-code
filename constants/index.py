@@ -1,18 +1,105 @@
-# The main window should automatically resize to the following dimensions
-SIZE_WINDOW_WIDTH = 929
-SIZE_WINDOW_HEIGHT = 522
-
-# COORDINATES_PANEL_HEROES = (14, 87, 218, 433)
-COORDINATES_PANEL_HEROES = (10, 80, 230, 440)
-COORDINATES_TEXT_DAILY_REWARDS = (330, 25, 600, 60)
-COORDINATES_TEXT_POPUP_OFFER = (280, 40, 650, 75)
-COORDINATES_QUESTS = (210, 156, 909, 521)
-COORDINATES_QUESTS_1 = (0, 0, 270, 40)
-
-COORDINATES_AVATAR_RECOGNIZE_AREA = (5, 27, 58, 50)
-# COORDINATES_AVATAR_RECOGNIZE_AREA = (5, 5, 62, 46)
-
-TEXT_QUEST_CONDITION_FIGHT_5_TIMES = 'fight in classic arena 5 times'
-
 TYPE_QUESTS_ITEM = 'TYPE_QUESTS_ITEM'
 GAME_WINDOW = 'Raid: Shadow Legends'
+
+# NEW CONSTANTS
+CLASSIC_ITEM_HEIGHT = 92
+CLASSIC_BUTTON_LOCATIONS = {
+    1: [855, 200],
+    2: [855, 295],
+    3: [855, 380],
+    4: [855, 465],
+}
+CLASSIC_ITEM_LOCATIONS = [
+    {
+        'swipes': 0,
+        'position': 1,
+    },
+    {
+        'swipes': 1,
+        'position': 1,
+    },
+    {
+        'swipes': 2,
+        'position': 1,
+    },
+    {
+        'swipes': 3,
+        'position': 1,
+    },
+    {
+        'swipes': 4,
+        'position': 1,
+    },
+    {
+        'swipes': 5,
+        'position': 1,
+    },
+    {
+        'swipes': 6,
+        'position': 1,
+    },
+    {
+        'swipes': 6,
+        'position': 2,
+    },
+    {
+        'swipes': 6,
+        'position': 3,
+    },
+    {
+        'swipes': 6,
+        'position': 4,
+    },
+]
+
+
+TAG_ITEM_HEIGHT = 100
+TAG_BUTTON_LOCATIONS = {
+    1: [855, 200],
+    2: [855, 300],
+    3: [855, 396],
+    # 4: [855, 440],
+    4: [855, 490],
+}
+TAG_ITEM_LOCATIONS = [
+    {
+        'swipes': 0,
+        'position': 1,
+    },
+    {
+        'swipes': 1,
+        'position': 1,
+    },
+    {
+        'swipes': 2,
+        'position': 1,
+    },
+    {
+        'swipes': 3,
+        'position': 1,
+    },
+    {
+        'swipes': 4,
+        'position': 1,
+    },
+    {
+        'swipes': 5,
+        'position': 1,
+    },
+    {
+        'swipes': 6,
+        'position': 1,
+    },
+    {
+        'swipes': 6,
+        'position': 2,
+    },
+    {
+        'swipes': 6,
+        'position': 3,
+    },
+    {
+        'swipes': 6,
+        'position': 4,
+    },
+]
