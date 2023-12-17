@@ -5,6 +5,7 @@ from helpers.screen import *
 import uuid
 import os
 from pathlib import Path
+from helpers.common import *
 
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files (x86)\Tesseract-OCR\tesseract'
 
@@ -48,12 +49,12 @@ def capture_demon_lord_result():
 
 def read_text_in_region(region):
     screenshot = pyautogui.screenshot(region=region)
-    screenshot.save(r"D:\ComputerVision\bot\text.png")
-    img = cv2.imread(r"D:\ComputerVision\bot\text.png")
+    screenshot.save(r"E:\Main\BACKEND\core\text.png")
+    img = cv2.imread(r"E:\Main\BACKEND\core\text.png")
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     threshold_img = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
     text = pytesseract.image_to_string(threshold_img)
     return text
 
 
-check_results()
+# check_results()
