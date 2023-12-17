@@ -32,3 +32,4 @@ virtualenv==20.16.5
 zipp==3.8.1
 telebot==0.0.5
 np==1.0.2
+more_itertools==9.1.0
