@@ -49,9 +49,9 @@ claim_chest = [534, 448, [233, 0, 0]]
 auto_mode = [49, 486]
 return_start_panel = [444, 490]
 
-
 MAX_DEFAULT_PAID_REFILL = 1
 
+# @TODO Needs to be refactor in order to fix phantom bug
 class ArenaLive:
     x_config = 600
     y_config = 175

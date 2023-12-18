@@ -7,9 +7,17 @@ import glob
 import np
 import cv2
 import json
-from text_recognition import *
+# from text_recognition import *
+from classes.window_mgr import *
 from datetime import datetime
 
+def prepare_window():
+    GAME_WINDOW = 'Raid: Shadow Legends'
+    w = WindowMgr()
+    w.find_window_wildcard(".*%s*" % GAME_WINDOW)
+    w.adjust_window()
+    w.set_foreground()
+    return w
 
 def log(message):
     time = '{}'.format(str(datetime.now().strftime("%H:%M:%S")))
@@ -255,21 +263,21 @@ def find_perfect_pixel():
     log(tracker)
 
 
-def recognize_text(region):
-    screenshot = pyautogui.screenshot(region=region)
-    screenshot.save(r"E:\Main\BACKEND\core\text.png")
-    img = cv2.imread(r"E:\Main\BACKEND\core\text.png", cv2.IMREAD_GRAYSCALE)
-
-    # img = cv2.resize(img, (0, 0), None, 4.0, 4.0)
-    # img = cv2.threshold(img, 160, 255, cv2.THRESH_BINARY)[1]
-    # config = '--psm 6 -c tessedit_char_whitelist="0123456789/"'
-    # config = '--oem 3 --psm 6 outputbase digits'
-    # text = pytesseract.image_to_string(img, config=config)
-
-    img = cv2.resize(img, (0, 0), fx=3.0, fy=3.0)
-    bin_inverted = ~cv2.threshold(img, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
-    text = pytesseract.image_to_string(bin_inverted)
-    return text
+# def recognize_text(region):
+#     screenshot = pyautogui.screenshot(region=region)
+#     screenshot.save(r"E:\Main\BACKEND\core\text.png")
+#     img = cv2.imread(r"E:\Main\BACKEND\core\text.png", cv2.IMREAD_GRAYSCALE)
+#
+#     # img = cv2.resize(img, (0, 0), None, 4.0, 4.0)
+#     # img = cv2.threshold(img, 160, 255, cv2.THRESH_BINARY)[1]
+#     # config = '--psm 6 -c tessedit_char_whitelist="0123456789/"'
+#     # config = '--oem 3 --psm 6 outputbase digits'
+#     # text = pytesseract.image_to_string(img, config=config)
+#
+#     img = cv2.resize(img, (0, 0), fx=3.0, fy=3.0)
+#     bin_inverted = ~cv2.threshold(img, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
+#     text = pytesseract.image_to_string(bin_inverted)
+#     return text
 
 
 def click_on_progress_info(delay=0.5):

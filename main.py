@@ -6,6 +6,9 @@ from features.faction_wars.index import *
 from features.rewards.index import *
 from features.hero_filter.index import *
 from features.dungeons.core import *
+from datetime import datetime
+from helpers.common import *
+from constants.index import *
 
 
 def prepare():
@@ -54,13 +57,12 @@ def main():
     pyautogui.FAILSAFE = True
     prepare()
 
+
     if is_index_page() is True:
         start()
     else:
         go_index_page()
         start()
-
-
 
 
 if __name__ == "__main__":

@@ -1,4 +1,5 @@
 from helpers.common import *
+from constants.index import *
 
 button_refresh = [817, 133, [22, 124, 156]]
 refill_free = [455, 380, [187, 130, 5]]
