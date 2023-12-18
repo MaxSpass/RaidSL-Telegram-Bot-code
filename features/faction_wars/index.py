@@ -98,7 +98,7 @@ CRYPT_SLIDES = [
 
 # @TODO Must be reworked by following new standard and refactor 'attack' method
 def faction_wars():
-    tracker = ['Demonspawn', 'High Elf']
+    tracker = []
     slide_first = np.array(CRYPT_SLIDES)[:8]
     slide_second = np.array(CRYPT_SLIDES)[8:]
 
