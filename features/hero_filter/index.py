@@ -27,6 +27,8 @@ class HeroFilter:
             click(x, y)
             sleep(.3)
             self.is_filter_opened = True
+        else:
+            log('Have not found the filter button')
 
     def close(self):
         if self.is_filter_opened:
