@@ -129,7 +129,7 @@ class Rewards:
         else:
             log("Skipped! No Index Page found")
 
-    def play_time_start(self):
+    def play_time_run(self):
         if is_index_page():
             x = 860
             y = 408
