@@ -6,8 +6,9 @@ refill_free = [455, 380, [187, 130, 5]]
 refill_paid = [440, 376, [255, 33, 51]]
 defeat = [443, 51, [229, 40, 104]]
 
-DEFAULT_STRIKES_LIMIT = 1
 PAID_REFILL = 0
+OUTPUT_ITEMS_AMOUNT = 10
+
 
 class ArenaFactory:
     name = None
@@ -17,10 +18,9 @@ class ArenaFactory:
     # classic: 95 | tag: 135
     x_axis_info = None
 
-    strikes = DEFAULT_STRIKES_LIMIT
     max_swipe = 0
     refill = 0
-    tracker = []
+    results = []
     terminate = False
 
     def __init__(
@@ -47,7 +47,7 @@ class ArenaFactory:
 
     def _refresh_arena(self):
         # if pixels_wait('Refresh button', [[817, 133, [22, 124, 156]]], timeout=10, mistake=10, wait_limit=5)[0]:
-        if pixels_wait('Refresh button', [button_refresh], 10)[0]:
+        if pixels_wait([button_refresh], msg='Refresh button', mistake=10)[0]:
             log('Refreshing...')
             click(817, 133)
             sleep(1)
@@ -74,20 +74,48 @@ class ArenaFactory:
         ruby_button = find_needle_refill_ruby()
 
         if ruby_button is not None:
-            log('No more free sacs')
+            log('Free coins are NOT available')
             if self.refill > 0:
                 self.refill -= 1
                 click_on_refill()
                 refilled = True
             else:
-                log('Refill value is 0')
+                log('No more refill')
                 self.terminate = True
-        elif pixel_check_new(refill_free, mistake=10):
-            log('Has free sacs')
+        elif pixels_wait([refill_free], msg='Free refill sacs', mistake=10, timeout=1, wait_limit=2)[0]:
+            log('Free coins are available')
             click_on_refill()
             refilled = True
 
+        sleep(0.5)
+
         return refilled
+
+
+    def _get_last_results(self):
+        length = len(self.results)
+        if length:
+            return [self.results[len(self.results) - 1]]
+        else:
+            return self.results
+
+    def _show_results(self, results, is_detailed=False):
+        if len(results):
+            flatten_list = flatten(results)
+            w = flatten_list.count(True)
+            l = flatten_list.count(False)
+
+            if is_detailed:
+                t = w + l
+                wr = w * 100 / t
+                wr_str = str(round(wr)) + '%'
+                # lr = 100 - wr
+                # lr_str = str(round(lr)) + '%'
+                s = self.name + ' | ' + 'Battles: ' + str(len(flatten_list)) + ' | ' + 'Win rate: ' + wr_str
+            else:
+                s = 'Won: ' + str(w) + ' | Lost: ' + str(l)
+
+            log(s)
 
     def attack(self):
         results_local = []
@@ -113,7 +141,7 @@ class ArenaFactory:
 
             def click_on_battle():
                 click(x, y)
-                sleep(.5)
+                sleep(1.5)
 
             def click_on_start():
                 click(860, 480)
@@ -132,6 +160,7 @@ class ArenaFactory:
                     click_on_battle()
 
                 if self.terminate:
+                    log('break')
                     break
 
                 click_on_start()
@@ -149,29 +178,41 @@ class ArenaFactory:
                 # tells to skip several teams by swiping
                 should_use_multi_swipe = True
 
-        return results_local
+                if i == 0:
+                    self.terminate = True
+                    break
+
+        # appends result from attack series into the global results list
+        self.results.append(results_local)
+        # return results_local
+
+    def report(self):
+        self._show_results(self.results, is_detailed=True)
 
     def finish(self):
         go_index_page()
         log('DONE - ' + self.name)
-        log('Won: ' + str(self.tracker.count(True)) + ' | Lost: ' + str(self.tracker.count(False)))
+        self._show_results(self._get_last_results())
 
-    def run(self, strikes=DEFAULT_STRIKES_LIMIT):
-        # @TODO strikes ???
-        self.strikes = strikes
+    def run(self):
         self.enter()
-        # and self.strikes > 0
-        while self.refill > 0 or self.terminate is False:
-            results = self.attack()
-            self.strikes -= 1
 
-            # joins each attack results into the global tracker
-            for j in range(len(results)):
-                self.tracker.append(results[j])
+        # refreshes arena, when it's a first time calling
+        # if not len(self.results):
+        #     self._refresh_arena()
 
-            # at least one 'Defeat' - should refresh
-            if results.count(False) > 0:
-                self._refresh_arena()
+        while self.terminate is False:
+            self.attack()
+
+            last_results = self._get_last_results()
+
+            if self.terminate is False:
+                # at least one 'Defeat' or continued battles - should refresh
+                if last_results.count(False) > 0 or len(last_results) < OUTPUT_ITEMS_AMOUNT:
+                    self._refresh_arena()
+
+            # Temp | test
+            # self.terminate = True
 
         self.finish()
 
