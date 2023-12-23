@@ -10,6 +10,8 @@ import json
 # from text_recognition import *
 from classes.window_mgr import *
 from datetime import datetime
+import pytesseract
+
 
 def prepare_window():
     GAME_WINDOW = 'Raid: Shadow Legends'
@@ -19,12 +21,16 @@ def prepare_window():
     w.set_foreground()
     return w
 
+
 def log(message):
+    print(message)
+    return
     time = '{}'.format(str(datetime.now().strftime("%H:%M:%S")))
     output = message
 
     if type(message) is not str:
-        output = json.dumps(message)
+        # output = json.dumps(message)
+        output = '[ ' + ' '.join(a) + ' ]'
 
     print(time + ' | ' + output)
 
@@ -64,9 +70,10 @@ def click(x, y):
     # win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP, 0, 0)
 
 
-def click_alt(x, y, duration=1):
-    pyautogui.moveTo(x, y, duration)
-    pyautogui.click()
+def click_alt(x, y, duration=1, moving=True):
+    if moving:
+        pyautogui.moveTo(x, y, duration)
+    pyautogui.click(x, y)
 
 
 def random_easying():
@@ -119,9 +126,10 @@ def pixel_wait(msg, x, y, rgb, timeout=5, mistake=0):
     return True
 
 
-def pixels_wait(msg, pixels, timeout=5, mistake=0, wait_limit=120):
+def pixels_wait(pixels, msg=None, timeout=5, mistake=0, wait_limit=None):
     length = len(pixels)
-    log('Waiting some of ' + str(length) + ' pixels: ' + msg)
+    if msg is not None:
+        log('Waiting some of ' + str(length) + ' pixels: ' + msg)
 
     def restart():
         res = []
@@ -135,11 +143,13 @@ def pixels_wait(msg, pixels, timeout=5, mistake=0, wait_limit=120):
     checked_pixels = restart()
     counter = 0
 
-    while checked_pixels.count(False) == length and counter < wait_limit:
+    while checked_pixels.count(False) == length:
         sleep(timeout)
         counter += timeout
         checked_pixels = restart()
         log(str(counter) + ' seconds left')
+        if type(wait_limit) is int and counter < wait_limit:
+            break
 
     return checked_pixels
 
@@ -236,6 +246,10 @@ def refresh_arena():
 
 def axis_to_region(x1, y1, x2, y2):
     return x1, y1, x2 - x1, y2 - y1
+
+
+def axis_list_to_region(l):
+    return l[0], l[1], l[2] - l[0], l[3] - l[1]
 
 
 def clear_folder(path):
@@ -353,7 +367,6 @@ def battles_click():
 
 def close_popup():
     close_popup_button = find_needle_close_popup()
-
     if close_popup is not None:
         x = close_popup_button[0]
         y = close_popup_button[1]
@@ -365,6 +378,8 @@ def close_popup():
     sleep(0.3)
     special_offer_popup = [300, 370, [22, 124, 156], 5]
     if pixel_check_new(special_offer_popup):
+        x = special_offer_popup[0]
+        y = special_offer_popup[1]
         click(x, y)
     else:
         log('Special offer popup was not found')
@@ -372,7 +387,7 @@ def close_popup():
 
 def go_index_page():
     log('Moving to the Index Page...')
-    click_alt(5, 5)
+    click_alt(5, 5, moving=False)
     sleep(1)
     # pyautogui.press('esc')
     close_popup()
@@ -381,3 +396,26 @@ def go_index_page():
     if is_index is False:
         go_index_page()
     return is_index
+
+
+def screenshot_to_image(screenshot):
+    return np.array(screenshot)[:, :, ::-1].copy()
+
+
+def flatten(xss):
+    return [x for xs in xss for x in xs]
+
+def image_to_text(image):
+    # image = cv2.medianBlur(image, 5)
+
+    # return [
+    #     pytesseract.image_to_string(image, config='--psm 4 --oem 3 -c tessedit_char_whitelist=0123456789'),
+    #     pytesseract.image_to_string(image, config='--psm 5 --oem 3 -c tessedit_char_whitelist=0123456789'),
+    #     pytesseract.image_to_string(image, config='--psm 6 --oem 3 -c tessedit_char_whitelist=0123456789'),
+    #     pytesseract.image_to_string(image, config='--psm 7 --oem 3 -c tessedit_char_whitelist=0123456789'),
+    #     pytesseract.image_to_string(image, config='--psm 8 --oem 3 -c tessedit_char_whitelist=0123456789'),
+    #     pytesseract.image_to_string(image, config='--psm 9 --oem 3 -c tessedit_char_whitelist=0123456789'),
+    #     pytesseract.image_to_string(image, config='--psm 10 --oem 3 -c tessedit_char_whitelist=0123456789'),
+    # ]
+
+    return pytesseract.image_to_string(image, config='--psm 8 --oem 3 -c tessedit_char_whitelist=0123456789')
