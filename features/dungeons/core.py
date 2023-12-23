@@ -85,6 +85,7 @@ class DungeonCore:
     strategy = [0, 0]
     refill_force = False
     refill_max = 0
+    allow_super_raid = False
 
     # define while initialization
     location = None
@@ -95,14 +96,17 @@ class DungeonCore:
     def __init__(self, dungeon, strategy=None, props=None):
         self.dungeon = dungeon
 
+        # @TODO Should be moved to the 'props' object
         if strategy is not None:
             self.strategy = strategy
 
         if props is not None:
-            if props.refill_force is not None:
-                self.refill_force = props.refill_force
-            if props.refill_max is not None:
-                self.refill_max = props.refill_max
+            if 'refill_force' in props:
+                self.refill_force = props['refill_force']
+            if 'refill_max' in props:
+                self.refill_max = props['refill_max']
+            if 'allow_super_raid' in props:
+                self.allow_super_raid = props['allow_super_raid']
 
         if self.strategy is None:
             if self.strategy == '*':
@@ -116,14 +120,20 @@ class DungeonCore:
     def _initialization(self):
         self.location = self._get_location(self.dungeon)
 
-        if 0 in self.strategy:
+        if len(self.strategy) > 0:
             self.runs = self.strategy[0]
 
-        if 1 in self.strategy:
+        if len(self.strategy) > 1:
             self.count_by = self.strategy[1]
 
     def _get_location(self, name):
         return first_true(DUNGEON_LOCATIONS, pred=lambda el: el['name'] == name)
+
+    def _click_on_super_raid(self):
+        x = check_box_super_raid[0]
+        y = check_box_super_raid[1]
+        click(x, y)
+        sleep(.3)
 
     def enter(self):
         battles_click()
@@ -138,7 +148,7 @@ class DungeonCore:
             swipe('right', 850, 400, 800, speed=.5)
             x = self.location['click']['x']
             y = self.location['click']['y']
-            # click on dragon icon
+            # click on dungeon icon
             click(x, y)
             sleep(1)
 
@@ -150,11 +160,13 @@ class DungeonCore:
         sleep(.5)
 
         # @TODO validate
-        if not pixel_check_new(check_box_super_raid, mistake=10):
-            x = check_box_super_raid[0]
-            y = check_box_super_raid[1]
-            click(x, y)
-            sleep(.3)
+
+        if self.allow_super_raid:
+            if not pixel_check_new(check_box_super_raid, mistake=10):
+                self._click_on_super_raid()
+        else:
+            if pixel_check_new(check_box_super_raid, mistake=10):
+                self._click_on_super_raid()
 
     def attack(self):
         def _start_battle():
@@ -199,11 +211,12 @@ class DungeonCore:
     def finish(self):
         dungeons_results_finish()
         go_index_page()
-        log('DONE - Dragon')
+        log('DONE - ' + self.dungeon)
         log('Victory: ' + str(self.tracker.count(True)) + ' | ' + 'Defeat: ' + str(self.tracker.count(False)))
 
     def done(self):
         return not (self.counter < self.runs)
+        # return self.counter == self.runs
 
     def run(self):
         self.enter()
