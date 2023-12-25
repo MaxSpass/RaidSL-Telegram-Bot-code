@@ -178,9 +178,9 @@ class ArenaFactory:
                 # tells to skip several teams by swiping
                 should_use_multi_swipe = True
 
-                if i == 0:
-                    self.terminate = True
-                    break
+                # if i == 0:
+                #     self.terminate = True
+                #     break
 
         # appends result from attack series into the global results list
         self.results.append(results_local)
