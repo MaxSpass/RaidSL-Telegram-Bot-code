@@ -18,6 +18,8 @@ Every package should be installed by using the following command:
 
 [Packaging Python](https://packaging.python.org/en/latest/tutorials/installing-packages/#requirements-files)
 
+[PyGetWindow-DOCS](https://github.com/asweigart/PyGetWindow)
+
 # Epics
 
 - [ ] Quests (Daily, Weekly, Monthly)

@@ -8,18 +8,8 @@ import np
 import cv2
 import json
 # from text_recognition import *
-from classes.window_mgr import *
 from datetime import datetime
 import pytesseract
-
-
-def prepare_window():
-    GAME_WINDOW = 'Raid: Shadow Legends'
-    w = WindowMgr()
-    w.find_window_wildcard(".*%s*" % GAME_WINDOW)
-    w.adjust_window()
-    w.set_foreground()
-    return w
 
 
 def log(message):
@@ -355,6 +345,10 @@ def find_needle_close_popup():
     return find_needle('close.png')
 
 
+def find_needle_burger():
+    return find_needle('burger.jpg')
+
+
 def battles_click():
     battle_button = find_needle_battles()
     if battle_button is not None:
@@ -404,6 +398,7 @@ def screenshot_to_image(screenshot):
 
 def flatten(xss):
     return [x for xs in xss for x in xs]
+
 
 def image_to_text(image):
     # image = cv2.medianBlur(image, 5)

@@ -183,7 +183,8 @@ class ArenaFactory:
                 #     break
 
         # appends result from attack series into the global results list
-        self.results.append(results_local)
+        if len(results_local):
+            self.results.append(results_local)
         # return results_local
 
     def report(self):

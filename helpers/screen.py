@@ -2,18 +2,10 @@ import os
 import cv2
 import numpy as np
 import pytesseract
-from classes.window_mgr import *
 from constants.index import *
 from skimage.metrics import structural_similarity as ssim
 import numpy as np
 import cv2
-
-def prepare_window():
-    w = WindowMgr()
-    w.find_window_wildcard(".*%s*" % GAME_WINDOW)
-    w.adjust_window()
-    w.set_foreground()
-    return w
 
 def mse(imageA, imageB):
     # the 'Mean Squared Error' between the two images is the
