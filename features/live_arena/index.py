@@ -349,6 +349,7 @@ class ArenaLive:
         sleep(3)
 
     def report(self):
+        s = None
         if len(self.results):
             w = self.results.count(True)
             l = self.results.count(False)
@@ -359,7 +360,7 @@ class ArenaLive:
             # lr_str = str(round(lr)) + '%'
             s = 'Live Arena | Battles: ' + str(len(self.results)) + ' | ' + 'Win rate: ' + wr_str
 
-        log(s)
+        return s
 
     def finish(self):
         go_index_page()

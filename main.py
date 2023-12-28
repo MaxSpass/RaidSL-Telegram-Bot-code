@@ -9,6 +9,8 @@ from features.dungeons.core import *
 from helpers.common import *
 from constants.index import *
 import sys
+import atexit
+import signal
 
 
 def prepare():
@@ -77,30 +79,48 @@ arena_live = ArenaLive(
 )
 
 
-# def flat(arr):
-#     return list(itertools.chain.from_iterable(arr))
+def app_exit():
+    r1 = arena_live.report()
+    r2 = arena_classic.report()
+    r3 = arena_tag.report()
+    if r1 is not None or r2 is not None or r3 is not None:
+        log('================   Report   ================')
+        if r1:
+            log(r1)
+        if r2:
+            log(r2)
+        if r3:
+            log(r3)
+        log('================   Report   ================')
 
-def start():
+
+
+def app_kill(*args):
+    log('App is terminated')
+    sys.exit(0)
+
+
+def app_start():
+    atexit.register(app_exit)
+    signal.signal(signal.SIGINT, app_kill)
+    signal.signal(signal.SIGTERM, app_kill)
+
     log('Executing automatic scenarios...')
     start_time = datetime.now()
 
     # demon_lord()
     # arena_live.run()
-    # arena_classic.run()
-    # arena_tag.run()
-    # rewards.quests_run()
-    # faction_wars()
-    # rewards.play_time_run()
-    # iron_twins_fortress()
-    # arena_tag.run()
+    arena_classic.run()
+    arena_tag.run()
+    rewards.quests_run()
+    faction_wars()
+    rewards.play_time_run()
+    iron_twins_fortress()
+    arena_tag.run()
 
     # DungeonCore(DUNGEON_FIRE, [65], props={
     #     'allow_super_raid': True
     # }).run()
-
-    # arena_live.report()
-    # arena_classic.report()
-    # arena_tag.report()
 
     log('All scenarios are done!')
     print('Duration: {}'.format(datetime.now() - start_time))
@@ -111,13 +131,12 @@ def main():
     try:
         prepare()
         if is_index_page() is True:
-            start()
+            app_start()
         else:
             go_index_page()
-            start()
+            app_start()
     except KeyboardInterrupt:
-        sys.exit()
-
+        return 0
 
 if __name__ == "__main__":
     main()

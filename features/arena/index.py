@@ -100,6 +100,7 @@ class ArenaFactory:
             return self.results
 
     def _show_results(self, results, is_detailed=False):
+        s = None
         if len(results):
             flatten_list = flatten(results)
             w = flatten_list.count(True)
@@ -115,7 +116,7 @@ class ArenaFactory:
             else:
                 s = 'Won: ' + str(w) + ' | Lost: ' + str(l)
 
-            log(s)
+        return s
 
     def attack(self):
         results_local = []
@@ -188,7 +189,7 @@ class ArenaFactory:
         # return results_local
 
     def report(self):
-        self._show_results(self.results, is_detailed=True)
+        return self._show_results(self.results, is_detailed=True)
 
     def finish(self):
         go_index_page()
