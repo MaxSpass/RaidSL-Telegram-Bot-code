@@ -105,9 +105,10 @@ if DEBUG:
                 'Duchess Lilitu',
             ],
             'leaders': [
-                'Герцогиня Ліліту',
-                'Кандрафон',
-            ]
+                'Arbiter',
+                'Sun Wukong',
+            ],
+            'refill': 1
         }
     }
 else:
