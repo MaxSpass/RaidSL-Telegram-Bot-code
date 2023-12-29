@@ -15,13 +15,12 @@ class ArenaFactory:
     item_height = None
     button_locations = None
     item_locations = None
-    # classic: 95 | tag: 135
     x_axis_info = None
 
-    max_swipe = 0
-    refill = 0
-    results = []
-    terminate = False
+    max_swipe = None
+    refill = None
+    results = None
+    terminate = None
 
     def __init__(
             self,
@@ -37,7 +36,11 @@ class ArenaFactory:
         self.item_height = item_height
         self.button_locations = button_locations
         self.item_locations = item_locations
+
+        self.max_swipe = 0
         self.refill = refill
+        self.results = []
+        self.terminate = False
 
         for i in range(len(self.item_locations)):
             item = self.item_locations[i]

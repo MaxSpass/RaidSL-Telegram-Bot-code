@@ -13,7 +13,7 @@ import atexit
 import signal
 
 
-def prepare():
+def prepare_window():
     WINDOW_SIZE = [920, 540]
     BURGER_POSITION = [15, 282]
     GAME_WINDOW = 'Raid: Shadow Legends'
@@ -65,17 +65,6 @@ arena_live = ArenaLive(
         'Arbiter',
         'Sun Wukong',
     ],
-    # pool=[
-    #     'Warlord',
-    #     'Sun Wukong',
-    #     'Arbiter',
-    #     'Trunda',
-    #     'Duchess Lilitu',
-    # ],
-    # leaders=[
-    #     'Arbiter',
-    #     'Sun Wukong',
-    # ],
 )
 
 
@@ -105,18 +94,27 @@ def app_start():
     signal.signal(signal.SIGINT, app_kill)
     signal.signal(signal.SIGTERM, app_kill)
 
+    prepare_window()
+
+
+def app_run():
     log('Executing automatic scenarios...')
     start_time = datetime.now()
 
     # demon_lord()
     # arena_live.run()
-    arena_classic.run()
-    arena_tag.run()
-    rewards.quests_run()
-    faction_wars()
-    rewards.play_time_run()
-    iron_twins_fortress()
-    arena_tag.run()
+
+    # arena_classic.run()
+    # arena_tag.run()
+    # arena_live.run()
+
+    # arena_classic.run()
+    # arena_tag.run()
+    # rewards.quests_run()
+    # faction_wars()
+    # rewards.play_time_run()
+    # iron_twins_fortress()
+    # arena_tag.run()
 
     # DungeonCore(DUNGEON_FIRE, [65], props={
     #     'allow_super_raid': True
@@ -125,16 +123,15 @@ def app_start():
     log('All scenarios are done!')
     print('Duration: {}'.format(datetime.now() - start_time))
 
-
 def main():
     # pyautogui.FAILSAFE = True
     try:
-        prepare()
+        app_start()
         if is_index_page() is True:
-            app_start()
+            app_run()
         else:
             go_index_page()
-            app_start()
+            app_run()
     except KeyboardInterrupt:
         return 0
 

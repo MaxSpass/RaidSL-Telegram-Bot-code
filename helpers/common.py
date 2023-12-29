@@ -13,10 +13,11 @@ import pytesseract
 
 
 def log(message):
-    print(message)
-    return
     time = '{}'.format(str(datetime.now().strftime("%H:%M:%S")))
     output = message
+
+    print(message)
+    return
 
     if type(message) is not str:
         # output = json.dumps(message)

@@ -352,12 +352,9 @@ class ArenaLive:
         s = None
         if len(self.results):
             w = self.results.count(True)
-            l = self.results.count(False)
-            t = w + l
+            t = len(self.results)
             wr = w * 100 / t
             wr_str = str(round(wr)) + '%'
-            # lr = 100 - wr
-            # lr_str = str(round(lr)) + '%'
             s = 'Live Arena | Battles: ' + str(len(self.results)) + ' | ' + 'Win rate: ' + wr_str
 
         return s
