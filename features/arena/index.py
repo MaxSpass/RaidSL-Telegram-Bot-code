@@ -6,7 +6,7 @@ refill_free = [455, 380, [187, 130, 5]]
 refill_paid = [440, 376, [255, 33, 51]]
 defeat = [443, 51, [229, 40, 104]]
 
-PAID_REFILL = 0
+PAID_REFILL_LIMIT = 0
 OUTPUT_ITEMS_AMOUNT = 10
 
 
@@ -29,7 +29,7 @@ class ArenaFactory:
             item_height,
             button_locations,
             item_locations,
-            refill=PAID_REFILL
+            refill=PAID_REFILL_LIMIT
     ):
         self.name = name
         self.x_axis_info = x_axis_info
@@ -37,8 +37,8 @@ class ArenaFactory:
         self.button_locations = button_locations
         self.item_locations = item_locations
 
-        self.max_swipe = 0
         self.refill = refill
+        self.max_swipe = 0
         self.results = []
         self.terminate = False
 
@@ -93,7 +93,6 @@ class ArenaFactory:
         sleep(0.5)
 
         return refilled
-
 
     def _get_last_results(self):
         length = len(self.results)
@@ -207,6 +206,8 @@ class ArenaFactory:
         #     self._refresh_arena()
 
         while self.terminate is False:
+            # log('Test | ' + self.name)
+            # break
             self.attack()
 
             last_results = self._get_last_results()
@@ -222,18 +223,25 @@ class ArenaFactory:
         self.finish()
 
 
-arena_classic = ArenaFactory(
-    name='Classic Arena',
-    x_axis_info=95,
-    item_height=CLASSIC_ITEM_HEIGHT,
-    button_locations=CLASSIC_BUTTON_LOCATIONS,
-    item_locations=CLASSIC_ITEM_LOCATIONS,
-)
+class ArenaClassic(ArenaFactory):
+    def __init__(self):
+        ArenaFactory.__init__(
+            self,
+            name='Classic Arena',
+            x_axis_info=95,
+            item_height=CLASSIC_ITEM_HEIGHT,
+            button_locations=CLASSIC_BUTTON_LOCATIONS,
+            item_locations=CLASSIC_ITEM_LOCATIONS,
+        )
 
-arena_tag = ArenaFactory(
-    name='Tag Arena',
-    x_axis_info=135,
-    item_height=TAG_ITEM_HEIGHT,
-    button_locations=TAG_BUTTON_LOCATIONS,
-    item_locations=TAG_ITEM_LOCATIONS,
-)
+
+class ArenaTag(ArenaFactory):
+    def __init__(self):
+        ArenaFactory.__init__(
+            self,
+            name='Tag Arena',
+            x_axis_info=135,
+            item_height=TAG_ITEM_HEIGHT,
+            button_locations=TAG_BUTTON_LOCATIONS,
+            item_locations=TAG_ITEM_LOCATIONS,
+        )

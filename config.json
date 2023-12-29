@@ -1,0 +1,37 @@
+{
+  "check_rewards": 1,
+  "tasks": [
+    {
+      "name": "arena_live",
+      "enable": 1,
+      "props": {
+        "pool": [
+          "Arbiter",
+          "Sun Wukong",
+          "Cupidus",
+          "Venus",
+          "Duchess Lilitu"
+        ],
+        "leaders": [
+          "Arbiter",
+          "Sun Wukong"
+        ],
+        "refill": 0
+      }
+    },
+    {
+      "name": "arena_classic",
+      "enable": 1,
+      "props": {
+        "refill": 0
+      }
+    },
+    {
+      "name": "arena_tag",
+      "enable": 1,
+      "props": {
+        "refill": 0
+      }
+    }
+  ]
+}

@@ -148,7 +148,7 @@ def pixels_wait(pixels, msg=None, timeout=5, mistake=0, wait_limit=None):
 
 def is_index_page():
     flag = False
-    if pixel_check_new([756, 39, [179, 111, 26]], 10):
+    if find_needle_burger() is not None:
         flag = True
         log('Index Page detected')
     else:
@@ -383,9 +383,6 @@ def close_popup():
 
 def go_index_page():
     log('Moving to the Index Page...')
-    click_alt(5, 5, moving=False)
-    sleep(1)
-    # pyautogui.press('esc')
     close_popup()
     sleep(1)
     is_index = is_index_page()

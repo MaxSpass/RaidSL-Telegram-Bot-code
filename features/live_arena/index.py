@@ -51,7 +51,7 @@ claim_chest = [534, 448, [233, 0, 0]]
 auto_mode = [49, 486]
 return_start_panel = [444, 490]
 
-MAX_DEFAULT_PAID_REFILL = 1
+PAID_REFILL_LIMIT = 1
 
 
 # @TODO Needs to be refactor in order to fix phantom bug
@@ -67,24 +67,28 @@ class ArenaLive:
     pool = None
     leaders = None
 
-    def __init__(self, config):
+    def __init__(self, props=None):
         self.results = []
         self.team = []
         self.terminate = False
+        self.refill = PAID_REFILL_LIMIT
 
-        if 'pool' in config:
-            self.pool = config['pool']
+        if props is not None:
+            self._apply_props(props)
+
+    def _apply_props(self, props):
+        if 'pool' in props:
+            self.pool = props['pool']
             random.shuffle(self.pool)
-            if 'leaders' in config:
-                self.leaders = config['leaders']
+            if 'leaders' in props:
+                self.leaders = props['leaders']
                 self.leaders.reverse()
             else:
                 self.leaders = self.pool[0:2]
 
-        if 'refill' in config:
-            self.refill = int(config['refill'])
-        else:
-            self.refill = MAX_DEFAULT_PAID_REFILL
+        if 'refill' in props:
+            self.refill = int(props['refill'])
+
 
     def _confirm(self):
         click(800, 490)
@@ -372,27 +376,34 @@ class ArenaLive:
         go_index_page()
         log('Live Arena | Finish')
 
-    def run(self):
-        if len(self.team):
-            if pixel_check_old(822, 472, [41, 162, 33], 10):
-                log('Live Arena | Active')
-                self.enter()
+    def run(self, props=None):
+        if props is not None:
+            self._apply_props(props)
 
-                battles_counter = 1
-                while self._is_available():
-                    log('Live Arena | Starts battle: ' + str(battles_counter))
-                    self._claim_free_refill_coins()
-                    self._claim_chest()
+        has_pool = bool(len(self.pool))
+        is_active = pixel_check_new([822, 472, [41, 162, 33]], 10)
 
-                    if self._refill():
-                        break
+        if not has_pool:
+            log('Live Arena is Terminated | The POOL is NOT specified')
 
-                    self.attack()
-                    battles_counter += 1
+        if not is_active:
+            log('Live Arena | NOT Active')
+            go_index_page()
 
-                self.finish()
-            else:
-                log('Live Arena | NOT Active')
-                go_index_page()
-        else:
-            log('Terminated | The TEAM is NOT specified')
+        if has_pool and is_active:
+            log('Live Arena | Active')
+            self.enter()
+
+            battles_counter = 1
+            while self._is_available():
+                log('Live Arena | Starts battle: ' + str(battles_counter))
+                self._claim_free_refill_coins()
+                self._claim_chest()
+
+                if self._refill():
+                    break
+
+                self.attack()
+                battles_counter += 1
+
+            self.finish()
