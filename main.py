@@ -1,16 +1,17 @@
 from features.live_arena.index import *
 from features.arena.index import *
-from features.demon_lord.index import *
-from features.iron_twins_fortress.index import *
-from features.faction_wars.index import *
+# from features.demon_lord.index import *
+# from features.iron_twins_fortress.index import *
+# from features.faction_wars.index import *
 from features.rewards.index import *
 from features.hero_filter.index import *
-from features.dungeons.core import *
+# from features.dungeons.core import *
 from helpers.common import *
-from constants.index import *
+# from constants.index import *
 import sys
 import atexit
 import signal
+import io
 
 
 def prepare_window():
@@ -50,22 +51,69 @@ def prepare_window():
         raise Exception("Game windows is NOT prepared")
 
 
+def app_config():
+    _config = {
+        'arena_live': {
+            'pool': [],
+            'leaders': []
+        }
+    }
+    try:
+        f = io.open("config.txt", mode="r", encoding="utf-8")
+        lines = f.readlines()
+        for i in range(len(lines)):
+            line = lines[i]
+            line_s = line.split('|')
+            location = line_s[0]
+
+            args = line_s[1]
+            args_s = args.split('&')
+
+            if len(args_s):
+                for j in range(len(args_s)):
+                    arg = args_s[j]
+                    arg_s = arg.split('=')
+                    arg_key = arg_s[0]
+
+                    # for array based values
+                    arg_value_s = arg_s[1].split(',')
+                    if len(arg_value_s) > 1:
+                        arg_value = arg_value_s
+                    else:
+                        arg_value = arg_s[1]
+
+                    _config[location][arg_key] = arg_value
+
+    except SystemError:
+        log('An error occurred while reading config.txt file')
+
+    log('Config body')
+    print(_config)
+
+    return _config
+
+
+config = app_config()
+# config = {
+#     'arena_live': {
+#         'pool': [
+#             'Arbiter',
+#             'Sun Wukong',
+#             'Cupidus',
+#             'Venus',
+#             'Duchess Lilitu',
+#         ],
+#         'leaders': [
+#             'Герцогиня Ліліту',
+#             'Кандрафон',
+#         ]
+#     }
+# }
+
 rewards = Rewards()
 hero_filter = HeroFilter()
-# @TODO Should be moved to the .env config file
-arena_live = ArenaLive(
-    pool=[
-        'Arbiter',
-        'Sun Wukong',
-        'Cupidus',
-        'Venus',
-        'Duchess Lilitu',
-    ],
-    leaders=[
-        'Arbiter',
-        'Sun Wukong',
-    ],
-)
+# @TODO Should be moved to the .env app_config file
+arena_live = ArenaLive(config['arena_live'])
 
 
 def app_exit():
@@ -81,7 +129,6 @@ def app_exit():
         if r3:
             log(r3)
         log('================   Report   ================')
-
 
 
 def app_kill(*args):
@@ -102,11 +149,11 @@ def app_run():
     start_time = datetime.now()
 
     # demon_lord()
-    # arena_live.run()
+    arena_live.run()
 
+    # arena_live.run()
     # arena_classic.run()
     # arena_tag.run()
-    # arena_live.run()
 
     # arena_classic.run()
     # arena_tag.run()
@@ -123,6 +170,7 @@ def app_run():
     log('All scenarios are done!')
     print('Duration: {}'.format(datetime.now() - start_time))
 
+
 def main():
     # pyautogui.FAILSAFE = True
     try:
@@ -134,6 +182,7 @@ def main():
             app_run()
     except KeyboardInterrupt:
         return 0
+
 
 if __name__ == "__main__":
     main()

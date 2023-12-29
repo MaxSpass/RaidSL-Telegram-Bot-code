@@ -58,21 +58,26 @@ MAX_DEFAULT_PAID_REFILL = 1
 class ArenaLive:
     x_config = 600
     y_config = 175
-    pool = []
-    team = []
-    leaders = []
-    refill = MAX_DEFAULT_PAID_REFILL
-
     x_find_opponent = 461
     y_find_opponent = 468
 
-    results = []
-    terminate = False
+    pool = None
+    leaders = None
+    results = None
+    team = None
+    terminate = None
 
-    def __init__(self, pool, leaders, refill=MAX_DEFAULT_PAID_REFILL):
-        self.pool = pool
-        self.leaders = leaders
-        self.refill = refill
+    def __init__(self, config):
+        self.pool = config['pool']
+        self.leaders = config['leaders']
+        self.results = []
+        self.team = []
+        self.terminate = False
+
+        if 'refill' in config:
+            self.refill = int(config['refill'])
+        else:
+            self.refill = MAX_DEFAULT_PAID_REFILL
 
         self.leaders.reverse()
         random.shuffle(self.pool)
