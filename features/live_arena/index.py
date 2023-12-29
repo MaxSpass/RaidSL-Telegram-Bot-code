@@ -61,26 +61,30 @@ class ArenaLive:
     x_find_opponent = 461
     y_find_opponent = 468
 
-    pool = None
-    leaders = None
     results = None
     team = None
     terminate = None
+    pool = None
+    leaders = None
 
     def __init__(self, config):
-        self.pool = config['pool']
-        self.leaders = config['leaders']
         self.results = []
         self.team = []
         self.terminate = False
+
+        if 'pool' in config:
+            self.pool = config['pool']
+            random.shuffle(self.pool)
+            if 'leaders' in config:
+                self.leaders = config['leaders']
+                self.leaders.reverse()
+            else:
+                self.leaders = self.pool[0:2]
 
         if 'refill' in config:
             self.refill = int(config['refill'])
         else:
             self.refill = MAX_DEFAULT_PAID_REFILL
-
-        self.leaders.reverse()
-        random.shuffle(self.pool)
 
     def _confirm(self):
         click(800, 490)
@@ -325,7 +329,7 @@ class ArenaLive:
             sleep(.5)
             self._confirm()
 
-        if pixels_wait([stage_3], msg='Stage 3 | Choosing leader',  timeout=2, mistake=5)[0]:
+        if pixels_wait([stage_3], msg='Stage 3 | Choosing leader', timeout=2, mistake=5)[0]:
             sleep(.5)
             if pixels_wait([first], msg='Choosing leader', timeout=2, mistake=10)[0]:
                 for i in range(len(self.leaders)):
@@ -369,23 +373,26 @@ class ArenaLive:
         log('Live Arena | Finish')
 
     def run(self):
-        if pixel_check_old(822, 472, [41, 162, 33], 10):
-            log('Live Arena | Active')
-            self.enter()
+        if len(self.team):
+            if pixel_check_old(822, 472, [41, 162, 33], 10):
+                log('Live Arena | Active')
+                self.enter()
 
-            battles_counter = 1
-            while self._is_available():
-                log('Live Arena | Starts battle: ' + str(battles_counter))
-                self._claim_free_refill_coins()
-                self._claim_chest()
+                battles_counter = 1
+                while self._is_available():
+                    log('Live Arena | Starts battle: ' + str(battles_counter))
+                    self._claim_free_refill_coins()
+                    self._claim_chest()
 
-                if self._refill():
-                    break
+                    if self._refill():
+                        break
 
-                self.attack()
-                battles_counter += 1
+                    self.attack()
+                    battles_counter += 1
 
-            self.finish()
+                self.finish()
+            else:
+                log('Live Arena | NOT Active')
+                go_index_page()
         else:
-            log('Live Arena | NOT Active')
-            go_index_page()
+            log('Terminated | The TEAM is NOT specified')

@@ -1,18 +1,19 @@
 from features.live_arena.index import *
 from features.arena.index import *
-# from features.demon_lord.index import *
-# from features.iron_twins_fortress.index import *
-# from features.faction_wars.index import *
+from features.demon_lord.index import *
+from features.iron_twins_fortress.index import *
+from features.faction_wars.index import *
 from features.rewards.index import *
 from features.hero_filter.index import *
-# from features.dungeons.core import *
+from features.dungeons.core import *
 from helpers.common import *
-# from constants.index import *
+from constants.index import *
 import sys
 import atexit
 import signal
 import io
 
+DEBUG = True
 
 def prepare_window():
     WINDOW_SIZE = [920, 540]
@@ -56,7 +57,7 @@ def app_config():
         'arena_live': {
             'pool': [],
             'leaders': []
-        }
+        },
     }
     try:
         f = io.open("config.txt", mode="r", encoding="utf-8")
@@ -93,26 +94,28 @@ def app_config():
     return _config
 
 
-config = app_config()
-# config = {
-#     'arena_live': {
-#         'pool': [
-#             'Arbiter',
-#             'Sun Wukong',
-#             'Cupidus',
-#             'Venus',
-#             'Duchess Lilitu',
-#         ],
-#         'leaders': [
-#             'Герцогиня Ліліту',
-#             'Кандрафон',
-#         ]
-#     }
-# }
+if DEBUG:
+    config = {
+        'arena_live': {
+            'pool': [
+                'Arbiter',
+                'Sun Wukong',
+                'Cupidus',
+                'Venus',
+                'Duchess Lilitu',
+            ],
+            'leaders': [
+                'Герцогиня Ліліту',
+                'Кандрафон',
+            ]
+        }
+    }
+else:
+    config = app_config()
+
 
 rewards = Rewards()
 hero_filter = HeroFilter()
-# @TODO Should be moved to the .env app_config file
 arena_live = ArenaLive(config['arena_live'])
 
 
@@ -149,7 +152,7 @@ def app_run():
     start_time = datetime.now()
 
     # demon_lord()
-    arena_live.run()
+    # arena_live.run()
 
     # arena_live.run()
     # arena_classic.run()
@@ -162,6 +165,7 @@ def app_run():
     # rewards.play_time_run()
     # iron_twins_fortress()
     # arena_tag.run()
+
 
     # DungeonCore(DUNGEON_FIRE, [65], props={
     #     'allow_super_raid': True

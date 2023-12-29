@@ -14,16 +14,17 @@ import pytesseract
 
 def log(message):
     time = '{}'.format(str(datetime.now().strftime("%H:%M:%S")))
-    output = message
 
-    print(time + ' | ' + output)
-    return
+    if type(message) is dict:
+        output = json.dumps(message, indent=2)
+    elif type(message) is list:
+        output = np.array(message)
+    elif type(message) is str:
+        output = message
+    else:
+        output = str(message)
 
-    if type(message) is not str:
-        # output = json.dumps(message)
-        output = '[ ' + ' '.join(a) + ' ]'
-
-    print(time + ' | ' + output)
+    print(time + ' | ', output)
 
 
 def sleep(duration):
