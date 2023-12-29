@@ -16,7 +16,7 @@ def log(message):
     time = '{}'.format(str(datetime.now().strftime("%H:%M:%S")))
     output = message
 
-    print(message)
+    print(time + ' | ' + output)
     return
 
     if type(message) is not str:
@@ -147,7 +147,7 @@ def pixels_wait(pixels, msg=None, timeout=5, mistake=0, wait_limit=None):
 
 def is_index_page():
     flag = False
-    if pixel_check_old(756, 39, [179, 111, 26], 5):
+    if pixel_check_new([756, 39, [179, 111, 26]], 10):
         flag = True
         log('Index Page detected')
     else:
@@ -362,7 +362,7 @@ def battles_click():
 
 def close_popup():
     close_popup_button = find_needle_close_popup()
-    if close_popup is not None:
+    if close_popup_button is not None:
         x = close_popup_button[0]
         y = close_popup_button[1]
         pyautogui.click(x, y)
