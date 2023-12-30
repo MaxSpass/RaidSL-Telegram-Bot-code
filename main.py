@@ -1,41 +1,41 @@
 from classes.app import *
 
-DEBUG = True
+# DEBUG = True
+DEBUG = False
 
 app = App()
 
 if DEBUG:
+    ARENA_LIVE_PROPS = {
+        'pool': [
+            'Arbiter',
+            'Sun Wukong',
+            'Cupidus',
+            'Venus',
+            'Duchess Lilitu',
+        ],
+        'leaders': [
+            'Arbiter',
+            'Sun Wukong',
+        ],
+        'refill': 0
+    }
     app.load_config({
-        'check_rewards': 1,
         'tasks': [
-            {
-                'name': 'arena_live',
-                'enable': 0,
-                'props': {
-                    'pool': [
-                        'Arbiter',
-                        'Sun Wukong',
-                        'Cupidus',
-                        'Venus',
-                        'Duchess Lilitu',
-                    ],
-                    'leaders': [
-                        'Arbiter',
-                        'Sun Wukong',
-                    ],
-                    'refill': 0
-                },
-            },
-            {'name': 'iron_twins', 'enable': 1},
-            {'name': 'arena_classic', 'enable': 1},
-            {'name': 'arena_tag', 'enable': 1},
+            {'name': 'arena_live', 'enable': 0, 'props': ARENA_LIVE_PROPS},
+            {'name': 'arena_classic', 'enable': 1, 'props': {'refill': 0}},
+            {'name': 'arena_tag', 'enable': 1, 'props': {'refill': 0}},
+            {'name': 'iron_twins', 'enable': 0},
             {'name': 'faction_wars', 'enable': 0},
             {'name': 'demon_lord', 'enable': 0},
-        ]
+        ],
+        'after_each': [
+            {'check_rewards': 1}
+        ],
     })
 
+
 def main():
-    return
     try:
         app.start()
         if is_index_page() is True:

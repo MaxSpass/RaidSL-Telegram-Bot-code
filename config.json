@@ -1,5 +1,4 @@
 {
-  "check_rewards": 1,
   "tasks": [
     {
       "name": "arena_live",
@@ -32,6 +31,11 @@
       "props": {
         "refill": 0
       }
+    }
+  ],
+  "after_each": [
+    {
+      "check_rewards": 1
     }
   ]
 }

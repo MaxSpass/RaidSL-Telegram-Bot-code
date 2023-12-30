@@ -29,7 +29,7 @@ class ArenaFactory:
             item_height,
             button_locations,
             item_locations,
-            refill=PAID_REFILL_LIMIT
+            props=None
     ):
         self.name = name
         self.x_axis_info = x_axis_info
@@ -37,16 +37,23 @@ class ArenaFactory:
         self.button_locations = button_locations
         self.item_locations = item_locations
 
-        self.refill = refill
+        self.refill = PAID_REFILL_LIMIT
         self.max_swipe = 0
         self.results = []
         self.terminate = False
+
+        self._apply_props(props)
 
         for i in range(len(self.item_locations)):
             item = self.item_locations[i]
             swipes = item['swipes']
             if swipes > self.max_swipe:
                 self.max_swipe = swipes
+
+    def _apply_props(self, props):
+        if props is not None:
+            if 'refill' in props:
+                self.refill = int(props['refill'])
 
     def _refresh_arena(self):
         # if pixels_wait('Refresh button', [[817, 133, [22, 124, 156]]], timeout=10, mistake=10, wait_limit=5)[0]:
@@ -198,7 +205,8 @@ class ArenaFactory:
         log('DONE - ' + self.name)
         self._show_results(self._get_last_results())
 
-    def run(self):
+    def run(self, props=None):
+        self._apply_props(props)
         self.enter()
 
         # refreshes arena, when it's a first time calling
@@ -206,7 +214,7 @@ class ArenaFactory:
         #     self._refresh_arena()
 
         while self.terminate is False:
-            # log('Test | ' + self.name)
+            # log('Test | ' + str(self.refill))
             # break
             self.attack()
 

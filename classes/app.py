@@ -35,6 +35,7 @@ def prepare_window():
         win.moveTo(x, y)
         time.sleep(.5)
 
+        # going back to the index page
         go_index_page()
 
         burger = find_needle_burger()
@@ -46,6 +47,10 @@ def prepare_window():
                 y -= y_burger
                 win.move(int(x), int(y))
             is_prepared = True
+
+            # waiting and closing sudden popups
+            sleep(3)
+            go_index_page()
         else:
             log('No Burger needle found')
 
@@ -64,12 +69,13 @@ class App:
     def _prepare_config(self, config_json):
         _config = {
             'tasks': [],
-            'check_rewards': False
+            'after_each': []
         }
 
-        length = len(config_json['tasks'])
-        if length:
-            for i in range(length):
+        # Tasks
+        tasks_length = len(config_json['tasks'])
+        if tasks_length:
+            for i in range(tasks_length):
                 task = config_json['tasks'][i]
                 if 'enable' not in task or bool(task['enable']):
                     task_d = {
@@ -80,6 +86,18 @@ class App:
                         task_d['props'] = task['props']
 
                     _config['tasks'].append(task_d)
+
+        # After each tasks
+        after_each_length = len(config_json['after_each'])
+        if after_each_length:
+            for i in range(after_each_length):
+                task = config_json['after_each'][i]
+                for key, val in task.items():
+                    if bool(val):
+                        _config['after_each'].append({
+                            'name': key
+                        })
+
 
         log(_config)
         return _config
@@ -126,6 +144,7 @@ class App:
         log('Executing automatic scenarios...')
         start_time = datetime.now()
 
+        # Tasks
         for i in range(len(self.config['tasks'])):
             item = self.config['tasks'][i]
             item_name = item['name']
@@ -137,11 +156,11 @@ class App:
             log('BOT is starting the task: ' + item_name)
 
             if item_name == 'arena_live':
-                arena_live.run(item_props)
+                arena_live.run(props=item_props)
             elif item_name == 'arena_classic':
-                arena_classic.run()
+                arena_classic.run(props=item_props)
             elif item_name == 'arena_tag':
-                arena_tag.run()
+                arena_tag.run(props=item_props)
             elif item_name == 'demon_lord':
                 demon_lord()
             elif item_name == 'faction_wars':
@@ -149,9 +168,16 @@ class App:
             elif item_name == 'iron_twins':
                 iron_twins_fortress()
 
-            if self.config['check_rewards']:
+        # After Each Task
+        for i in range(len(self.config['after_each'])):
+            item = self.config['after_each'][i]
+            item_name = item['name']
+
+            if item_name == 'check_rewards':
                 rewards.quests_run()
                 rewards.play_time_run()
+
+
 
         # demon_lord()
         # arena_live.run()
