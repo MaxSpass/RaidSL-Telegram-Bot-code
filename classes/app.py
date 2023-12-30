@@ -131,7 +131,8 @@ class App:
             log('================   Report   ================')
 
     def kill(self, *args):
-        log('App is terminated')
+        log('App is terminated, please press any key for closing the window')
+        os.system("pause")
         sys.exit(0)
 
     def start(self):
@@ -144,38 +145,44 @@ class App:
         log('Executing automatic scenarios...')
         start_time = datetime.now()
 
-        # Tasks
+        # Looping: Tasks List
         for i in range(len(self.config['tasks'])):
-            item = self.config['tasks'][i]
-            item_name = item['name']
-            item_props = None
+            # Task Item
+            ti = self.config['tasks'][i]
+            ti_name = ti['name'].lower()
+            ti_props = None
 
-            if 'props' in item:
-                item_props = item['props']
+            if 'props' in ti:
+                ti_props = ti['props']
 
-            log('BOT is starting the task: ' + item_name)
+            log('BOT is starting the TASK: ' + ti_name.upper())
 
-            if item_name == 'arena_live':
-                arena_live.run(props=item_props)
-            elif item_name == 'arena_classic':
-                arena_classic.run(props=item_props)
-            elif item_name == 'arena_tag':
-                arena_tag.run(props=item_props)
-            elif item_name == 'demon_lord':
+            # @TODO Refactor
+            if ti_name == 'arena_live':
+                arena_live.run(props=ti_props)
+            elif ti_name == 'arena_classic':
+                arena_classic.run(props=ti_props)
+            elif ti_name == 'arena_tag':
+                arena_tag.run(props=ti_props)
+            elif ti_name == 'demon_lord':
                 demon_lord()
-            elif item_name == 'faction_wars':
+            elif ti_name == 'faction_wars':
                 faction_wars()
-            elif item_name == 'iron_twins':
+            elif ti_name == 'iron_twins':
                 iron_twins_fortress()
 
-        # After Each Task
-        for i in range(len(self.config['after_each'])):
-            item = self.config['after_each'][i]
-            item_name = item['name']
+            # Looping: After Each List
+            for j in range(len(self.config['after_each'])):
+                # After Each Item
+                aei = self.config['after_each'][i]
+                aei_name = aei['name'].lower()
 
-            if item_name == 'check_rewards':
-                rewards.quests_run()
-                rewards.play_time_run()
+                log('BOT is starting the "after_each" action: ' + aei_name.upper())
+
+                # @TODO Refactor
+                if aei_name == 'check_rewards':
+                    rewards.quests_run()
+                    rewards.play_time_run()
 
 
 

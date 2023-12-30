@@ -56,10 +56,6 @@ def capture_by_source(src, region, confidence=.9, grayscale=False):
 
 def click(x, y):
     pyautogui.click(x, y)
-    # win32api.SetCursorPos((x, y))
-    # win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN, 0, 0)
-    # sleep(0.1)
-    # win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP, 0, 0)
 
 
 def click_alt(x, y, duration=1, moving=True):
@@ -328,9 +324,7 @@ def find_needle(image_name, region=None, confidence=.8):
     if region is None:
         region = [0, 0, 900, 530]
 
-    # @TODO Replace hardcode by the system string
-    path_root = 'E:/Main/BACKEND/core'
-    path_image = os.path.join(path_root, 'images/needles/' + image_name)
+    path_image = os.path.join(os.getcwd(), 'images/needles/' + image_name)
     return capture_by_source(path_image, region,
                              confidence=confidence)
 

@@ -11,7 +11,7 @@ pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files (x86)\Tesseract-OCR\t
 
 
 def get_demon_lord_path():
-    root_dir = 'E:/Main/BACKEND/core'
+    root_dir = os.getcwd()
     dir = 'demon-lord'
     path = os.path.join(root_dir, dir)
 

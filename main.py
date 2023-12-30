@@ -23,8 +23,8 @@ if DEBUG:
     app.load_config({
         'tasks': [
             {'name': 'arena_live', 'enable': 0, 'props': ARENA_LIVE_PROPS},
-            {'name': 'arena_classic', 'enable': 1, 'props': {'refill': 0}},
-            {'name': 'arena_tag', 'enable': 1, 'props': {'refill': 0}},
+            {'name': 'arena_classic', 'enable': 0, 'props': {'refill': 0}},
+            {'name': 'arena_tag', 'enable': 0, 'props': {'refill': 0}},
             {'name': 'iron_twins', 'enable': 0},
             {'name': 'faction_wars', 'enable': 0},
             {'name': 'demon_lord', 'enable': 0},

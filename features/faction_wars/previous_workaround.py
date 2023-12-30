@@ -12,7 +12,7 @@ SLICE_WITH = 50
 SCREENSHOT_WIDTH = 900
 SCREENSHOT_HEIGHT = 530
 
-root_dir = 'E:/Main/BACKEND/core'
+root_dir = os.getcwd()
 dir = 'test'
 path = os.path.join(root_dir, dir)
 

@@ -10,8 +10,7 @@ screenshot = cv2.imread(os.path.join('images', 'test.png'))
 # needle_img_not_resized = cv2.imread(os.path.join('dataset', 'images', 'heroes', 'maneater_profile.png'))
 # needle_img_not_resized = cv2.imread(os.path.join('dataset', 'images', 'heroes', 'ninja_profile.png'))
 # needle_img_not_resized = cv2.imread(os.path.join('dataset', 'images', 'heroes', 'seeker_profile.png'))
-# needle_img_not_resized = cv2.imread(os.path.join('dataset', 'images', 'heroes', 'painkeeper_profile.png'))
-needle_img_not_resized = cv2.imread(os.path.join('images', 'needles', 'quick_move.jpg'))
+needle_img_not_resized = cv2.imread(os.path.join('dataset', 'images', 'heroes', 'painkeeper_profile.png'))
 
 
 

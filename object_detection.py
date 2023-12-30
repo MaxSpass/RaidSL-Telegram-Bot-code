@@ -2,10 +2,7 @@ import os
 import cv2
 
 screenshot = cv2.imread(os.path.join('images', 'test.png'))
-# needle_img = cv2.imread(os.path.join('images', 'needles', 'battles.jpg'))
-# needle_img = cv2.imread(os.path.join('images', 'needles', 'quick_move.jpg'))
-# needle_img = cv2.imread(os.path.join('images', 'needles', 'quick_move_2.jpg'))
-needle_img = cv2.imread(os.path.join('images', 'needles', 'quick_move_2.jpg'))
+needle_img = cv2.imread(os.path.join('images', 'needles', 'battles.jpg'))
 
 result = cv2.matchTemplate(screenshot, needle_img, cv2.TM_CCOEFF_NORMED)
 min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)

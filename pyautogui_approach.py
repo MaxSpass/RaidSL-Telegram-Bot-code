@@ -35,7 +35,6 @@ time.sleep(1)
 exit()
 
 # needle = os.path.join(needles_folder_path, 'shop.jpg')
-# needle = os.path.join(needles_folder_path, 'quests.jpg')
 needle = os.path.join(needles_avatars_folder_path, 'Lydia_the_Deathsiren.png')
 target = pyautogui.locateOnScreen(needle, grayscale=True, confidence=0.25)
 print(target)
