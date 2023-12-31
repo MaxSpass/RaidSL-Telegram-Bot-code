@@ -131,8 +131,8 @@ class App:
             log('================   Report   ================')
 
     def kill(self, *args):
-        log('App is terminated, please press any key for closing the window')
-        os.system("pause")
+        log('App is terminated')
+        input('Confirm by pressing any key')
         sys.exit(0)
 
     def start(self):
@@ -174,7 +174,7 @@ class App:
             # Looping: After Each List
             for j in range(len(self.config['after_each'])):
                 # After Each Item
-                aei = self.config['after_each'][i]
+                aei = self.config['after_each'][j]
                 aei_name = aei['name'].lower()
 
                 log('BOT is starting the "after_each" action: ' + aei_name.upper())
@@ -183,8 +183,6 @@ class App:
                 if aei_name == 'check_rewards':
                     rewards.quests_run()
                     rewards.play_time_run()
-
-
 
         # demon_lord()
         # arena_live.run()
@@ -207,3 +205,7 @@ class App:
 
         log('All scenarios are done!')
         print('Duration: {}'.format(datetime.now() - start_time))
+
+        # @TODO Test
+        self.exit()
+        self.kill()

@@ -133,7 +133,7 @@ def faction_wars():
         sleep(0.5)
 
         # enable "Super Raid Mode"
-        if pixel_check_old(653, 335, [108, 237, 255], 3) is False:
+        if not pixel_check_new([653, 335, [108, 237, 255]], 10):
             click(653, 335)
             sleep(0.3)
 
