@@ -54,8 +54,6 @@ class Rewards:
 
     def quests_obtain(self):
         for i in range(len(QUESTS_TABS)):
-            # log(i)
-            # continue
             tab = QUESTS_TABS[i]
             x = tab['pixel']['x']
             y = tab['pixel']['y']
@@ -116,7 +114,7 @@ class Rewards:
 
     def quests_run(self):
         if is_index_page():
-            if pixel_check_old(276, 480, [225, 0, 0], 5):
+            if pixel_check_new([276, 480, [225, 0, 0]], 10):
                 # enter
                 click(276, 480)
                 sleep(1)
@@ -134,7 +132,7 @@ class Rewards:
             x = 860
             y = 408
             # @TODO Needs to be tested
-            if pixel_check_old(x, y, [225, 0, 0], 20):
+            if pixel_check_new([x, y, [225, 0, 0]], 20):
                 # enter
                 click(x, y)
                 sleep(1)
@@ -146,3 +144,18 @@ class Rewards:
                 log('Play-Time rewards are not available')
         else:
             log("Skipped! No Index Page found")
+
+    def report(self):
+        s = None
+        t1 = self.cache['regular_quests']['total']
+        t2 = self.cache['play_time']['total']
+        total = t1 + t2
+
+        if total > 0:
+            s = 'Rewards | Total obtained: ' + str(total)
+
+        return s
+
+    def run(self):
+        self.quests_run()
+        self.play_time_run()

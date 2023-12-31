@@ -28,7 +28,12 @@ def log(message):
 
 
 def sleep(duration):
-    log('Sleeping ' + str(duration) + ' second/s')
+    seconds_str = 'seconds'
+
+    if duration == 1:
+        seconds_str = 'second'
+
+    log('Sleeping ' + str(duration) + ' ' + seconds_str)
     time.sleep(duration)
 
 

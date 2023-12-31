@@ -117,10 +117,12 @@ class App:
             log('An error occurred while reading ' + CONFIG_PATH + ' file')
 
     def exit(self):
+        # @TODO Refactor
         r1 = arena_live.report()
         r2 = arena_classic.report()
         r3 = arena_tag.report()
-        if r1 is not None or r2 is not None or r3 is not None:
+        r4 = rewards.report()
+        if r1 is not None or r2 is not None or r3 is not None or r4 is not None:
             log('================   Report   ================')
             if r1:
                 log(r1)
@@ -128,6 +130,8 @@ class App:
                 log(r2)
             if r3:
                 log(r3)
+            if r4:
+                log(r4)
             log('================   Report   ================')
 
     def kill(self, *args):
@@ -181,8 +185,7 @@ class App:
 
                 # @TODO Refactor
                 if aei_name == 'check_rewards':
-                    rewards.quests_run()
-                    rewards.play_time_run()
+                    rewards.run()
 
         # demon_lord()
         # arena_live.run()
@@ -204,7 +207,7 @@ class App:
         # }).run()
 
         log('All scenarios are done!')
-        print('Duration: {}'.format(datetime.now() - start_time))
+        log('Duration: {}'.format(datetime.now() - start_time))
 
         # @TODO Test
         self.exit()

@@ -23,9 +23,9 @@ if DEBUG:
     }
     app.load_config({
         'tasks': [
-            {'name': 'arena_live', 'enable': 1, 'props': ARENA_LIVE_PROPS},
+            {'name': 'arena_live', 'enable': 0, 'props': ARENA_LIVE_PROPS},
             {'name': 'arena_classic', 'enable': 0, 'props': {'refill': 0}},
-            {'name': 'arena_tag', 'enable': 0, 'props': {'refill': 0}},
+            {'name': 'arena_tag', 'enable': 1, 'props': {'refill': 0}},
             {'name': 'iron_twins', 'enable': 0},
             {'name': 'faction_wars', 'enable': 0},
             {'name': 'demon_lord', 'enable': 0},
@@ -36,12 +36,18 @@ if DEBUG:
     })
 
 
-def main():
-    currentYear = datetime.now().year
-    currentMonth = datetime.now().month
+def validation():
+    if DEBUG:
+        return True
+    else:
+        currentYear = datetime.now().year
+        currentMonth = datetime.now().month
+        return currentYear == 2023 or currentYear == 2024 and (currentMonth <= 2)
 
+
+def main():
     # primitive validation
-    if currentYear == 2023 or currentYear == 2024 and (currentMonth <= 2):
+    if validation():
         try:
             app.start()
             if is_index_page() is True:
