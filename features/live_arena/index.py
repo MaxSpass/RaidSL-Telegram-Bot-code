@@ -150,6 +150,8 @@ class ArenaLive:
         return self.terminate
 
     def enter(self):
+        go_index_page()
+
         click_on_progress_info()
         # live arena
         click(self.x_config, self.y_config)

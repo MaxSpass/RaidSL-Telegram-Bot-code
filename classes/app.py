@@ -15,6 +15,7 @@ rewards = Rewards()
 arena_live = ArenaLive()
 arena_classic = ArenaClassic()
 arena_tag = ArenaTag()
+demon_lord = DemonLord()
 
 
 def prepare_window():
@@ -117,21 +118,20 @@ class App:
             log('An error occurred while reading ' + CONFIG_PATH + ' file')
 
     def exit(self):
-        # @TODO Refactor
-        r1 = arena_live.report()
-        r2 = arena_classic.report()
-        r3 = arena_tag.report()
-        r4 = rewards.report()
-        if r1 is not None or r2 is not None or r3 is not None or r4 is not None:
+        entries = list(map(lambda x: x.report(), [
+            arena_live,
+            arena_classic,
+            arena_tag,
+            rewards,
+            demon_lord,
+        ]))
+
+        if entries.count(None) < len(entries):
             log('================   Report   ================')
-            if r1:
-                log(r1)
-            if r2:
-                log(r2)
-            if r3:
-                log(r3)
-            if r4:
-                log(r4)
+            for i in range(len(entries)):
+                report = entries[i]
+                if report:
+                    log(report)
             log('================   Report   ================')
 
     def kill(self, *args):
@@ -169,7 +169,7 @@ class App:
             elif ti_name == 'arena_tag':
                 arena_tag.run(props=ti_props)
             elif ti_name == 'demon_lord':
-                demon_lord()
+                demon_lord.run()
             elif ti_name == 'faction_wars':
                 faction_wars()
             elif ti_name == 'iron_twins':

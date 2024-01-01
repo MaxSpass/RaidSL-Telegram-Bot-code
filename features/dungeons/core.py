@@ -136,6 +136,8 @@ class DungeonCore:
         sleep(.3)
 
     def enter(self):
+        go_index_page()
+
         battles_click()
         sleep(1)
 

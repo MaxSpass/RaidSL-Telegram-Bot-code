@@ -68,6 +68,8 @@ class ArenaFactory:
             sleep(3)
 
     def enter(self):
+        go_index_page()
+
         click_on_progress_info()
         # classic arena
         click(600, self.x_axis_info)
