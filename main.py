@@ -36,18 +36,8 @@ if DEBUG:
     })
 
 
-def validation():
-    if DEBUG:
-        return True
-    else:
-        currentYear = datetime.now().year
-        currentMonth = datetime.now().month
-        return currentYear == 2023 or currentYear == 2024 and (currentMonth <= 2)
-
-
 def main():
-    # primitive validation
-    if validation():
+    if DEBUG or app.validation():
         try:
             app.start()
             if is_index_page() is True:

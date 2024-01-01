@@ -99,9 +99,14 @@ class App:
                             'name': key
                         })
 
-
         log(_config)
         return _config
+
+    def validation(self):
+        # primitive validation
+        currentYear = datetime.now().year
+        currentMonth = datetime.now().month
+        return currentYear == 2024 and (currentMonth <= 2)
 
     def load_config(self, config):
         self.config = self._prepare_config(config)
