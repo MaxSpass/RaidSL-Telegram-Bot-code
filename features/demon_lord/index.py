@@ -1,7 +1,7 @@
 from helpers.common import *
 
 # demon lord | levels for attack
-DEMON_LORD_LEVELS_FOR_ATTACK = [6, 5]
+DEFAULT_STAGES = [6, 5]
 # demon lord | clicking areas for obtaining rewards
 DEMON_LORD_REWARD_COORDINATES = {
     3: (580, 120),
@@ -11,9 +11,21 @@ DEMON_LORD_REWARD_COORDINATES = {
 }
 
 
-# @TODO Must be reworked by following new standard
-def demon_lord():
-    def enter():
+class DemonLord:
+    def __init__(self, props=None):
+        self.results = {
+            'obtained': [],
+            'attacked': []
+        }
+        self.stages = DEFAULT_STAGES
+
+        if props is not None:
+            if 'stages' in props:
+                self.stages = props['stages']
+
+    def enter(self):
+        go_index_page()
+
         # moving to the Demon Lord
         # click on the red button "Battles"
         battles_click()
@@ -30,8 +42,8 @@ def demon_lord():
         pyautogui.dragTo(580, 120, duration=1)
         sleep(2)
 
-    def obtain():
-        global DEMON_LORD_LEVELS_FOR_ATTACK
+    def obtain(self):
+        global DEFAULT_STAGES
         global DEMON_LORD_REWARD_COORDINATES
         # obtain rewards
         for lvl in DEMON_LORD_REWARD_COORDINATES:
@@ -39,7 +51,7 @@ def demon_lord():
             y = DEMON_LORD_REWARD_COORDINATES[lvl][1]
             click(x, y)
             sleep(0.5)
-            str_lvl = str(lvl)
+            stage = str(lvl)
             if pixel_check_old(870, 457, [246, 0, 0]):
                 # click on the "Claim reward button"
                 click(870, 457)
@@ -49,43 +61,59 @@ def demon_lord():
                 sleep(1)
                 # click on the "Obtain reward button"
                 click(460, 444)
-                log('Obtained reward from Demon Lord ' + str_lvl)
+                log('Obtained reward from Demon Lord ' + stage)
+                self.results['obtained'].append(stage)
             else:
-                log('No reward found from Demon Lord ' + str_lvl)
+                log('No reward found from Demon Lord ' + stage)
             sleep(2)
 
-    def attack():
-        global DEMON_LORD_LEVELS_FOR_ATTACK
+    def attack(self):
         global DEMON_LORD_REWARD_COORDINATES
         # attack
-        for i in range(len(DEMON_LORD_LEVELS_FOR_ATTACK)):
+        for i in range(len(self.stages)):
             # zero-indexed Demon Lord level is always next
-            lvl = DEMON_LORD_LEVELS_FOR_ATTACK[0]
-            x = DEMON_LORD_REWARD_COORDINATES[lvl][0]
-            y = DEMON_LORD_REWARD_COORDINATES[lvl][1]
+            stage = self.stages[0]
+            x = DEMON_LORD_REWARD_COORDINATES[stage][0]
+            y = DEMON_LORD_REWARD_COORDINATES[stage][1]
             # click on the certain demon lord
             click(x, y)
             # pyautogui.moveTo(x, y, 1)
-            # DEMON_LORD_LEVELS_FOR_ATTACK.remove(lvl)
+            # DEFAULT_STAGES.remove(lvl)
             sleep(.5)
             # prepare to battle
             click(860, 480)
             sleep(.5)
             # start battle
             click(860, 480)
-            if pixel_wait('End of the battle with Demon Lord: ' + str(lvl) + ' level', 20, 112, [255, 255, 255], 3):
+            if pixel_wait('End of the battle with Demon Lord: ' + str(stage) + ' level', 20, 112, [255, 255, 255], 3):
                 # return to the demon lord menu
                 click(420, 490)
                 close_popup()
                 sleep(2)
                 # removing already attacked Demon Lord from the array
-                DEMON_LORD_LEVELS_FOR_ATTACK.remove(lvl)
+                self.stages.remove(stage)
+                self.results['attacked'].append(str(stage))
 
-    def finish():
+    def finish(self):
         go_index_page()
         log('DONE - Demon Lord')
 
-    enter()
-    obtain()
-    attack()
-    finish()
+    def report(self):
+        s = None
+        has_obtained = len(self.results['obtained'])
+        has_attacked = len(self.results['attacked'])
+
+        if has_obtained or has_attacked:
+            s = 'Demon Lord'
+            if has_obtained:
+                s += ' | Obtained: ' + ','.join(self.results['obtained'])
+            if has_attacked:
+                s += ' | Attacked: ' + ','.join(self.results['attacked'])
+
+        return s
+
+    def run(self):
+        self.enter()
+        self.obtain()
+        self.attack()
+        self.finish()
