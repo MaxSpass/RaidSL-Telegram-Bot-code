@@ -339,6 +339,10 @@ def find_needle_refill_ruby():
     return find_needle('refill_ruby.jpg', axis_to_region(320, 320, 640, 440))
 
 
+def find_needle_refill_button(region):
+    return find_needle('refill_button.jpg', region)
+
+
 def find_needle_battles():
     return find_needle('battles.jpg', axis_to_region(730, 430, 900, 530))
 

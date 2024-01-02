@@ -192,20 +192,8 @@ class App:
                 if aei_name == 'check_rewards':
                     rewards.run()
 
-        # demon_lord()
-        # arena_live.run()
-
-        # arena_live.run()
-        # arena_classic.run()
-        # arena_tag.run()
-
-        # arena_classic.run()
-        # arena_tag.run()
-        # rewards.quests_run()
         # faction_wars()
-        # rewards.play_time_run()
         # iron_twins_fortress()
-        # arena_tag.run()
 
         # DungeonCore(DUNGEON_FIRE, [65], props={
         #     'allow_super_raid': True

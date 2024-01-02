@@ -123,6 +123,14 @@ class ArenaLive:
 
         return not self.terminate
 
+    def _save_result(self, result):
+        if result:
+            log("Live Arena | WIN")
+            self.results.append(True)
+        else:
+            log('Live Arena | DEFEAT')
+            self.results.append(False)
+
     def _refill(self):
         self._click_on_find_opponent()
 
@@ -225,17 +233,12 @@ class ArenaLive:
                     sleep(.5)
                 self._confirm()
 
-        if pixels_wait([battle_start], msg='Start battle', timeout=2, mistake=5)[0]:
+        if pixels_wait([battle_start], msg='Start battle', timeout=2, mistake=5, wait_limit=60)[0]:
             click(auto_mode[0], auto_mode[1])
 
             battle_result = pixels_wait([victory, defeat], msg='End of the battle', timeout=2, mistake=20)
 
-            if battle_result[0]:
-                log("Live Arena | WIN")
-                self.results.append(True)
-            elif battle_result[1]:
-                log('Live Arena | DEFEAT')
-                self.results.append(False)
+            self._save_result(battle_result[0])
 
         click(return_start_panel[0], return_start_panel[1])
         sleep(3)

@@ -31,6 +31,17 @@
       "props": {
         "refill": 0
       }
+    },
+    {
+      "name": "faction_wars",
+      "enable": 0
+    },
+    {
+      "name": "demon_lord",
+      "enable": 0,
+      "props": {
+        "stages": [6,5]
+      }
     }
   ],
   "after_each": [

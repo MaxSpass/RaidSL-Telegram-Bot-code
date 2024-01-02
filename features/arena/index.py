@@ -29,6 +29,7 @@ class ArenaFactory:
             item_height,
             button_locations,
             item_locations,
+            refill_coordinates,
             props=None
     ):
         self.name = name
@@ -36,6 +37,7 @@ class ArenaFactory:
         self.item_height = item_height
         self.button_locations = button_locations
         self.item_locations = item_locations
+        self.refill_coordinates = refill_coordinates
 
         self.refill = PAID_REFILL_LIMIT
         self.max_swipe = 0
@@ -56,7 +58,18 @@ class ArenaFactory:
                 self.refill = int(props['refill'])
 
     def _refresh_arena(self):
-        # if pixels_wait('Refresh button', [[817, 133, [22, 124, 156]]], timeout=10, mistake=10, wait_limit=5)[0]:
+        # @TODO In progress
+        # x_refill = self.refill_coordinates[0]
+        # y_refill = self.refill_coordinates[1]
+        # click(x_refill, y_refill)
+        #
+        # sleep(1)
+        # ruby_button = find_needle_refill_ruby()
+        # if ruby_button is not None and self.refill == 0:
+        #     self.terminate = True
+        # close_popup()
+
+        # not self.terminate
         if pixels_wait([button_refresh], msg='Refresh button', mistake=10)[0]:
             log('Refreshing...')
             click(817, 133)
@@ -242,6 +255,7 @@ class ArenaClassic(ArenaFactory):
             item_height=CLASSIC_ITEM_HEIGHT,
             button_locations=CLASSIC_BUTTON_LOCATIONS,
             item_locations=CLASSIC_ITEM_LOCATIONS,
+            refill_coordinates=CLASSIC_COINS_REFILL
         )
 
 
@@ -254,4 +268,5 @@ class ArenaTag(ArenaFactory):
             item_height=TAG_ITEM_HEIGHT,
             button_locations=TAG_BUTTON_LOCATIONS,
             item_locations=TAG_ITEM_LOCATIONS,
+            refill_coordinates=TAG_COINS_REFILL
         )
