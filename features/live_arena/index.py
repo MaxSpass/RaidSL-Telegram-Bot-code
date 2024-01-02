@@ -236,9 +236,8 @@ class ArenaLive:
         if pixels_wait([battle_start], msg='Start battle', timeout=2, mistake=5, wait_limit=60)[0]:
             click(auto_mode[0], auto_mode[1])
 
-            battle_result = pixels_wait([victory, defeat], msg='End of the battle', timeout=2, mistake=20)
-
-            self._save_result(battle_result[0])
+        battle_result = pixels_wait([victory, defeat], msg='End of the battle', timeout=2, mistake=20)
+        self._save_result(battle_result[0])
 
         click(return_start_panel[0], return_start_panel[1])
         sleep(3)
