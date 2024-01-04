@@ -5,6 +5,7 @@ from features.arena.index import *
 from features.demon_lord.index import *
 from features.faction_wars.index import *
 from features.iron_twins_fortress.index import *
+from features.dungeons.core import *
 import atexit
 import signal
 import sys
@@ -179,6 +180,11 @@ class App:
                 faction_wars()
             elif ti_name == 'iron_twins':
                 iron_twins_fortress()
+            elif ti_name == 'dungeon':
+                # @TODO Refactor
+                DungeonCore(ti_props['location'], [int(ti_props['runs'])], props={
+                    'allow_super_raid': bool(ti_props['allow_super_raid'])
+                }).run()
 
             # Looping: After Each List
             for j in range(len(self.config['after_each'])):
@@ -194,10 +200,6 @@ class App:
 
         # faction_wars()
         # iron_twins_fortress()
-
-        # DungeonCore(DUNGEON_FIRE, [65], props={
-        #     'allow_super_raid': True
-        # }).run()
 
         log('All scenarios are done!')
         log('Duration: {}'.format(datetime.now() - start_time))

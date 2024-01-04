@@ -28,12 +28,10 @@ def log(message):
 
 
 def sleep(duration):
-    seconds_str = 'seconds'
-
-    if duration == 1:
-        seconds_str = 'second'
-
-    log('Sleeping ' + str(duration) + ' ' + seconds_str)
+    # seconds_str = 'seconds'
+    # if duration == 1:
+    #     seconds_str = 'second'
+    # log('Sleeping ' + str(duration) + ' ' + seconds_str)
     time.sleep(duration)
 
 
@@ -90,6 +88,7 @@ def pixel_check_old(x, y, rgb, mistake=0):
 
 
 def pixel_check_new(pixel, mistake=10):
+    print(pyautogui.pixel(pixel[0], pixel[1]))
     x = pixel[0]
     y = pixel[1]
     rgb = pixel[2]
@@ -159,7 +158,7 @@ def is_index_page():
 
 
 def waiting_battle_end_regular(msg, timeout=5, x=20, y=46):
-    return pixel_wait(msg, x, y, [255, 255, 255], timeout)
+    return pixel_wait(msg, x, y, [255, 255, 255], timeout, mistake=10)
 
 
 def tap_to_continue():

@@ -11,6 +11,8 @@ def iron_twins_fortress():
     tracker = []
 
     def enter():
+        go_index_page()
+
         battles_click()
         sleep(0.5)
         # click on dungeons

@@ -204,7 +204,7 @@ class DungeonCore:
                     self.terminate = True
 
         # @TODO Test, considering with the code above
-        waiting_battle_end_regular('Dragon battle End', x=28, y=88)
+        waiting_battle_end_regular(self.dungeon + ' battle end', x=28, y=88)
         sleep(1)
 
         result = not pixel_check_new(defeat)
@@ -224,7 +224,7 @@ class DungeonCore:
         self.enter()
 
         while not self.done() and self.terminate is False:
-            log('Dungeon battle ' + str(self.counter + 1) + ' is starting')
+            log(self.dungeon + ' battle ' + str(self.counter + 1) + ' is starting')
             self.attack()
             self.counter += 1
 

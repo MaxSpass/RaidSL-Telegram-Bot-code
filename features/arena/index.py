@@ -174,7 +174,8 @@ class ArenaFactory:
 
             # checking - is an enemy already attacked
             is_not_attacked = len(results_local) - 1 < i
-            if pixel_check_old(x, y, [187, 130, 5]) and is_not_attacked:
+            print('is_not_attacked: ' + str(is_not_attacked))
+            if pixel_check_new([x, y, [187, 130, 5]]) and is_not_attacked:
                 log(self.name + ' | Attack')
                 # pyautogui.moveTo(x, y, 1)
                 # log(pyautogui.pixel(x, y))
@@ -191,7 +192,9 @@ class ArenaFactory:
                 click_on_start()
 
                 waiting_battle_end_regular(self.name + ' battle end')
-                res = not pixel_check_new(defeat, 5)
+                log('Completed: waiting_battle_end_regular')
+                res = not pixel_check_new(defeat, 20)
+                log('Completed: not pixel_check_new(defeat, 5)')
                 results_local.append(res)
                 if res:
                     log('VICTORY')

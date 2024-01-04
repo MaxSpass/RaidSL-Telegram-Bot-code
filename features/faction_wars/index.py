@@ -159,6 +159,8 @@ def faction_wars():
             sleep(0.5)
 
     def enter():
+        go_index_page()
+
         click_on_progress_info()
         # faction
         click(600, 260)

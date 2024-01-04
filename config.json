@@ -1,5 +1,23 @@
 {
   "tasks": [
+      {
+      "name": "arena_classic",
+      "enable": 1,
+      "props": {
+        "refill": 0
+      }
+    },
+    {
+      "name": "arena_tag",
+      "enable": 1,
+      "props": {
+        "refill": 0
+      }
+    },
+    {
+      "name": "faction_wars",
+      "enable": 1
+    },
     {
       "name": "arena_live",
       "enable": 1,
@@ -19,28 +37,19 @@
       }
     },
     {
-      "name": "arena_classic",
-      "enable": 1,
-      "props": {
-        "refill": 0
-      }
-    },
-    {
-      "name": "arena_tag",
-      "enable": 1,
-      "props": {
-        "refill": 0
-      }
-    },
-    {
-      "name": "faction_wars",
-      "enable": 0
-    },
-    {
       "name": "demon_lord",
       "enable": 0,
       "props": {
         "stages": [6,5]
+      }
+    },
+    {
+      "name": "dungeon",
+      "enable": 0,
+      "props": {
+        "location": "Spider's Den",
+        "runs": 1,
+        "allow_super_raid": 0
       }
     }
   ],
