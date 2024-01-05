@@ -9,7 +9,7 @@ def clear_dist():
         shutil.rmtree(root_dir)
 
 def zipper():
-    shutil.make_archive('RAID-Without_Routine_BOT', format='zip', root_dir=root_dir)
+    shutil.make_archive('RAID-stop-routine-BOT', format='zip', root_dir=root_dir)
 
 def copy_images():
     shutil.copytree('images/needles', 'dist/images/needles')

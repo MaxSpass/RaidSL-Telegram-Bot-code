@@ -1,11 +1,11 @@
 from classes.app import *
 
-# DEBUG = True
-DEBUG = False
+# DEV = True
+DEV = False
 
 app = App()
 
-if DEBUG:
+if DEV:
     ARENA_LIVE_PROPS = {
         'pool': [
             'Arbiter',
@@ -22,11 +22,11 @@ if DEBUG:
     }
     app.load_config({
         'tasks': [
-            {'name': 'iron_twins', 'enable': 0},
+            {'name': 'arena_live', 'enable': 0, 'props': ARENA_LIVE_PROPS},
+            {'name': 'iron_twins', 'enable': 1},
             {'name': 'arena_classic', 'enable': 0, 'props': {'refill': 0}},
-            {'name': 'arena_live', 'enable': 1, 'props': ARENA_LIVE_PROPS},
             {'name': 'faction_wars', 'enable': 1},
-            {'name': 'arena_tag', 'enable': 1, 'props': {'refill': 0}},
+            {'name': 'arena_tag', 'enable': 0, 'props': {'refill': 0}},
             {'name': 'demon_lord', 'enable': 0},
         ],
         'after_each': [
@@ -36,7 +36,7 @@ if DEBUG:
 
 
 def main():
-    if DEBUG or app.validation():
+    if DEV or app.validation():
         try:
             app.start()
             if is_index_page() is True:
