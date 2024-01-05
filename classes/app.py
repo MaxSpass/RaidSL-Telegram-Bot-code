@@ -17,6 +17,8 @@ arena_live = ArenaLive()
 arena_classic = ArenaClassic()
 arena_tag = ArenaTag()
 demon_lord = DemonLord()
+iron_twins = IronTwins()
+faction_wars = FactionWars()
 
 
 def prepare_window():
@@ -130,6 +132,8 @@ class App:
             arena_tag,
             rewards,
             demon_lord,
+            iron_twins,
+            faction_wars,
         ]))
 
         if entries.count(None) < len(entries):
@@ -177,9 +181,9 @@ class App:
             elif ti_name == 'demon_lord':
                 demon_lord.run()
             elif ti_name == 'faction_wars':
-                faction_wars()
+                faction_wars.run()
             elif ti_name == 'iron_twins':
-                iron_twins_fortress()
+                iron_twins.run()
             elif ti_name == 'dungeon':
                 # @TODO Refactor
                 DungeonCore(ti_props['location'], [int(ti_props['runs'])], props={

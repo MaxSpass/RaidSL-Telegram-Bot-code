@@ -6,31 +6,32 @@ TWIN_ATTACKS_LIMIT = 6
 defeat = [443, 51, [229, 40, 104]]
 
 
-# @TODO Must be reworked by following new standard
-def iron_twins_fortress():
-    tracker = []
+class IronTwins:
+    LOCATION_NAME = 'Iron Twins Fortress'
 
-    def enter():
+    def __init__(self):
+        self.results = {
+            'runs': TWIN_ATTACKS_LIMIT,
+            'attempts': [],
+        }
+
+    def enter(self):
         go_index_page()
 
-        battles_click()
-        sleep(0.5)
-        # click on dungeons
-        click(306, 290)
-        sleep(0.5)
-        # click on iron twins fortress
-        click(280, 235)
-        sleep(0.5)
+        click_on_progress_info()
+        # Fortress Keys
+        click(600, 210)
+        sleep(1)
+
         dungeons_scroll()
 
-    # @TODO Refactor
-    def attack():
-        attack_limit = TWIN_ATTACKS_LIMIT
+    def attack(self):
+        attack_limit = self.results['runs']
         click(830, 460)
         sleep(.5)
 
         while attack_limit > 0:
-            if attack_limit == TWIN_ATTACKS_LIMIT:
+            if attack_limit == self.results['runs']:
                 # starts first battle
                 click(830, 460)
                 sleep(.5)
@@ -38,19 +39,29 @@ def iron_twins_fortress():
                 # repeat all subsequent battles
                 dungeons_replay()
 
-            waiting_battle_end_regular('Iron Twins Fortress', x=28, y=88)
+            waiting_battle_end_regular(self.LOCATION_NAME, x=28, y=88)
 
             res = not pixel_check_new(defeat)
-            tracker.append(res)
+            self.results['attempts'].append(res)
             if res:
                 attack_limit -= 1
 
-    def finish():
+    def finish(self):
         dungeons_results_finish()
         go_index_page()
-        log('DONE - Iron Twins')
-        log('Used ' + str(tracker.count(True)) + ' keys in ' + str(len(tracker)) + ' attempts')
+        log('DONE - ' + self.LOCATION_NAME)
 
-    enter()
-    attack()
-    finish()
+    def report(self):
+        attempts = self.results['attempts']
+        s = None
+
+        if len(attempts):
+            s = self.LOCATION_NAME + ' | Completed ' + str(attempts.count(True)) + ' keys in ' + str(
+                len(attempts)) + ' attempts '
+
+        return s
+
+    def run(self):
+        self.enter()
+        self.attack()
+        self.finish()

@@ -95,21 +95,23 @@ CRYPT_SLIDES = [
     },
 ]
 
-
 # @TODO Must be reworked by following new standard and refactor 'attack' method
-def faction_wars():
-    tracker = []
-    slide_first = np.array(CRYPT_SLIDES)[:8]
-    slide_second = np.array(CRYPT_SLIDES)[8:]
+class FactionWars():
+    LOCATION_NAME = 'Faction Wars'
 
-    def _swipe_left_border(times=2):
+    def __init__(self):
+        self.results = []
+        self.slide_first = np.array(CRYPT_SLIDES)[:8]
+        self.slide_second = np.array(CRYPT_SLIDES)[8:]
+
+    def _swipe_left_border(self, times=2):
         for i in range(times):
             swipe('left', 50, 400, 800, speed=0.3)
 
-    def _detect(x, y):
+    def _detect(self, x, y):
         return bool(pixel_check_old(x, y, [30, 36, 49], 3))
 
-    def _attack_item(x, y, title):
+    def _attack_item(self, x, y, title):
         log('Entering ' + title + ' Crypt...')
         # @TODO Should be calculated
         runs = 2
@@ -153,75 +155,77 @@ def faction_wars():
             if pixel_check_old(452, 42, [30, 186, 239], 5):
                 runs -= 1
 
-        # going back to all Factions
-        for i in range(2):
-            pyautogui.press('esc')
-            sleep(0.5)
-
-    def enter():
+    def enter(self):
         go_index_page()
 
         click_on_progress_info()
-        # faction
+        # Faction Keys
         click(600, 260)
         sleep(1)
 
-    def attack():
-
+    def attack(self):
         should_swipe_left = True
-        for i in range(len(slide_first)):
-            el = slide_first[i]
+        for i in range(len(self.slide_first)):
+            el = self.slide_first[i]
             title = el['title']
 
-            if bool(tracker.count(title)):
+            if bool(self.results.count(title)):
                 break
 
             x = el['pixel']['x']
             y = el['pixel']['y']
 
             if should_swipe_left:
-                _swipe_left_border()
+                self._swipe_left_border()
 
-            if _detect(x, y):
-                _attack_item(x, y, title)
-                tracker.append(title)
+            if self._detect(x, y):
+                self._attack_item(x, y, title)
+                self.results.append(title)
                 should_swipe_left = True
             else:
                 should_swipe_left = False
 
         should_swipe_left = False
         should_swipe_right = True
-        for i in range(len(slide_second)):
-            el = slide_second[i]
+        for i in range(len(self.slide_second)):
+            el = self.slide_second[i]
             title = el['title']
 
-            if bool(tracker.count(title)):
+            if bool(self.results.count(title)):
                 break
 
             x = el['pixel']['x']
             y = el['pixel']['y']
 
             if should_swipe_left:
-                _swipe_left_border()
+                self._swipe_left_border()
 
             if should_swipe_right:
                 for k in range(2):
                     swipe('right', 850, 200, 690, speed=1)
 
-            if _detect(x, y):
-                _attack_item(x, y, title)
-                tracker.append(title)
+            if self._detect(x, y):
+                self._attack_item(x, y, title)
+                self.results.append(title)
                 should_swipe_left = True
                 should_swipe_right = True
             else:
                 should_swipe_left = False
                 should_swipe_right = False
 
-    def finish():
+    def finish(self):
         go_index_page()
-        log('DONE - Faction Wars')
-        log(tracker)
+        log('DONE - ' + self.LOCATION_NAME)
 
-    enter()
-    attack()
-    finish()
+    def report(self):
+        s = None
+
+        if len(self.results):
+            s = self.LOCATION_NAME + ' | Completed: ' + str(np.array(self.results))
+
+        return s
+
+    def run(self):
+        self.enter()
+        self.attack()
+        self.finish()
