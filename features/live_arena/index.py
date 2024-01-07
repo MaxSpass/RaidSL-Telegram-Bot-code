@@ -9,6 +9,7 @@ hero_filter = HeroFilter()
 
 first = [334, 209, [22, 51, 90]]
 second = [899, 94, [90, 24, 24]]
+cant_find_opponent = [590, 290, [188, 130, 5]]
 
 my_slots = [
     [253, 188],
@@ -176,9 +177,15 @@ class ArenaLive:
     def attack(self):
         log('Live Arena | Attack')
 
-        start_pixels = pixels_wait([first, second], msg="Start screen", timeout=0.1)
-        log('Live Arena | Starts battle: ' + str(self.battles_counter))
+        start_pixels = pixels_wait([cant_find_opponent, first, second], msg="Start screen", timeout=0.1)
+
+        # @TODO Should improve
         if start_pixels[0]:
+            log("Can't find opponent")
+            return
+
+        log('Live Arena | Starts battle: ' + str(self.battles_counter))
+        if start_pixels[1]:
             # first
             log("I'm first")
             self.team = [
@@ -186,7 +193,7 @@ class ArenaLive:
                 self.pool[1:3],
                 self.pool[3:5]
             ]
-        elif start_pixels[1]:
+        elif start_pixels[2]:
             # second
             log("I'm second")
             self.team = [
