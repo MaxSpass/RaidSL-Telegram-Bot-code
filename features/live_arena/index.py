@@ -1,8 +1,10 @@
 import pyautogui
+import pause
 
-from helpers.common import *
+from helpers.time_mgr import *
 from features.hero_filter.index import *
 
+time_mgr = TimeMgr()
 hero_filter = HeroFilter()
 
 first = [334, 209, [22, 51, 90]]
@@ -54,12 +56,13 @@ return_start_panel = [444, 490]
 PAID_REFILL_LIMIT = 1
 
 
-# @TODO Needs to be refactor in order to fix phantom bug
+# @TODO Issues: keyboard locale, enemy's leaving the battle
+# Requires: checking amount of keys
 class ArenaLive:
     x_config = 600
     y_config = 175
-    x_find_opponent = 461
-    y_find_opponent = 468
+    x_find_opponent = 500
+    y_find_opponent = 460
 
     results = None
     team = None
@@ -114,8 +117,10 @@ class ArenaLive:
             sleep(2)
 
     def _click_on_find_opponent(self):
-        click(self.x_find_opponent, self.y_find_opponent)
-        sleep(2)
+        # click(self.x_find_opponent, self.y_find_opponent)
+        find_opponent = [self.x_find_opponent, self.y_find_opponent, [187, 130, 5]]
+        await_click([find_opponent], mistake=10)
+        sleep(1)
 
     def _is_available(self):
         if pixel_check_new(not_available):
@@ -236,10 +241,10 @@ class ArenaLive:
                     sleep(.5)
                 self._confirm()
 
-        start_or_defeat = pixels_wait([battle_start, defeat], msg='Start or Defeat', timeout=2, mistake=20)
+        my_turn_or_defeat = pixels_wait([battle_start, defeat], msg='My turn or Defeat', timeout=2, mistake=20)
 
         # Battle just started
-        if start_or_defeat[0]:
+        if my_turn_or_defeat[0]:
             click(auto_mode[0], auto_mode[1])
             battle_result = pixels_wait([victory, defeat], msg='Victory or Defeat', timeout=2, mistake=20)
             self._save_result(battle_result[0])
@@ -264,7 +269,40 @@ class ArenaLive:
         go_index_page()
         log('Live Arena | Finish')
 
+    def check_availability(self):
+        # @TODO Finish
+        # res = {
+        #     'is_active': False,
+        #     'open_hour': None
+        # }
+        # live_arena_open_hours = [[6, 8], [14, 16], [20, 22]]
+        # utc_timestamp = datetime.utcnow().timestamp()
+        utc_datetime = datetime.fromtimestamp(utc_timestamp)
+        parsed_time = time_mgr.timestamp_to_datetime(utc_datetime)
+        # hour = parsed_time['hour']
+        #
+        # length = len(live_arena_open_hours)
+        # for i in range(len(live_arena_open_hours)):
+        #     arr = live_arena_open_hours[i]
+        #     for j in range(len(arr)):
+        #         if arr[0] < hour < arr[1]:
+        #             res['is_active'] = True
+        #             break
+        #         elif arr[1] <= hour and i < length:
+        #             res['open_hour'] = live_arena_open_hours[i + 1]
+
+
+        year = parsed_time['year']
+        month = parsed_time['month']
+        day = parsed_time['day']
+        # @TODO
+        hour = parsed_time['hour']
+        hour = 14
+        pause.until(datetime(year, month, day, hour, 1, 0, tzinfo=timezone.utc))
+
     def run(self, props=None):
+        # self.check_availability()
+
         if props is not None:
             self._apply_props(props)
 

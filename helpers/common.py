@@ -121,8 +121,11 @@ def pixel_wait(msg, x, y, rgb, timeout=5, mistake=0):
 
 def pixels_wait(pixels, msg=None, timeout=5, mistake=0, wait_limit=None):
     length = len(pixels)
+    pixels_str = 'pixel'
+    if length > 1:
+        pixels_str = 'pixels'
     if msg is not None:
-        log('Waiting some of ' + str(length) + ' pixels: ' + msg)
+        log('Waiting some of ' + str(length) + ' ' + pixels_str + ' ' + msg)
 
     def restart():
         res = []
@@ -145,6 +148,24 @@ def pixels_wait(pixels, msg=None, timeout=5, mistake=0, wait_limit=None):
             break
 
     return checked_pixels
+
+
+def await_click(pixels, msg=None, timeout=5, mistake=0, wait_limit=None):
+    res = pixels_wait(pixels, msg=msg, timeout=timeout, mistake=mistake, wait_limit=wait_limit)
+
+    for i in range(len(res)):
+        el = res[i]
+        if el:
+            pixel = pixels[i]
+            x = pixel[0]
+            y = pixel[1]
+
+            click(x, y)
+            time.sleep(.3)
+
+            break
+
+    return res
 
 
 def is_index_page():

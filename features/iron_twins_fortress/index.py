@@ -5,7 +5,7 @@ TWIN_ATTACKS_LIMIT = 6
 
 defeat = [443, 51, [229, 40, 104]]
 
-
+# @TODO Checking first battle
 class IronTwins:
     LOCATION_NAME = 'Iron Twins Fortress'
 

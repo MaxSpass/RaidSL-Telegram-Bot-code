@@ -192,9 +192,7 @@ class ArenaFactory:
                 click_on_start()
 
                 waiting_battle_end_regular(self.name + ' battle end')
-                log('Completed: waiting_battle_end_regular')
                 res = not pixel_check_new(defeat, 20)
-                log('Completed: not pixel_check_new(defeat, 5)')
                 results_local.append(res)
                 if res:
                     log('VICTORY')

@@ -96,6 +96,7 @@ CRYPT_SLIDES = [
 ]
 
 # @TODO Must be reworked by following new standard and refactor 'attack' method
+# @TODO Requires: keyboard locale, enemy's leaving the battle
 class FactionWars():
     LOCATION_NAME = 'Faction Wars'
 
