@@ -9,7 +9,7 @@ hero_filter = HeroFilter()
 
 first = [334, 209, [22, 51, 90]]
 second = [899, 94, [90, 24, 24]]
-cant_find_opponent = [590, 290, [188, 130, 5]]
+cant_find_opponent = [590, 290, [187, 130, 5]]
 
 my_slots = [
     [253, 188],
@@ -177,7 +177,7 @@ class ArenaLive:
     def attack(self):
         log('Live Arena | Attack')
 
-        start_pixels = pixels_wait([cant_find_opponent, first, second], msg="Start screen", timeout=0.1)
+        start_pixels = pixels_wait([cant_find_opponent, first, second], msg="Start screen", timeout=0.1, mistake=5)
 
         # @TODO Should improve
         if start_pixels[0]:
