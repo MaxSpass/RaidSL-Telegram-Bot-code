@@ -10,21 +10,22 @@ hero_filter = HeroFilter()
 first = [334, 209, [22, 51, 90]]
 second = [899, 94, [90, 24, 24]]
 cant_find_opponent = [590, 290, [187, 130, 5]]
+rgb_empty_slot = [49, 54, 49]
 
 my_slots = [
-    [253, 188],
-    [202, 293],
-    [170, 202],
-    [122, 295],
-    [91, 194]
+    [240, 170, rgb_empty_slot],
+    [200, 270, rgb_empty_slot],
+    [160, 170, rgb_empty_slot],
+    [120, 270, rgb_empty_slot],
+    [76, 170, rgb_empty_slot],
 ]
 
 enemy_slots = [
-    [650, 198],
-    [697, 289],
-    [728, 199],
-    [767, 292],
-    [812, 201]
+    [650, 198, rgb_empty_slot],
+    [697, 289, rgb_empty_slot],
+    [728, 199, rgb_empty_slot],
+    [767, 292, rgb_empty_slot],
+    [812, 201, rgb_empty_slot],
 ]
 
 # picking heroes
@@ -55,6 +56,7 @@ auto_mode = [49, 486]
 return_start_panel = [444, 490]
 
 PAID_REFILL_LIMIT = 1
+ARCHIVE_PATTERN_FIRST = [1, 2, 2]
 
 
 # @TODO Issues: keyboard locale, enemy's leaving the battle
@@ -65,15 +67,11 @@ class ArenaLive:
     x_find_opponent = 500
     y_find_opponent = 460
 
-    results = None
-    team = None
-    terminate = None
-    pool = None
-    leaders = None
-
     def __init__(self, props=None):
         self.results = []
         self.team = []
+        self.pool = []
+        self.leaders = []
         self.terminate = False
         self.refill = PAID_REFILL_LIMIT
         self.battles_counter = 0
@@ -83,17 +81,19 @@ class ArenaLive:
 
     def _apply_props(self, props):
         if 'pool' in props:
-            self.pool = props['pool']
-            random.shuffle(self.pool)
+            self.pool = sorted(props['pool'], key=lambda x: (-x.get('priority', 0), x.get('priority', 0)))
             if 'leaders' in props:
                 self.leaders = props['leaders']
-                self.leaders.reverse()
-            else:
-                self.leaders = self.pool[0:2]
+            # self.pool = props['pool']
+            # random.shuffle(self.pool)
+            # if 'leaders' in props:
+            #     self.leaders = props['leaders']
+            #     self.leaders.reverse()
+            # else:
+            #     self.leaders = self.pool[0:2]
 
         if 'refill' in props:
             self.refill = int(props['refill'])
-
 
     def _confirm(self):
         click(800, 490)
@@ -176,56 +176,94 @@ class ArenaLive:
 
     def attack(self):
         log('Live Arena | Attack')
+        sorted_pool = self.pool
+        team = []
+        leaders = []
+        slots_counter = 0
 
-        start_pixels = pixels_wait([cant_find_opponent, first, second], msg="Start screen", timeout=0.1, mistake=5)
+        def pick(name):
+            hero_filter.open(x2=450)
+            hero_filter.input(name)
+            hero_filter.pick()
+            hero_filter.clear()
+            hero_filter.reset()
+            hero_filter.close()
 
-        # @TODO Should improve
-        if start_pixels[0]:
-            log("Can't find opponent")
-            return
+        def find_character(role=None):
+            if role is None:
+                role = sorted_pool[0]['role']
+
+            next_char = None
+            while next_char is None:
+                i, char = find(sorted_pool, lambda x: x.get('role') == role)
+
+                if char:
+                    pick(char['name'])
+
+                    if not pixel_check_new(my_slots[slots_counter], mistake=0):
+                        next_char = char
+
+                    sorted_pool.pop(i)
+                else:
+                    sorted_pool.pop(0)
+
+            return next_char
+
+        def find_leaders_indicis():
+            res = []
+
+            for i in range(len(self.leaders)):
+                l = self.leaders[i]
+                if l in team:
+                    res.append(team.index(l))
+                if len(res) == 2:
+                    break
+
+            res.reverse()
+
+            return res
+
+        def wait_start_pixels():
+            return pixels_wait([cant_find_opponent, first, second], msg="Start screen 1", timeout=0.1, mistake=5)
+
+        start_pixels = wait_start_pixels()
+        opponent_found = False
+        while not opponent_found:
+            # for "can't find opponent" cases
+            if start_pixels[0]:
+                x_find = cant_find_opponent[0]
+                y_find = cant_find_opponent[1]
+                click(x_find, y_find)
+                sleep(.5)
+                self._click_on_find_opponent()
+                start_pixels = wait_start_pixels()
+            else:
+                opponent_found = True
 
         log('Live Arena | Starts battle: ' + str(self.battles_counter))
+        pattern = ARCHIVE_PATTERN_FIRST
         if start_pixels[1]:
-            # first
             log("I'm first")
-            self.team = [
-                self.pool[0:1],
-                self.pool[1:3],
-                self.pool[3:5]
-            ]
         elif start_pixels[2]:
-            # second
             log("I'm second")
-            self.team = [
-                self.pool[0:2],
-                self.pool[2:4],
-                self.pool[4:5]
-            ]
+            pattern.reverse()
 
         if pixels_wait([stage_1], msg='Stage 1 | Picking characters', timeout=2, mistake=5)[0]:
             sleep(.5)
-            slots_counter = 0
-            print(self.team)
-            for i in range(len(self.team)):
+
+            for i in range(len(pattern)):
                 if pixels_wait([first], msg='Picking characters', timeout=2, mistake=10)[0]:
                     sleep(.2)
-                    hero_filter.open(x2=450)
 
                     # picking heroes logic
-                    for j in range(len(self.team[i])):
-                        hero_name = self.team[i][j]
-                        hero_filter.input(hero_name)
-                        hero_filter.pick()
-                        hero_filter.clear()
+                    for j in range(pattern[i]):
+                        unit = find_character()
+                        team.append(unit['name'])
+                        sleep(.1)
+                        self._confirm()
                         slots_counter += 1
 
-                    hero_filter.reset()
-                    hero_filter.close()
-                    sleep(.1)
-
-                    self._confirm()
-
-        if pixels_wait([stage_2], msg='Stage 2 | Ban second hero', timeout=2, mistake=5)[0]:
+        if pixels_wait([stage_2], msg='Stage 2 | Ban hero', timeout=2, mistake=5)[0]:
             sleep(.5)
             # Banning random second slot
             random_slot = random.choice(enemy_slots)
@@ -238,10 +276,11 @@ class ArenaLive:
         if pixels_wait([stage_3], msg='Stage 3 | Choosing leader', timeout=2, mistake=5)[0]:
             sleep(.5)
             if pixels_wait([first], msg='Choosing leader', timeout=2, mistake=10)[0]:
-                for i in range(len(self.leaders)):
-                    leader = self.leaders[i]
-                    team_index = self.pool.index(leader)
-                    slot = my_slots[team_index]
+                leaders_indicis = find_leaders_indicis()
+
+                for i in range(len(leaders_indicis)):
+                    leader_index = leaders_indicis[i]
+                    slot = my_slots[leader_index]
                     x = slot[0]
                     y = slot[1]
                     click(x, y)
@@ -297,7 +336,6 @@ class ArenaLive:
         #             break
         #         elif arr[1] <= hour and i < length:
         #             res['open_hour'] = live_arena_open_hours[i + 1]
-
 
         year = parsed_time['year']
         month = parsed_time['month']
