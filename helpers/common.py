@@ -7,13 +7,30 @@ import glob
 import np
 import cv2
 import json
+import re
 # from text_recognition import *
 from datetime import datetime
+from constants.index import IS_DEV
+from helpers.time_mgr import *
 import pytesseract
 
+time_mgr = TimeMgr()
+
+def get_time_for_log():
+    return '{}'.format(str(datetime.now().strftime("%H:%M:%S")))
+
+def log_save(message):
+    if not IS_DEV:
+        time = get_time_for_log()
+
+        current_date = time_mgr.timestamp_to_datetime()
+        file_name = 'log-' + f'{current_date["day"]}-{current_date["month"]}-{current_date["year"]}' + '.txt'
+        f = open(file_name, "a")
+        f.write(time + ' | ' + message + '\n')
+        f.close()
 
 def log(message):
-    time = '{}'.format(str(datetime.now().strftime("%H:%M:%S")))
+    time = get_time_for_log()
 
     if type(message) is dict:
         output = json.dumps(message, indent=2)
@@ -25,6 +42,7 @@ def log(message):
         output = str(message)
 
     print(time + ' | ', output)
+    log_save(str(message))
 
 
 def sleep(duration):
@@ -88,7 +106,6 @@ def pixel_check_old(x, y, rgb, mistake=0):
 
 
 def pixel_check_new(pixel, mistake=10):
-    print(pyautogui.pixel(pixel[0], pixel[1]))
     x = pixel[0]
     y = pixel[1]
     rgb = pixel[2]
@@ -125,7 +142,7 @@ def pixels_wait(pixels, msg=None, timeout=5, mistake=0, wait_limit=None):
     if length > 1:
         pixels_str = 'pixels'
     if msg is not None:
-        log('Waiting some of ' + str(length) + ' ' + pixels_str + ' ' + msg)
+        log('Waiting some of ' + str(length) + ' ' + pixels_str + ': ' + msg)
 
     def restart():
         res = []
@@ -148,6 +165,11 @@ def pixels_wait(pixels, msg=None, timeout=5, mistake=0, wait_limit=None):
             break
 
     return checked_pixels
+
+
+# @TODO Should implement based on 'pixels_wait' within one crucial difference
+def pixels_wait_every():
+    return 0
 
 
 def await_click(pixels, msg=None, timeout=5, mistake=0, wait_limit=None):
@@ -279,6 +301,13 @@ def show_pyautogui_image(pyautogui_screenshot):
     cv2.waitKey()
 
 
+def show_image(path=None):
+    if path is not None:
+        image = cv2.imread(path)
+        cv2.imshow('Matches', image)
+        cv2.waitKey()
+
+
 # run only in case when you are aware of the action
 def find_perfect_pixel():
     tracker = []
@@ -288,7 +317,6 @@ def find_perfect_pixel():
             if pixel_check_old(x, y, [222, 0, 0]):
                 log("Found")
                 tracker.append([x, y])
-    log(tracker)
 
 
 # def recognize_text(region):
@@ -316,34 +344,6 @@ def click_on_progress_info(delay=0.5):
 
 def make_lambda(predicate, *args):
     return lambda: predicate(*args)
-
-
-def get_progress():
-    ITEM_HEIGHT = 40
-
-    x1 = 585
-    y1 = 72
-    x2 = 744
-    y2 = 112
-
-    # x1 = x1 + 70
-    # x2 = x2 - 70
-    # y1 += ITEM_HEIGHT + ITEM_HEIGHT / 2
-    # y2 += ITEM_HEIGHT
-
-    if is_index_page():
-        click(760, 46)
-        sleep(0.5)
-
-        for i in range(9):
-            # show_pyautogui_image(pyautogui.screenshot(region=axis_to_region(x1, y1, x2, y2)))
-            text = recognize_text(axis_to_region(x1, y1, x2, y2))
-            log(text)
-            y1 += ITEM_HEIGHT
-            y2 += ITEM_HEIGHT
-
-    else:
-        log("Stopped! It's not an Index Page")
 
 
 def find_needle(image_name, region=None, confidence=.8):
@@ -390,9 +390,8 @@ def close_popup():
     if close_popup_button is not None:
         x = close_popup_button[0]
         y = close_popup_button[1]
-        pyautogui.click(x, y)
-    else:
-        log('Regular popup was not found')
+        click(x, y)
+        log('Regular popup closed')
 
     # closes special offer popup when it appears
     sleep(0.3)
@@ -401,8 +400,7 @@ def close_popup():
         x = special_offer_popup[0]
         y = special_offer_popup[1]
         click(x, y)
-    else:
-        log('Special offer popup was not found')
+        log('Special offer popup closed')
 
 
 def go_index_page():
@@ -423,17 +421,109 @@ def flatten(xss):
     return [x for xs in xss for x in xs]
 
 
+def find(arr, predicate):
+    for i in range(len(arr)):
+        el = arr[i]
+        if predicate(el):
+            return i, el
+    return None, None
+
+
 def image_to_text(image):
     # image = cv2.medianBlur(image, 5)
 
-    # return [
-    #     pytesseract.image_to_string(image, config='--psm 4 --oem 3 -c tessedit_char_whitelist=0123456789'),
-    #     pytesseract.image_to_string(image, config='--psm 5 --oem 3 -c tessedit_char_whitelist=0123456789'),
-    #     pytesseract.image_to_string(image, config='--psm 6 --oem 3 -c tessedit_char_whitelist=0123456789'),
-    #     pytesseract.image_to_string(image, config='--psm 7 --oem 3 -c tessedit_char_whitelist=0123456789'),
-    #     pytesseract.image_to_string(image, config='--psm 8 --oem 3 -c tessedit_char_whitelist=0123456789'),
-    #     pytesseract.image_to_string(image, config='--psm 9 --oem 3 -c tessedit_char_whitelist=0123456789'),
-    #     pytesseract.image_to_string(image, config='--psm 10 --oem 3 -c tessedit_char_whitelist=0123456789'),
-    # ]
+    return [
+        pytesseract.image_to_string(image, config='--psm 1 --oem 3'),
+        pytesseract.image_to_string(image, config='--psm 3 --oem 3'),
+        pytesseract.image_to_string(image, config='--psm 4 --oem 3'),
+        pytesseract.image_to_string(image, config='--psm 7 --oem 3'),
+        pytesseract.image_to_string(image, config='--psm 8 --oem 3'),
+        pytesseract.image_to_string(image, config='--psm 10 --oem 3'),
+    ]
 
-    return pytesseract.image_to_string(image, config='--psm 8 --oem 3 -c tessedit_char_whitelist=0123456789')
+    # return pytesseract.image_to_string(image, config='--psm 8 --oem 3 -c tessedit_char_whitelist=0123456789')
+
+
+def archive_list(input_list, pattern):
+    result = []
+    index = 0
+
+    for group_size in pattern:
+        group = input_list[index:index + group_size]
+        result.append(group)
+        index += group_size
+
+    return result
+
+
+def pop_random_element(input_list):
+    if not input_list:
+        return None  # Return None if the list is empty
+
+    random_index = random.randrange(len(input_list))  # Get a random index
+    random_element = input_list.pop(random_index)  # Remove and get the element at that index
+    return random_element
+
+
+def get_higher_occurrence(arr):
+    for i in range(len(arr)):
+        log(arr[i])
+
+    return max(arr, key=arr.count)
+
+def parse_dealt_damage(s):
+    # only digits
+    arr = re.split(r'\D+', s)
+    # removing empty lines
+    arr = list(filter(bool, arr))
+    # taking only first 2 elements
+    arr = arr[0:2]
+    # joining to the one string
+    str_damage = '.'.join(arr)
+
+    # avoid phantom bug for some cases
+    if str_damage:
+        int_damage = float(str_damage)
+    else:
+        int_damage = 0
+
+    if s.count('K'):
+        int_damage = int_damage / 1000
+
+    return int_damage
+
+
+def read_dealt_damage(timeout=.5, region=None):
+    log('Computing dealt damage...')
+    # returns the damage in millions
+    res = []
+    configs = [
+        '--psm 1 --oem 3',
+        '--psm 3 --oem 3',
+        '--psm 4 --oem 3',
+        '--psm 7 --oem 3',
+        '--psm 8 --oem 3',
+        '--psm 10 --oem 3',
+        '--psm 1 --oem 3',
+        '--psm 3 --oem 3',
+        '--psm 4 --oem 3',
+        '--psm 7 --oem 3',
+        '--psm 8 --oem 3',
+        '--psm 10 --oem 3',
+    ]
+    if region is None:
+        region = [190, 156, 550, 50]
+
+    for i in range(len(configs)):
+        config = configs[i]
+        screenshot = pyautogui.screenshot(region=region)
+        image = screenshot_to_image(screenshot)
+        text = pytesseract.image_to_string(image, config=config)
+        # Test
+        # text = '876K;Damage-Dealt'
+        # text = '--876M;Damage-Dealt'
+        int_damage = parse_dealt_damage(text)
+        res.append(int_damage)
+        sleep(timeout)
+
+    return get_higher_occurrence(res)
