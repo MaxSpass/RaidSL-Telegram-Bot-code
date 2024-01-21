@@ -6,9 +6,11 @@ from features.demon_lord.index import *
 from features.faction_wars.index import *
 from features.iron_twins_fortress.index import *
 from features.dungeons.core import *
+from features.hydra.index import *
 import atexit
 import signal
 import sys
+import pytesseract
 
 CONFIG_PATH = "config.json"
 
@@ -19,6 +21,7 @@ arena_tag = ArenaTag()
 demon_lord = DemonLord()
 iron_twins = IronTwins()
 faction_wars = FactionWars()
+hydra = Hydra()
 
 
 def prepare_window():
@@ -102,7 +105,7 @@ class App:
                             'name': key
                         })
 
-        log(_config)
+        # log(_config)
         return _config
 
     def validation(self):
@@ -120,7 +123,7 @@ class App:
             with open(CONFIG_PATH) as config_file:
                 config = json.load(config_file)
                 self.config = self._prepare_config(config)
-                log('Read App Config')
+                log('Reading App Config...')
 
         except SystemError:
             log('An error occurred while reading ' + CONFIG_PATH + ' file')
@@ -130,10 +133,11 @@ class App:
             arena_live,
             arena_classic,
             arena_tag,
-            rewards,
             demon_lord,
             iron_twins,
             faction_wars,
+            hydra,
+            rewards,
         ]))
 
         if entries.count(None) < len(entries):
@@ -184,6 +188,8 @@ class App:
                 faction_wars.run()
             elif ti_name == 'iron_twins':
                 iron_twins.run()
+            elif ti_name == 'hydra':
+                hydra.run(props=ti_props)
             elif ti_name == 'dungeon':
                 # @TODO Refactor
                 DungeonCore(ti_props['location'], [int(ti_props['runs'])], props={
