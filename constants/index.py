@@ -1,3 +1,8 @@
+# System
+# @TODO Should move to the env variables file
+IS_DEV = False
+# IS_DEV = True
+
 # NEW CONSTANTS
 CLASSIC_ITEM_HEIGHT = 92
 CLASSIC_BUTTON_LOCATIONS = {

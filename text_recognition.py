@@ -7,9 +7,6 @@ import pyautogui
 import uuid
 import os
 
-pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files (x86)\Tesseract-OCR\tesseract'
-
-
 def get_demon_lord_path():
     root_dir = os.getcwd()
     dir = 'demon-lord'

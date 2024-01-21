@@ -1,55 +1,185 @@
 {
   "tasks": [
-      {
+    {
+      "name": "dungeon",
+      "enable": 0,
+      "props": {
+        "location": "Sand Devil's Necropolis",
+        "runs": 6,
+        "allow_super_raid": 0
+      }
+    },
+    {
+      "name": "arena_live",
+      "enable": 0,
+      "props": {
+        "pool": [
+          {
+            "name": "Arbiter",
+            "role": "s",
+            "priority": 1
+          },
+          {
+            "name": "Sun Wukong",
+            "role": "a",
+            "priority": 1
+          },
+          {
+            "name": "Duchess Lilitu",
+            "role": "s",
+            "priority": 1
+          },
+          {
+            "name": "Cupidus",
+            "role": "a",
+            "priority": 1
+          },
+          {
+            "name": "Venus",
+            "role": "s",
+            "priority": 1
+          },
+          {
+            "name": "Leorius the Proud",
+            "role": "a"
+          },
+          {
+            "name": "Rotos",
+            "role": "a"
+          },
+          {
+            "name": "Mortu-Macaab",
+            "role": "a"
+          },
+          {
+            "name": "Ramantu Drakesblood",
+            "role": "a"
+          },
+          {
+            "name": "Candraphon",
+            "role": "a"
+          },
+          {
+            "name": "Lady Mikage",
+            "role": "s"
+          },
+          {
+            "name": "Pythion",
+            "role": "s"
+          },
+          {
+            "name": "Maulie Tankard",
+            "role": "s"
+          },
+          {
+            "name": "Lydia the Deathsiren",
+            "role": "s"
+          },
+          {
+            "name": "Mighty Ukko",
+            "role": "s"
+          }
+        ],
+        "leaders": [
+          "Arbiter",
+          "Sun Wukong",
+          "Mortu-Macaab",
+          "Duchess Lilitu",
+          "Mighty Ukko",
+          "Lydia the Deathsiren",
+          "Pythion"
+        ],
+        "refill": 0
+      }
+    },
+    {
       "name": "arena_classic",
-      "enable": 1,
+      "enable": 0,
       "props": {
         "refill": 0
       }
     },
     {
       "name": "arena_tag",
-      "enable": 1,
+      "enable": 0,
       "props": {
         "refill": 0
       }
     },
     {
-      "name": "faction_wars",
-      "enable": 1
+      "name": "iron_twins",
+      "enable": 0
     },
     {
-      "name": "arena_live",
+      "name": "faction_wars",
+      "enable": 0
+    },
+    {
+      "name": "arena_tag",
+      "enable": 0,
+      "props": {
+        "refill": 0
+      }
+    },
+    {
+      "name": "hydra",
       "enable": 1,
       "props": {
-        "pool": [
-          "Arbiter",
-          "Sun Wukong",
-          "Cupidus",
-          "Venus",
-          "Duchess Lilitu"
-        ],
-        "leaders": [
-          "Arbiter",
-          "Sun Wukong"
-        ],
-        "refill": 0
+        "runs_limit": 5,
+        "runs": [
+          {
+            "stage": 4,
+            "team_preset": 1,
+            "min_damage": 170,
+            "skip": 1,
+            "priority": {
+              "head_of_decay": 2,
+              "head_of_blight": 1,
+              "head_of_mischief": 0,
+              "head_of_suffering": 0,
+              "head_of_torment": 0,
+              "head_of_wrath": 0
+            }
+          },
+          {
+            "stage": 3,
+            "team_preset": 4,
+            "min_damage": 30,
+            "skip": 0,
+            "priority": {
+              "head_of_decay": 2,
+              "head_of_blight": 1,
+              "head_of_mischief": 0,
+              "head_of_suffering": 0,
+              "head_of_torment": 0,
+              "head_of_wrath": 0
+            }
+          },
+          {
+            "stage": 1,
+            "team_preset": 3,
+            "min_damage": 200,
+            "skip": 1,
+            "priority": {
+              "head_of_decay": 2,
+              "head_of_blight": 1,
+              "head_of_mischief": 0,
+              "head_of_suffering": 0,
+              "head_of_torment": 0,
+              "head_of_wrath": 0
+            }
+          }
+        ]
       }
     },
     {
       "name": "demon_lord",
       "enable": 0,
       "props": {
-        "stages": [6,5]
-      }
-    },
-    {
-      "name": "dungeon",
-      "enable": 0,
-      "props": {
-        "location": "Spider's Den",
-        "runs": 1,
-        "allow_super_raid": 0
+        "stages": [
+          6,
+          5
+        ]
       }
     }
   ],
