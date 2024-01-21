@@ -1,4 +1,5 @@
 import random
+import pyperclip
 from helpers.common import *
 
 
@@ -44,8 +45,10 @@ class HeroFilter:
             click(input_field[0], input_field[1])
             sleep(.5)
             self.is_input_focused = True
-            interval = random.randint(2, 5) / 10
-            pyautogui.write(name, interval=interval)
+            # interval = random.randint(2, 5) / 10
+            # pyautogui.write(name, interval=interval)
+            pyperclip.copy(name)
+            pyautogui.hotkey("ctrl", "v")
         else:
             log('Filter is not opened')
 
