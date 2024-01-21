@@ -39,7 +39,7 @@ class IronTwins:
                 # repeat all subsequent battles
                 dungeons_replay()
 
-            waiting_battle_end_regular(self.LOCATION_NAME, x=28, y=88)
+            waiting_battle_end_regular(self.LOCATION_NAME + ' battle end', x=28, y=88)
 
             res = not pixel_check_new(defeat)
             self.results['attempts'].append(res)
