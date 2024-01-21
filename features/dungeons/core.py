@@ -106,7 +106,7 @@ class DungeonCore:
             if 'refill_max' in props:
                 self.refill_max = props['refill_max']
             if 'allow_super_raid' in props:
-                self.allow_super_raid = props['allow_super_raid']
+                self.allow_super_raid = bool(props['allow_super_raid'])
 
         if self.strategy is None:
             if self.strategy == '*':
