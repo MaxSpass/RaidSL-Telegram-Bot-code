@@ -16,8 +16,10 @@ import pytesseract
 
 time_mgr = TimeMgr()
 
+
 def get_time_for_log():
     return '{}'.format(str(datetime.now().strftime("%H:%M:%S")))
+
 
 def log_save(message):
     if not IS_DEV:
@@ -28,6 +30,7 @@ def log_save(message):
         f = open(file_name, "a")
         f.write(time + ' | ' + message + '\n')
         f.close()
+
 
 def log(message):
     time = get_time_for_log()
@@ -464,39 +467,67 @@ def pop_random_element(input_list):
     random_element = input_list.pop(random_index)  # Remove and get the element at that index
     return random_element
 
+def to_int(s):
+    return 1
 
 def get_higher_occurrence(arr):
-    for i in range(len(arr)):
-        log(arr[i])
-
+    if not len(arr):
+        return None
     return max(arr, key=arr.count)
 
-def parse_dealt_damage(s):
+
+def parse_dealt_damage(variants):
     # only digits
-    arr = re.split(r'\D+', s)
-    # removing empty lines
-    arr = list(filter(bool, arr))
-    # taking only first 2 elements
-    arr = arr[0:2]
-    # joining to the one string
-    str_damage = '.'.join(arr)
+    def _parse(s):
+        arr = re.split(r'\D+', s)
+        # removing empty lines
+        arr = list(filter(bool, arr))
+        # taking only first 2 elements
+        arr = arr[0:2]
+        # joining to the one string
+        str_damage = '.'.join(arr)
 
-    # avoid phantom bug for some cases
-    if str_damage:
-        int_damage = float(str_damage)
-    else:
-        int_damage = 0
+        # avoid phantom bug for some cases
+        if str_damage:
+            int_damage = float(str_damage)
+        else:
+            int_damage = 0
 
-    if s.count('K'):
-        int_damage = int_damage / 1000
+        if s.count('K'):
+            int_damage = int_damage / 1000
 
-    return int_damage
+        return int_damage
+
+    return list(map(lambda x: _parse(x), variants))
+
+def parse_stage_energy_cost(variants):
+    extract_numbers = lambda x: [float(match.group()) for match in re.finditer(r'\d+\.?\d*', str(x))]
+    numbers_only = [num for x in variants for num in extract_numbers(x)]
+    return numbers_only
 
 
-def read_dealt_damage(timeout=.5, region=None):
+def read_text(configs, region, timeout=0.1, parser=None):
+    res = []
+
+    for i in range(len(configs)):
+        config = configs[i]
+        screenshot = pyautogui.screenshot(region=region)
+        image = screenshot_to_image(screenshot)
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        text = pytesseract.image_to_string(image, config=config)
+        res.append(text)
+        sleep(timeout)
+
+    if parser:
+        res = parser(res)
+
+    return get_higher_occurrence(res)
+
+
+def read_dealt_damage():
     log('Computing dealt damage...')
     # returns the damage in millions
-    res = []
+    region = [190, 156, 550, 50]
     configs = [
         '--psm 1 --oem 3',
         '--psm 3 --oem 3',
@@ -511,19 +542,27 @@ def read_dealt_damage(timeout=.5, region=None):
         '--psm 8 --oem 3',
         '--psm 10 --oem 3',
     ]
-    if region is None:
-        region = [190, 156, 550, 50]
 
-    for i in range(len(configs)):
-        config = configs[i]
-        screenshot = pyautogui.screenshot(region=region)
-        image = screenshot_to_image(screenshot)
-        text = pytesseract.image_to_string(image, config=config)
-        # Test
-        # text = '876K;Damage-Dealt'
-        # text = '--876M;Damage-Dealt'
-        int_damage = parse_dealt_damage(text)
-        res.append(int_damage)
-        sleep(timeout)
+    return read_text(configs=configs, region=region, timeout=.5, parser=parse_dealt_damage)
 
-    return get_higher_occurrence(res)
+
+def read_energy_cost():
+    log('Computing energy cost...')
+    # returns energy cost
+    region = axis_to_region(720, 460, 860, 505)
+    configs = [
+        '--psm 1 --oem 3',
+        '--psm 3 --oem 3',
+        '--psm 4 --oem 3',
+        '--psm 5 --oem 3',
+        '--psm 6 --oem 3',
+        '--psm 7 --oem 3',
+        '--psm 8 --oem 3',
+        '--psm 9 --oem 3',
+        '--psm 10 --oem 3',
+        '--psm 11 --oem 3',
+        '--psm 12 --oem 3',
+        '--psm 13 --oem 3',
+    ]
+
+    return read_text(configs=configs, region=region, parser=parse_stage_energy_cost)
