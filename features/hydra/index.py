@@ -120,14 +120,11 @@ class Hydra:
         log('Damage Dealt: ' + str(int_damage) + 'M')
         if int_damage >= min_damage:
             log(self.LOCATION_NAME + ' | Dealt Damage is enough')
-            # @TODO Temp
             await_click([button_keep_result], timeout=1)
             self._save_result(int_damage)
         else:
             log(self.LOCATION_NAME + ' | Dealt Damage is NOT enough')
-            # @TODO Temp
             await_click([button_free_regroup], timeout=1)
-
 
     def _check_end(self):
         return pixel_check_new(battle_end)
@@ -154,10 +151,13 @@ class Hydra:
     def _focus_head(self, name):
         self.focused_head = name
         i, hydra = find(self.heads, lambda x: x['name'] == name)
-        name = hydra['name']
-        h = HEADS_POSITIONS[i]
-        click(h['focus']['x'], 175)
-        log(self.LOCATION_NAME + ' | Focus: ' + self._format_name(name))
+        if hydra is not None:
+            name = hydra['name']
+            h = HEADS_POSITIONS[i]
+            click(h['focus']['x'], 175)
+            log(self.LOCATION_NAME + ' | Focus: ' + self._format_name(name))
+        else:
+            log(f'No Hydra head with name: {name}')
 
     def _reset_focus(self):
         pyautogui.click(x=50, y=470, clicks=2, interval=.1)
@@ -169,7 +169,7 @@ class Hydra:
     def _while_stage_available(self):
         stage = self.current['stage']
         return self.current['runs_counter'] < self.runs_limit \
-               or self.current['min_damage'] < self.results[stage]['damage']
+               and self.results[stage]['damage'] < self.current['min_damage']
 
     def _certain_hydra_or_all_hydra_screens(self):
         # @TODO
@@ -206,7 +206,7 @@ class Hydra:
             x_stack = stack['x']
             y_stack = stack['y']
             region_stack = [x_stack, y_stack, STACK_FRAME_WIDTH, STACK_FRAME_HEIGHT]
-            digesting_position = find_needle('hydra/hydra_digesting.png', region=region_stack, confidence=.55)
+            digesting_position = find_needle('hydra/hydra_digesting.png', region=region_stack, confidence=.6)
 
             current_heads.append({
                 'name': hydra_name,
@@ -287,9 +287,9 @@ class Hydra:
     def finish(self):
         go_index_page()
         log('DONE - ' + self.LOCATION_NAME)
-        log(self.results)
 
     def scan(self):
+        log(self.LOCATION_NAME + ' | ' + 'Scanning all heads...')
         queue = []
         reset = False
 
@@ -323,13 +323,12 @@ class Hydra:
                     if d is None:
                         if is_alive and is_not_focused:
                             if digesting:
-                                print('DIGESTING', name)
+                                log(self.LOCATION_NAME + ' | Digestion head: ' + self._format_name(name))
                                 queue.append({
                                     'name': name,
                                     'reason': 1,
                                     'priority': priority
                                 })
-                                log(self.LOCATION_NAME + ' | Digestion head: ' + self._format_name(name))
                             elif has_priority:
                                 log(self.LOCATION_NAME + ' | Priority head: ' + self._format_name(name))
                                 queue.append({
@@ -345,7 +344,7 @@ class Hydra:
                             log(self.LOCATION_NAME + ' | Saved from digestion by: ' + self._format_name(name))
 
             queue = self._sort_by_priority(queue)
-            print('queue', queue)
+            log(queue)
 
             if len(queue):
                 name = queue[0]['name']
@@ -370,6 +369,7 @@ class Hydra:
 
     def attack(self):
         def hydra_enter(data):
+            log(self.LOCATION_NAME + ' | ' + 'Internal method called - hydra_enter')
             swipes = data['swipes']
             x = data['x']
             y = data['y']
@@ -387,23 +387,22 @@ class Hydra:
 
         def hydra_start():
             while self._while_stage_available():
-
+                log(self.LOCATION_NAME + ' | ' + 'Internal method called - hydra_start')
                 # skips then logic, when all_hydra_screen appears
                 is_certain = self._certain_hydra_or_all_hydra_screens()[0]
                 if is_certain:
 
-                    preset.choose(team_preset)
+                    if 'team_preset' in self.current:
+                        preset.choose(self.current['team_preset'])
 
                     if not pixel_check_new(start_on_auto, mistake=10):
                         click(start_on_auto[0], start_on_auto[1])
 
-                    log('Scanning all heads...')
                     await_click([button_start], timeout=1, mistake=10)
 
                     if pixels_wait([icon_pause], timeout=2, mistake=10)[0]:
                         log(self.LOCATION_NAME + ' | ' + 'Battle just started')
                         self.scan()
-
 
         for i in range(len(self.runs)):
             if 'skip' in self.runs[i] and bool(self.runs[i]['skip']):
@@ -411,13 +410,12 @@ class Hydra:
 
             self.current = self._prepare_run_props(self.runs[i])
             stage = self.current['stage']
-            team_preset = self.current['team_preset']
+            # team_preset = self.current['team_preset']
 
             # damage = self.results[stage]['damage']
             # keys = self.results[stage]['keys']
 
             if stage in HYDRA_DATA:
-
                 screens = self._certain_hydra_or_all_hydra_screens()
 
                 if screens[0]:
@@ -428,6 +426,7 @@ class Hydra:
                     hydra_enter(HYDRA_DATA[stage])
                     hydra_start()
 
+                # depending on the case: saved damage/regroup the team
                 if self._certain_hydra_or_all_hydra_screens()[0]:
                     close_popup()
 
