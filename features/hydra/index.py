@@ -117,6 +117,11 @@ class Hydra:
 
         self.results[stage]['counter'] = self.current['runs_counter']
 
+        if 'results' not in self.results[stage]:
+            self.results[stage]['results'] = []
+        self.results[stage]['results'].append(int_damage)
+
+
         log('Damage Dealt: ' + str(int_damage) + 'M')
         if int_damage >= min_damage:
             log(self.LOCATION_NAME + ' | Dealt Damage is enough')
@@ -168,8 +173,15 @@ class Hydra:
 
     def _while_stage_available(self):
         stage = self.current['stage']
-        return self.current['runs_counter'] < self.runs_limit \
+        can_continue = self.current['runs_counter'] < self.runs_limit \
                and self.results[stage]['damage'] < self.current['min_damage']
+
+        if can_continue:
+            log(self.LOCATION_NAME + ' | Can continue')
+        else:
+            log(self.LOCATION_NAME + " | Can't continue")
+
+        return can_continue
 
     def _certain_hydra_or_all_hydra_screens(self):
         # @TODO
@@ -206,7 +218,7 @@ class Hydra:
             x_stack = stack['x']
             y_stack = stack['y']
             region_stack = [x_stack, y_stack, STACK_FRAME_WIDTH, STACK_FRAME_HEIGHT]
-            digesting_position = find_needle('hydra/hydra_digesting.png', region=region_stack, confidence=.6)
+            digesting_position = find_needle('hydra/hydra_digesting_new.png', region=region_stack, confidence=.6)
 
             current_heads.append({
                 'name': hydra_name,
@@ -279,8 +291,13 @@ class Hydra:
 
             line_1 = f'{key} hydra | {value["keys"]} keys used'
             line_2 = f'{value["damage"]}M dd in {value["counter"]} attempts'
+            line_3 = ''
 
-            res += line_1 + ' | ' + line_2 + '\n'
+            if len(value["results"]):
+                avg = sum(value["results"]) / len(value["results"])
+                line_3 = f'Results: {value["results"]}, Avg: {avg}M'
+
+            res += line_1 + ' | ' + line_2 + ' | ' + line_3 + '\n'
 
         return res
 
@@ -400,7 +417,7 @@ class Hydra:
 
                     await_click([button_start], timeout=1, mistake=10)
 
-                    if pixels_wait([icon_pause], timeout=2, mistake=10)[0]:
+                    if pixels_wait([icon_pause], timeout=2, mistake=10, msg='Pause icon')[0]:
                         log(self.LOCATION_NAME + ' | ' + 'Battle just started')
                         self.scan()
 
@@ -428,6 +445,7 @@ class Hydra:
 
                 # depending on the case: saved damage/regroup the team
                 if self._certain_hydra_or_all_hydra_screens()[0]:
+                    log(self.LOCATION_NAME + " | Checking hydra screen after each iteration")
                     close_popup()
 
     def run(self, props):
