@@ -2,11 +2,14 @@
   "tasks": [
     {
       "name": "dungeon",
-      "enable": 0,
+      "enable": 1,
       "props": {
-        "location": "Sand Devil's Necropolis",
-        "runs": 6,
-        "allow_super_raid": 0
+        "bank": true,
+        "refill": false,
+        "super_raid": false,
+        "locations": [
+          {"id": 6}
+        ]
       }
     },
     {
@@ -68,7 +71,7 @@
             "role": "s"
           },
           {
-            "name": "Maulie Tankard",
+            "name": "Tormin",
             "role": "s"
           },
           {
@@ -89,7 +92,7 @@
           "Lydia the Deathsiren",
           "Pythion"
         ],
-        "refill": 0
+        "refill": 1
       }
     },
     {
@@ -123,15 +126,15 @@
     },
     {
       "name": "hydra",
-      "enable": 1,
+      "enable": 0,
       "props": {
         "runs_limit": 5,
         "runs": [
           {
             "stage": 4,
             "team_preset": 1,
-            "min_damage": 170,
-            "skip": 1,
+            "min_damage": 160,
+            "skip": 0,
             "priority": {
               "head_of_decay": 2,
               "head_of_blight": 1,
@@ -158,8 +161,8 @@
           {
             "stage": 1,
             "team_preset": 3,
-            "min_damage": 200,
-            "skip": 1,
+            "min_damage": 160,
+            "skip": 0,
             "priority": {
               "head_of_decay": 2,
               "head_of_blight": 1,

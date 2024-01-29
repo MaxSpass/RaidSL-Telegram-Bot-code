@@ -230,6 +230,7 @@ def dungeons_scroll(direction='bottom', times=2):
 
 
 def dungeons_replay():
+    sleep(0.5)
     click(500, 480)
     sleep(0.3)
 
@@ -241,6 +242,13 @@ def dungeons_results_finish():
     sleep(0.5)
 
 
+def calculate_win_rate(w, d):
+    t = w + d
+    wr = w * 100 / t
+    wr_str = str(round(wr)) + '%'
+    return wr_str
+
+
 # @TODO Should be fixed ASAP
 def swipe(direction, x1, y1, distance, sleep_after_end=1.5, speed=2):
     # @TODO It does not work perfect
@@ -250,7 +258,9 @@ def swipe(direction, x1, y1, distance, sleep_after_end=1.5, speed=2):
 
     pyautogui.mouseDown()
 
-    if direction == 'bottom':
+    if direction == 'top':
+        pyautogui.moveTo(x1, y1 + distance, speed)
+    elif direction == 'bottom':
         pyautogui.moveTo(x1, y1 - distance, speed)
     elif direction == 'right':
         pyautogui.moveTo(x1 - distance, y1, speed)
@@ -378,6 +388,13 @@ def find_needle_burger():
     return find_needle('burger.jpg')
 
 
+def find_needle_bank_energy(region=None):
+    if not region:
+        region = axis_to_region(220, 32, 790, 68)
+
+    return find_needle('bank_energy.jpg', region)
+
+
 def battles_click():
     battle_button = find_needle_battles()
     if battle_button is not None:
@@ -432,19 +449,9 @@ def find(arr, predicate):
     return None, None
 
 
-def image_to_text(image):
-    # image = cv2.medianBlur(image, 5)
-
-    return [
-        pytesseract.image_to_string(image, config='--psm 1 --oem 3'),
-        pytesseract.image_to_string(image, config='--psm 3 --oem 3'),
-        pytesseract.image_to_string(image, config='--psm 4 --oem 3'),
-        pytesseract.image_to_string(image, config='--psm 7 --oem 3'),
-        pytesseract.image_to_string(image, config='--psm 8 --oem 3'),
-        pytesseract.image_to_string(image, config='--psm 10 --oem 3'),
-    ]
-
-    # return pytesseract.image_to_string(image, config='--psm 8 --oem 3 -c tessedit_char_whitelist=0123456789')
+def check_image(region):
+    screenshot = pyautogui.screenshot(region=region)
+    show_pyautogui_image(screenshot)
 
 
 def archive_list(input_list, pattern):
@@ -467,8 +474,6 @@ def pop_random_element(input_list):
     random_element = input_list.pop(random_index)  # Remove and get the element at that index
     return random_element
 
-def to_int(s):
-    return 1
 
 def get_higher_occurrence(arr):
     if not len(arr):
@@ -477,6 +482,8 @@ def get_higher_occurrence(arr):
 
 
 def parse_dealt_damage(variants):
+    log(variants)
+
     # only digits
     def _parse(s):
         arr = re.split(r'\D+', s)
@@ -500,26 +507,53 @@ def parse_dealt_damage(variants):
 
     return list(map(lambda x: _parse(x), variants))
 
-def parse_stage_energy_cost(variants):
+
+def parse_energy_cost(variants):
     extract_numbers = lambda x: [float(match.group()) for match in re.finditer(r'\d+\.?\d*', str(x))]
-    numbers_only = [num for x in variants for num in extract_numbers(x)]
-    return numbers_only
+    res = [num for x in variants for num in extract_numbers(x)]
+    return res
 
 
-def read_text(configs, region, timeout=0.1, parser=None):
+def parse_energy_bank(variants):
+    log(variants)
+    extract_first_number = lambda x: int(re.search(r'(?<!\d)\d+(?=/\d+)', x.replace(',', '')).group()) if re.search(
+        r'(?<!\d)\d+/\d+', x) else None
+
+    # extracting Number elements
+    res = list(map(extract_first_number, variants))
+    # removing None elements
+    res = list(filter(lambda x: x is not None, res))
+    return res
+
+
+def read_text(configs, region, timeout=0.1, parser=None, update_screenshot=True):
     res = []
+    screenshot = None
+
+    if not update_screenshot:
+        screenshot = pyautogui.screenshot(region=region)
 
     for i in range(len(configs)):
+        if update_screenshot:
+            screenshot = pyautogui.screenshot(region=region)
+
         config = configs[i]
-        screenshot = pyautogui.screenshot(region=region)
         image = screenshot_to_image(screenshot)
+        height, width = image.shape[:2]
+        # greyscale
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        # resize
+        image = cv2.resize(image, (round(width * 2), round(height * 2)), interpolation=cv2.INTER_AREA)
+        # cv2.imshow('Matches', image)
+        # cv2.waitKey()
         text = pytesseract.image_to_string(image, config=config)
-        res.append(text)
+        res.append(text.strip())
         sleep(timeout)
 
     if parser:
         res = parser(res)
+
+    log(res)
 
     return get_higher_occurrence(res)
 
@@ -565,4 +599,63 @@ def read_energy_cost():
         '--psm 13 --oem 3',
     ]
 
-    return read_text(configs=configs, region=region, parser=parse_stage_energy_cost)
+    return read_text(configs=configs, region=region, parser=parse_energy_cost)
+
+
+def read_energy_bank(region=None):
+    log('Computing energy bank...')
+    # returns energy cost
+
+    if not region:
+        # index page
+        # region = axis_to_region(332, 38, 414, 56)
+        region = axis_to_region(332, 30, 414, 64)
+
+        # in dungeon (does not work well)
+        # region = axis_to_region(480, 38, 590, 56)
+
+    configs = [
+        # '--psm 1 --oem 3',
+        # '--psm 3 --oem 3',
+        # '--psm 4 --oem 3',
+        # '--psm 5 --oem 3',
+        '--psm 6 --oem 3',
+        '--psm 7 --oem 3',
+        '--psm 8 --oem 3',
+        '--psm 9 --oem 3',
+        '--psm 10 --oem 3',
+        # '--psm 11 --oem 3',
+        # '--psm 12 --oem 3',
+        # '--psm 13 --oem 3',
+    ]
+
+    return read_text(configs=configs, region=region, parser=parse_energy_bank)
+
+
+def generic_bank_energy():
+    # @TODO In progress
+    ICON_WIDTH = 17
+    ICON_HEIGHT = 22
+    CAPTURE_WIDTH = 100
+    CAPTURE_HEIGHT = 26
+    position = find_needle_bank_energy()
+    if position:
+        x_p = position[0]
+        y_p = position[1]
+        x_offset = round(ICON_WIDTH / 2)
+        y_offset = round(ICON_HEIGHT / 2)
+
+        x = x_p - CAPTURE_WIDTH + x_offset
+        y = y_p - CAPTURE_HEIGHT + y_offset
+
+        # x2 = x1 + CAPTURE_WIDTH
+        # y2 = y_p + y_offset
+
+        region = [x, y, x + CAPTURE_WIDTH, y + CAPTURE_HEIGHT]
+
+        check_image(region)
+
+        return read_energy_bank(region=region)
+
+    else:
+        return 0

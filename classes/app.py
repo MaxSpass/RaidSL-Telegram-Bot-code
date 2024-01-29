@@ -5,7 +5,7 @@ from features.arena.index import *
 from features.demon_lord.index import *
 from features.faction_wars.index import *
 from features.iron_twins_fortress.index import *
-from features.dungeons.core import *
+from features.dungeons.index import *
 from features.hydra.index import *
 import atexit
 import signal
@@ -22,6 +22,7 @@ demon_lord = DemonLord()
 iron_twins = IronTwins()
 faction_wars = FactionWars()
 hydra = Hydra()
+dungeons = Dungeons()
 
 
 def prepare_window():
@@ -134,9 +135,10 @@ class App:
             arena_classic,
             arena_tag,
             demon_lord,
-            iron_twins,
-            faction_wars,
             hydra,
+            dungeons,
+            faction_wars,
+            iron_twins,
             rewards,
         ]))
 
@@ -160,6 +162,8 @@ class App:
         prepare_window()
 
     def run(self):
+        _dungeons = []
+
         log('Executing automatic scenarios...')
         start_time = datetime.now()
 
@@ -191,10 +195,7 @@ class App:
             elif ti_name == 'hydra':
                 hydra.run(props=ti_props)
             elif ti_name == 'dungeon':
-                # @TODO Refactor
-                DungeonCore(ti_props['location'], [int(ti_props['runs'])], props={
-                    'allow_super_raid': bool(ti_props['allow_super_raid'])
-                }).run()
+                dungeons.run(props=ti_props)
 
             # Looping: After Each List
             for j in range(len(self.config['after_each'])):
