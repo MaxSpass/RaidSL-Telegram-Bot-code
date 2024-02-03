@@ -100,7 +100,7 @@ CRYPT_SLIDES = [
 class FactionWars():
     LOCATION_NAME = 'Faction Wars'
 
-    def __init__(self):
+    def __init__(self, props=None):
         self.results = []
         self.slide_first = np.array(CRYPT_SLIDES)[:8]
         self.slide_second = np.array(CRYPT_SLIDES)[8:]
@@ -157,6 +157,8 @@ class FactionWars():
                 runs -= 1
 
     def enter(self):
+        go_index_page()
+        sleep(1)
         go_index_page()
 
         click_on_progress_info()
@@ -226,7 +228,7 @@ class FactionWars():
 
         return s
 
-    def run(self):
+    def run(self, props=None):
         self.enter()
         self.attack()
         self.finish()

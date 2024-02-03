@@ -14,16 +14,27 @@ import pytesseract
 
 CONFIG_PATH = "config.json"
 
-rewards = Rewards()
 arena_live = ArenaLive()
 arena_classic = ArenaClassic()
 arena_tag = ArenaTag()
 demon_lord = DemonLord()
-iron_twins = IronTwins()
-faction_wars = FactionWars()
 hydra = Hydra()
 dungeons = Dungeons()
+faction_wars = FactionWars()
+iron_twins = IronTwins()
+rewards = Rewards()
 
+INSTANCES_MAP = {
+   'arena_live': ArenaLive,
+   'arena_classic': ArenaClassic,
+   'arena_tag': ArenaTag,
+   'demon_lord': DemonLord,
+   'hydra': Hydra,
+   'dungeon': Dungeons,
+   'faction_wars': FactionWars,
+   'iron_twins': IronTwins,
+   'rewards': Rewards,
+}
 
 def prepare_window():
     WINDOW_SIZE = [920, 540]
@@ -72,13 +83,18 @@ def prepare_window():
 class App:
     def __init__(self):
         self.config = None
+        self.entries = {}
         self.read_config()
 
     def _prepare_config(self, config_json):
         _config = {
+            'start_immediate': True,
             'tasks': [],
             'after_each': []
         }
+
+        if 'start_immediate' in config_json:
+            _config['start_immediate'] = bool(config_json['start_immediate'])
 
         # Tasks
         tasks_length = len(config_json['tasks'])
@@ -86,12 +102,19 @@ class App:
             for i in range(tasks_length):
                 task = config_json['tasks'][i]
                 if 'enable' not in task or bool(task['enable']):
-                    task_d = {
-                        'name': task['name']
-                    }
+                    _name = task['name'].lower()
+                    _props = task['props'] if 'props' in task else None
 
-                    if 'props' in task:
-                        task_d['props'] = task['props']
+                    task_d = {'name': _name, 'props': _props}
+
+                    # task_d['props'] = task['props']
+
+                    # accumulated instances
+                    if _name in INSTANCES_MAP and _name not in self.entries:
+                        # @TODO should take from memory later on
+                        self.entries[_name] = {
+                            'instance': INSTANCES_MAP[_name](_props),
+                        }
 
                     _config['tasks'].append(task_d)
 
@@ -106,14 +129,13 @@ class App:
                             'name': key
                         })
 
-        # log(_config)
         return _config
 
     def validation(self):
         # primitive validation
         currentYear = datetime.now().year
         currentMonth = datetime.now().month
-        return currentYear == 2024 and (currentMonth <= 2)
+        return currentYear == 2024 and (currentMonth <= 3)
 
     def load_config(self, config):
         self.config = self._prepare_config(config)
@@ -130,25 +152,25 @@ class App:
             log('An error occurred while reading ' + CONFIG_PATH + ' file')
 
     def exit(self):
-        entries = list(map(lambda x: x.report(), [
-            arena_live,
-            arena_classic,
-            arena_tag,
-            demon_lord,
-            hydra,
-            dungeons,
-            faction_wars,
-            iron_twins,
-            rewards,
-        ]))
+        self.report()
 
-        if entries.count(None) < len(entries):
-            log('================   Report   ================')
-            for i in range(len(entries)):
-                report = entries[i]
+    def report(self):
+        res = None
+        instances = list(map(lambda x: x['instance'], self.entries.values()))
+        reports = list(map(lambda x: x.report(), instances))
+
+        if reports.count(None) < len(reports):
+            res = '\n================   Report   ================\n'
+            for i in range(len(reports)):
+                report = reports[i]
                 if report:
-                    log(report)
-            log('================   Report   ================')
+                    res += f'{report}\n'
+            res += '================   Report   ================\n'
+
+        if res:
+            log(res)
+
+        return res
 
     def kill(self, *args):
         log('App is terminated')
@@ -156,12 +178,24 @@ class App:
         sys.exit(0)
 
     def start(self):
-        atexit.register(self.exit)
+        # atexit.register(self.report)
         signal.signal(signal.SIGINT, self.kill)
         signal.signal(signal.SIGTERM, self.kill)
-        prepare_window()
+        # prepare_window()
+        return 0
 
-    def run(self):
+    def prepare(self):
+        prepare_window()
+        return 1
+
+    def get_entry(self, entry_name, prepare=False):
+        # if prepare:
+        #     self.prepare()
+
+        return self.entries[entry_name]
+
+    def run(self, *args):
+        self.prepare()
         _dungeons = []
 
         log('Executing automatic scenarios...')
@@ -169,33 +203,13 @@ class App:
 
         # Looping: Tasks List
         for i in range(len(self.config['tasks'])):
-            # Task Item
-            ti = self.config['tasks'][i]
-            ti_name = ti['name'].lower()
-            ti_props = None
+            task = self.config['tasks'][i]
+            task_name = task['name'].lower()
+            log('BOT is starting the TASK: ' + task_name.upper())
 
-            if 'props' in ti:
-                ti_props = ti['props']
-
-            log('BOT is starting the TASK: ' + ti_name.upper())
-
-            # @TODO Refactor
-            if ti_name == 'arena_live':
-                arena_live.run(props=ti_props)
-            elif ti_name == 'arena_classic':
-                arena_classic.run(props=ti_props)
-            elif ti_name == 'arena_tag':
-                arena_tag.run(props=ti_props)
-            elif ti_name == 'demon_lord':
-                demon_lord.run()
-            elif ti_name == 'faction_wars':
-                faction_wars.run()
-            elif ti_name == 'iron_twins':
-                iron_twins.run()
-            elif ti_name == 'hydra':
-                hydra.run(props=ti_props)
-            elif ti_name == 'dungeon':
-                dungeons.run(props=ti_props)
+            # Run instance
+            instance = self.get_entry(task_name)['instance']
+            instance.run()
 
             # Looping: After Each List
             for j in range(len(self.config['after_each'])):
@@ -209,12 +223,12 @@ class App:
                 if aei_name == 'check_rewards':
                     rewards.run()
 
-        # faction_wars()
-        # iron_twins_fortress()
-
-        log('All scenarios are done!')
-        log('Duration: {}'.format(datetime.now() - start_time))
-
         # @TODO Test
-        self.exit()
-        self.kill()
+        self.report()
+
+        duration = 'Duration: {}'.format(datetime.now() - start_time)
+        log('All scenarios are done!')
+
+        # self.kill()
+
+        return duration

@@ -1,17 +1,6 @@
 {
+  "start_immediate": 0,
   "tasks": [
-    {
-      "name": "dungeon",
-      "enable": 1,
-      "props": {
-        "bank": true,
-        "refill": false,
-        "super_raid": false,
-        "locations": [
-          {"id": 6}
-        ]
-      }
-    },
     {
       "name": "arena_live",
       "enable": 0,
@@ -97,36 +86,41 @@
     },
     {
       "name": "arena_classic",
-      "enable": 0,
+      "enable": 1,
       "props": {
         "refill": 0
       }
     },
     {
       "name": "arena_tag",
-      "enable": 0,
+      "enable": 1,
       "props": {
         "refill": 0
       }
     },
     {
       "name": "iron_twins",
-      "enable": 0
+      "enable": 1
     },
     {
       "name": "faction_wars",
-      "enable": 0
+      "enable": 1
     },
     {
-      "name": "arena_tag",
-      "enable": 0,
+      "name": "dungeon",
+      "enable": 1,
       "props": {
-        "refill": 0
+        "bank": 2000,
+        "refill": 1,
+        "super_raid": false,
+        "locations": [
+          {"id": 3}
+        ]
       }
     },
     {
       "name": "hydra",
-      "enable": 0,
+      "enable": 1,
       "props": {
         "runs_limit": 5,
         "runs": [
@@ -177,12 +171,9 @@
     },
     {
       "name": "demon_lord",
-      "enable": 0,
+      "enable": 1,
       "props": {
-        "stages": [
-          6,
-          5
-        ]
+        "stages": [6, 5, 4]
       }
     }
   ],

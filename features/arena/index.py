@@ -58,18 +58,6 @@ class ArenaFactory:
                 self.refill = int(props['refill'])
 
     def _refresh_arena(self):
-        # @TODO In progress
-        # x_refill = self.refill_coordinates[0]
-        # y_refill = self.refill_coordinates[1]
-        # click(x_refill, y_refill)
-        #
-        # sleep(1)
-        # ruby_button = find_needle_refill_ruby()
-        # if ruby_button is not None and self.refill == 0:
-        #     self.terminate = True
-        # close_popup()
-
-        # not self.terminate
         if pixels_wait([button_refresh], msg='Refresh button', mistake=10)[0]:
             log('Refreshing...')
             click(817, 133)
@@ -81,6 +69,8 @@ class ArenaFactory:
             sleep(3)
 
     def enter(self):
+        go_index_page()
+        sleep(1)
         go_index_page()
 
         click_on_progress_info()
@@ -174,7 +164,6 @@ class ArenaFactory:
 
             # checking - is an enemy already attacked
             is_not_attacked = len(results_local) - 1 < i
-            print('is_not_attacked: ' + str(is_not_attacked))
             if pixel_check_new([x, y, [187, 130, 5]]) and is_not_attacked:
                 log(self.name + ' | Attack')
                 # pyautogui.moveTo(x, y, 1)
@@ -186,7 +175,7 @@ class ArenaFactory:
                     click_on_battle()
 
                 if self.terminate:
-                    log('break')
+                    log('terminate')
                     break
 
                 click_on_start()
@@ -222,6 +211,9 @@ class ArenaFactory:
         self._show_results(self._get_last_results())
 
     def run(self, props=None):
+        # self.terminate = False for further executions
+        self.terminate = False
+
         self._apply_props(props)
         self.enter()
 
@@ -248,7 +240,7 @@ class ArenaFactory:
 
 
 class ArenaClassic(ArenaFactory):
-    def __init__(self):
+    def __init__(self, props=None):
         ArenaFactory.__init__(
             self,
             name='Classic Arena',
@@ -261,7 +253,7 @@ class ArenaClassic(ArenaFactory):
 
 
 class ArenaTag(ArenaFactory):
-    def __init__(self):
+    def __init__(self, props=None):
         ArenaFactory.__init__(
             self,
             name='Tag Arena',

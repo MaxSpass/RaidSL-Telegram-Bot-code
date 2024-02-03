@@ -10,7 +10,7 @@ DEMON_LORD_REWARD_COORDINATES = {
     6: (580, 380),
 }
 
-
+# @TODO checking for a 'refill'
 class DemonLord:
     def __init__(self, props=None):
         self.results = {
@@ -24,6 +24,8 @@ class DemonLord:
                 self.stages = props['stages']
 
     def enter(self):
+        go_index_page()
+        sleep(1)
         go_index_page()
 
         # moving to the Demon Lord
@@ -112,7 +114,7 @@ class DemonLord:
 
         return s
 
-    def run(self):
+    def run(self, props=None):
         self.enter()
         self.obtain()
         self.attack()

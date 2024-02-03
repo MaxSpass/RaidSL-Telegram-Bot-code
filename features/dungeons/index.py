@@ -109,6 +109,7 @@ class Dungeons:
 
     DUNGEON_DIFFICULTY_NORMAL = 'normal'
     DUNGEON_DIFFICULTY_HARD = 'hard'
+    DUNGEON_BANK_MIN_LIMIT = 8
     DUNGEON_DIFFICULTY_DEFAULT = DUNGEON_DIFFICULTY_HARD
     DUNGEON_SUPER_RAID_DEFAULT = False
     DIFFICULTIES = {
@@ -120,6 +121,11 @@ class Dungeons:
         self.dungeons = []
         self.results = {}
         self.current = None
+        self.terminate = False
+
+        self.bank = 0
+        self.refill = 0
+        self.super_raid = self.DUNGEON_SUPER_RAID_DEFAULT
 
         self._apply_props(props)
 
@@ -133,13 +139,20 @@ class Dungeons:
         if props is not None:
             length = len(props['locations'])
 
-            self.bank = int(props['bank']) if 'bank' in props and not bool(props['bank']) else read_energy_bank()
-            self.refill = bool(props['refill']) if 'refill' and bool(props['refill']) in props else False
-            self.super_raid = bool(props['super_raid']) \
-                if 'super_raid' and bool(props['super_raid']) in props\
-                else self.DUNGEON_SUPER_RAID_DEFAULT
+            self.bank = int(props['bank']) if 'bank' in props else read_energy_bank()
+            if self.bank is None:
+                self.bank = 0
 
-            self._log(f'Bank: {self.bank}')
+            if self.bank < self.DUNGEON_BANK_MIN_LIMIT:
+                self.terminate = True
+                self._log(f"Bank is critically low")
+                return
+
+            if 'refill' in props:
+                self.refill = int(props['refill'])
+
+            if 'super_raid' in props:
+                self.super_raid = bool(props['super_raid'])
 
             available_energy = self.bank
 
@@ -172,15 +185,15 @@ class Dungeons:
                 if available_energy > 0:
                     # calculating energy for 'not defined energy' locations
                     no_energy_quantity = len(list(filter(lambda x: 'energy' not in x, self.dungeons)))
-                    if no_energy_quantity > 0:
-                        energy_for_each = round(available_energy / no_energy_quantity)
+                    if no_energy_quantity:
+                        energy_for_each = round(available_energy / no_energy_quantity) if available_energy > 0 else 0
                         for i in range(len(self.dungeons)):
                             _d = self.dungeons[i]
                             if 'energy' not in self.dungeons[i]:
                                 self.dungeons[i]['energy'] = energy_for_each
 
-        for i in range(len(self.dungeons)):
-            print(self.dungeons[i])
+        # for i in range(len(self.dungeons)):
+        #     print(self.dungeons[i])
 
     def _initialize(self, dungeon):
         self.current = dungeon
@@ -195,7 +208,7 @@ class Dungeons:
         return (self.results[_id]['victory'] + self.results[_id]['defeat']) == 0
 
     def _able_attacking(self, cost):
-        return self.current['energy'] >= cost or self.refill
+        return self.current['energy'] >= cost
 
     def _save_result(self, condition):
         _id = self.current['id']
@@ -264,8 +277,10 @@ class Dungeons:
             self._select_difficulty(self.current['difficulty'])
 
         # @TODO Works with the last stage/floor only
-        # click last floor
-        click(850, 475)
+        # click last floor @TODO Temp commented
+        # click(850, 475)
+
+        click(850, 375)
         sleep(.5)
 
         # @TODO validate
@@ -286,8 +301,9 @@ class Dungeons:
 
         if ruby_button is not None:
             self._log('Free coins are NOT available')
-            if self.refill:
+            if self.refill < 0:
                 await_click([self.REFILL_PAID], mistake=10)
+                self.refill -= 1
                 self._start_battle()
             else:
                 self._log('No more refill')
@@ -323,28 +339,27 @@ class Dungeons:
 
         return res
 
-
     def run(self, props=None):
         if props is not None:
             self._apply_props(props)
+            self._log(f'Bank: {self.bank}')
 
-        # return
+        if not self.terminate:
+            for i in range(len(self.dungeons)):
+                self._initialize(self.dungeons[i])
+                self._log(f"Starting {self.current['name']}")
+                self.enter()
 
-        for i in range(len(self.dungeons)):
-            self._initialize(self.dungeons[i])
-            self._log(f"Starting {self.current['name']}")
-            self.enter()
+                cost = read_energy_cost()
+                self._log(f'Energy cost: {cost}')
 
-            cost = read_energy_cost()
-            self._log(f'Energy cost: {cost}')
+                while self._able_attacking(cost):
+                    self._log('Start battle')
+                    self.attack()
+                    # @TODO Validate
+                    # decreasing energy of the certain Dungeon
+                    self.current['energy'] -= cost
 
-            while self._able_attacking(cost):
-                self._log('Start battle')
-                self.attack()
-                # @TODO Validate
-                # decreasing energy of the certain Dungeon
-                self.current['energy'] -= cost
-
-            self._exit_location()
+                self._exit_location()
 
         self.finish()

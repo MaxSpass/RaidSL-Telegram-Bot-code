@@ -121,7 +121,6 @@ class Hydra:
             self.results[stage]['results'] = []
         self.results[stage]['results'].append(int_damage)
 
-
         log('Damage Dealt: ' + str(int_damage) + 'M')
         if int_damage >= min_damage:
             log(self.LOCATION_NAME + ' | Dealt Damage is enough')
@@ -174,7 +173,7 @@ class Hydra:
     def _while_stage_available(self):
         stage = self.current['stage']
         can_continue = self.current['runs_counter'] < self.runs_limit \
-               and self.results[stage]['damage'] < self.current['min_damage']
+                       and self.results[stage]['damage'] < self.current['min_damage']
 
         if can_continue:
             log(self.LOCATION_NAME + ' | Can continue')
@@ -278,6 +277,9 @@ class Hydra:
 
     def enter(self):
         go_index_page()
+        sleep(1)
+        go_index_page()
+
         click_on_progress_info()
         # Hydra Keys
         click(600, 340)

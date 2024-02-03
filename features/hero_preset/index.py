@@ -19,13 +19,15 @@ rgb_active_team = [71, 223, 255]
 
 def get_presets(x2, y2):
     return capture_by_source('images/needles/presets.jpg', axis_to_region(0, 0, x2, y2),
-                             confidence=.8)
+                             confidence=.7, grayscale=True)
 
 class HeroPreset():
     def __init__(self):
         self.is_presets_opened = False
 
     def open(self, x2=900, y2=520):
+        # avoid sudden notification in this area
+        sleep(7)
         # clan boss = x2:150, y2:350
         presets_position = get_presets(x2, y2)
         if presets_position is not None:
