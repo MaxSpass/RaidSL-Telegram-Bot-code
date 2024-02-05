@@ -7,23 +7,14 @@ from features.faction_wars.index import *
 from features.iron_twins_fortress.index import *
 from features.dungeons.index import *
 from features.hydra.index import *
+from io import BytesIO
 import atexit
 import signal
 import sys
 import pytesseract
 
 CONFIG_PATH = "config.json"
-
-arena_live = ArenaLive()
-arena_classic = ArenaClassic()
-arena_tag = ArenaTag()
-demon_lord = DemonLord()
-hydra = Hydra()
-dungeons = Dungeons()
-faction_wars = FactionWars()
-iron_twins = IronTwins()
-rewards = Rewards()
-
+WINDOW_SIZE = [920, 540]
 INSTANCES_MAP = {
    'arena_live': ArenaLive,
    'arena_classic': ArenaClassic,
@@ -37,7 +28,6 @@ INSTANCES_MAP = {
 }
 
 def prepare_window():
-    WINDOW_SIZE = [920, 540]
     BURGER_POSITION = [15, 282]
     GAME_WINDOW = 'Raid: Shadow Legends'
     is_prepared = False
@@ -96,6 +86,9 @@ class App:
         if 'start_immediate' in config_json:
             _config['start_immediate'] = bool(config_json['start_immediate'])
 
+        if 'telegram_token' in config_json:
+            _config['telegram_token'] = str(config_json['telegram_token'])
+
         # Tasks
         tasks_length = len(config_json['tasks'])
         if tasks_length:
@@ -118,16 +111,24 @@ class App:
 
                     _config['tasks'].append(task_d)
 
+            # rewards init
+            self.entries['rewards'] = {
+                'instance': INSTANCES_MAP['rewards']()
+            }
+
         # After each tasks
-        after_each_length = len(config_json['after_each'])
-        if after_each_length:
-            for i in range(after_each_length):
-                task = config_json['after_each'][i]
-                for key, val in task.items():
-                    if bool(val):
-                        _config['after_each'].append({
-                            'name': key
-                        })
+        if 'after_each' in config_json:
+            _config['after_each'] = config_json['after_each']
+
+        # after_each_length = len(config_json['after_each'])
+        # if after_each_length:
+        #     for i in range(after_each_length):
+        #         task = config_json['after_each'][i]
+        #         for key, val in task.items():
+        #             if bool(val):
+        #                 _config['after_each'].append({
+        #                     'name': key
+        #                 })
 
         return _config
 
@@ -160,12 +161,11 @@ class App:
         reports = list(map(lambda x: x.report(), instances))
 
         if reports.count(None) < len(reports):
-            res = '\n================   Report   ================\n'
+            res = ''
             for i in range(len(reports)):
                 report = reports[i]
                 if report:
                     res += f'{report}\n'
-            res += '================   Report   ================\n'
 
         if res:
             log(res)
@@ -176,6 +176,37 @@ class App:
         log('App is terminated')
         input('Confirm by pressing any key')
         sys.exit(0)
+
+    def relogin(self):
+        # limit in seconds
+        limit = 120
+        timeout = 3
+        counter = 0
+
+        click(425, 300)
+        time.sleep(2)
+
+        burger = find_needle_burger()
+        while burger is None and counter < limit:
+            time.sleep(timeout)
+            counter += timeout
+            burger = find_needle_burger()
+
+        if burger:
+            return True
+        else:
+            error = "Can't relogin"
+            log(error)
+
+    def screen(self):
+        screenshot = pyautogui.screenshot(region=[0, 0, WINDOW_SIZE[0], WINDOW_SIZE[1]])
+
+        # Convert the screenshot to bytes
+        image_bytes = BytesIO()
+        screenshot.save(image_bytes, format='PNG')
+        image_bytes.seek(0)
+
+        return image_bytes
 
     def start(self):
         # atexit.register(self.report)
@@ -194,7 +225,7 @@ class App:
 
         return self.entries[entry_name]
 
-    def run(self, *args):
+    def run(self):
         self.prepare()
         _dungeons = []
 
@@ -208,22 +239,21 @@ class App:
             log('BOT is starting the TASK: ' + task_name.upper())
 
             # Run instance
-            instance = self.get_entry(task_name)['instance']
-            instance.run()
+            instance_task = self.get_entry(task_name)['instance']
+            instance_task.run()
 
             # Looping: After Each List
-            for j in range(len(self.config['after_each'])):
-                # After Each Item
-                aei = self.config['after_each'][j]
-                aei_name = aei['name'].lower()
+            if 'after_each' in self.config:
+                for j in range(len(self.config['after_each'])):
+                    # After Each Item
+                    aei = self.config['after_each'][j]
+                    aei_name = aei.lower()
 
-                log('BOT is starting the "after_each" action: ' + aei_name.upper())
+                    log('BOT is starting the "after_each" action: ' + aei_name.upper())
 
-                # @TODO Refactor
-                if aei_name == 'check_rewards':
-                    rewards.run()
+                    instance_after_each = self.get_entry(aei_name)['instance']
+                    instance_after_each.run()
 
-        # @TODO Test
         self.report()
 
         duration = 'Duration: {}'.format(datetime.now() - start_time)

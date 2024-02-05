@@ -18,10 +18,19 @@ class DemonLord:
             'attacked': []
         }
         self.stages = DEFAULT_STAGES
+        self.terminate = False
+        self.completed = False
 
         if props is not None:
             if 'stages' in props:
                 self.stages = props['stages']
+
+    def _check_refill(self):
+        sleep(1)
+        ruby_button = find_needle_refill_ruby()
+
+        if ruby_button is not None:
+            self.terminate = True
 
     def enter(self):
         go_index_page()
@@ -72,20 +81,24 @@ class DemonLord:
     def attack(self):
         global DEMON_LORD_REWARD_COORDINATES
         # attack
-        for i in range(len(self.stages)):
+        while len(self.stages) and not self.terminate:
             # zero-indexed Demon Lord level is always next
             stage = self.stages[0]
             x = DEMON_LORD_REWARD_COORDINATES[stage][0]
             y = DEMON_LORD_REWARD_COORDINATES[stage][1]
             # click on the certain demon lord
             click(x, y)
-            # pyautogui.moveTo(x, y, 1)
-            # DEFAULT_STAGES.remove(lvl)
             sleep(.5)
-            # prepare to battle
+            # click on battle
             click(860, 480)
             sleep(.5)
-            # start battle
+
+            # terminates the loop
+            self._check_refill()
+            if self.terminate:
+                break
+
+            # click on start
             click(860, 480)
             if pixel_wait('End of the battle with Demon Lord: ' + str(stage) + ' level', 20, 112, [255, 255, 255], 3):
                 # return to the demon lord menu
@@ -115,6 +128,8 @@ class DemonLord:
         return s
 
     def run(self, props=None):
+        self.terminate = False
+
         self.enter()
         self.obtain()
         self.attack()

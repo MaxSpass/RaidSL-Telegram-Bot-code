@@ -40,6 +40,7 @@ class ArenaFactory:
         self.refill_coordinates = refill_coordinates
 
         self.refill = PAID_REFILL_LIMIT
+        self.initial_refresh = False
         self.max_swipe = 0
         self.results = []
         self.terminate = False
@@ -52,21 +53,22 @@ class ArenaFactory:
             if swipes > self.max_swipe:
                 self.max_swipe = swipes
 
-    def _apply_props(self, props):
+    def _apply_props(self, props=None):
         if props is not None:
             if 'refill' in props:
                 self.refill = int(props['refill'])
+            if 'initial_refresh' in props:
+                self.initial_refresh = bool(props['initial_refresh'])
 
     def _refresh_arena(self):
-        if pixels_wait([button_refresh], msg='Refresh button', mistake=10)[0]:
-            log('Refreshing...')
-            click(817, 133)
-            sleep(1)
-            for index in range(2):
-                pyautogui.moveTo(560, 185, .5, random_easying())
-                pyautogui.dragTo(560, 510, duration=.4)
-                sleep(1.5)
-            sleep(3)
+        log('Refreshing...')
+        await_click([button_refresh], msg='Refresh button', mistake=10)
+        sleep(1)
+        for index in range(2):
+            pyautogui.moveTo(560, 185, .5, random_easying())
+            pyautogui.dragTo(560, 510, duration=.4)
+            sleep(1.5)
+        sleep(3)
 
     def enter(self):
         go_index_page()
@@ -214,16 +216,19 @@ class ArenaFactory:
         # self.terminate = False for further executions
         self.terminate = False
 
-        self._apply_props(props)
+        if props is not None:
+            self._apply_props(props)
+
         self.enter()
 
         # refreshes arena, when it's a first time calling
         # if not len(self.results):
         #     self._refresh_arena()
 
+        if self.initial_refresh:
+            self._refresh_arena()
+
         while self.terminate is False:
-            # log('Test | ' + str(self.refill))
-            # break
             self.attack()
 
             last_results = self._get_last_results()
@@ -248,7 +253,8 @@ class ArenaClassic(ArenaFactory):
             item_height=CLASSIC_ITEM_HEIGHT,
             button_locations=CLASSIC_BUTTON_LOCATIONS,
             item_locations=CLASSIC_ITEM_LOCATIONS,
-            refill_coordinates=CLASSIC_COINS_REFILL
+            refill_coordinates=CLASSIC_COINS_REFILL,
+            props=props
         )
 
 
@@ -261,5 +267,6 @@ class ArenaTag(ArenaFactory):
             item_height=TAG_ITEM_HEIGHT,
             button_locations=TAG_BUTTON_LOCATIONS,
             item_locations=TAG_ITEM_LOCATIONS,
-            refill_coordinates=TAG_COINS_REFILL
+            refill_coordinates=TAG_COINS_REFILL,
+            props=props
         )

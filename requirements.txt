@@ -34,3 +34,4 @@ np==1.0.2
 more_itertools==9.1.0
 pause==0.3
 python-telegram-bot==13.7
+keyboard==0.13.5

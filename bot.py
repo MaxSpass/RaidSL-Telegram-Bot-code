@@ -6,38 +6,36 @@ from PIL import Image
 from io import BytesIO
 from helpers.common import log
 
+
 class TelegramBOT:
-    # Define your token here @TODO should be taken from .env
-    TOKEN = '6722044970:AAGZ5EtkQPVFpSzHqhKeAiCf3sXD-PRX6_w'
-
     def __init__(self, props=None):
-        self.commands = [
-            {
-                'name': 'start',
-                'description': 'Start the bot',
-                'handler': {'type': 'message', 'callback': self._start}
-            },
-            {
-                'name': 'help',
-                'description': 'Show available commands',
-                'handler': {'type': 'message', 'callback': self._help}
-            },
-            {
-                'name': 'screen',
-                'description': 'Capture and send a screenshot',
-                'handler': {'type': 'screenshot', 'callback': lambda *args: self._screen(*args)}
-            },
-        ]
+        self.token = props['token'] if 'token' in props and bool(props['token']) else None
 
-        # Create the Updater and pass it your bot's token
-        self.updater = Updater(token=self.TOKEN)
-        # Get the dispatcher to register handlers
-        self.dp = self.updater.dispatcher
-        # Register the /start command
-        for i in range(len(self.commands)):
-            name = self.commands[i]['name']
-            handler = self.commands[i]['handler']['callback']
-            self.dp.add_handler(CommandHandler(name, handler))
+        if not self.token:
+            raise 'No telegram token provided'
+        else:
+            self.commands = [
+                {
+                    'name': 'start',
+                    'description': 'Start the bot',
+                    'handler': {'type': 'message', 'callback': self._start}
+                },
+                {
+                    'name': 'help',
+                    'description': 'Show available commands',
+                    'handler': {'type': 'message', 'callback': self._help}
+                },
+            ]
+
+            # Create the Updater and pass it your bot's token
+            self.updater = Updater(token=self.token)
+            # Get the dispatcher to register handlers
+            self.dp = self.updater.dispatcher
+            # Register the /start command
+            for i in range(len(self.commands)):
+                name = self.commands[i]['name']
+                handler = self.commands[i]['handler']['callback']
+                self.dp.add_handler(CommandHandler(name, handler))
 
     def _all_commands(self):
         commands = list(map(lambda x: f"/{x['name']} - {x['description']}", self.commands))
@@ -51,38 +49,23 @@ class TelegramBOT:
         message = self._all_commands()
         update.message.reply_text(message)
 
-    # @TODO Important refactoring in order to make 'screen' function working in async way
-    def _screen(self, update: Updater, context: CallbackContext) -> None:
-        screenshot = pyautogui.screenshot(region=[0, 0, 920, 540])
-
-        # Convert the screenshot to bytes
-        image_bytes = BytesIO()
-        screenshot.save(image_bytes, format='PNG')
-        image_bytes.seek(0)
-
-        context.bot.send_photo(chat_id=update.message.chat_id, photo=image_bytes)
-
-
     def add(self, obj):
         self.commands.append(obj)
         name = obj['name']
         handler = obj['handler']
-        _type = handler['type'] if 'type' in handler else 'none'
         callback = handler['callback']
 
-        if _type == 'message':
-            def final_callback(upd, ctx):
-                result = callback()
-                message = result if result else 'Empty'
-                upd.message.reply_text(message)
+        def final_callback(upd, ctx):
+            res = callback(upd, ctx)
+            status = "Done" if bool(res) or res is None else "Error"
+            message = f'{status} - {name}'
 
-            self.dp.add_handler(CommandHandler(name, final_callback))
-        else:
-            def final_callback(upd, ctx):
-                callback()
-                upd.message.reply_text(f'Done - {name}')
+            if res and type(res) is str:
+                message += f'\n{res}'
 
-            self.dp.add_handler(CommandHandler(name, final_callback))
+            upd.message.reply_text(message)
+
+        self.dp.add_handler(CommandHandler(name, final_callback))
 
     def run(self):
         log('An App is waiting for some command')

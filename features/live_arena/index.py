@@ -1,5 +1,6 @@
 import pyautogui
 import pause
+import copy
 
 from helpers.time_mgr import *
 from features.hero_filter.index import *
@@ -57,6 +58,10 @@ return_start_panel = [444, 490]
 
 PAID_REFILL_LIMIT = 1
 ARCHIVE_PATTERN_FIRST = [1, 2, 2]
+
+# @TODO Can be useful
+error_dialog_button_left = [357, 287, [22, 124, 156]]
+error_dialog_button_right = [550, 291, [22, 124, 156]]
 
 
 # @TODO Issues: keyboard locale, enemy's leaving the battle
@@ -175,8 +180,8 @@ class ArenaLive:
         sleep(3)
 
     def attack(self):
-        log('Live Arena | Attack')
-        sorted_pool = self.pool
+        sorted_pool = copy.deepcopy(self.pool)
+        log('Live Arena | Attack | Pool Length: ' + str(len(sorted_pool)))
         team = []
         leaders = []
         slots_counter = 0
@@ -190,22 +195,24 @@ class ArenaLive:
             hero_filter.close()
 
         def find_character(role=None):
+            log(f'Current pool length: {len(sorted_pool)}')
             if role is None:
                 role = sorted_pool[0]['role']
 
             next_char = None
             while next_char is None:
                 i, char = find(sorted_pool, lambda x: x.get('role') == role)
+                index_to_remove = 0
 
                 if char:
                     pick(char['name'])
 
-                    if not pixel_check_new(my_slots[slots_counter], mistake=0):
+                    if not pixel_check_new(my_slots[slots_counter], mistake=5):
                         next_char = char
 
-                    sorted_pool.pop(i)
-                else:
-                    sorted_pool.pop(0)
+                    index_to_remove = i
+
+                del sorted_pool[index_to_remove]
 
             return next_char
 
@@ -241,16 +248,17 @@ class ArenaLive:
                 opponent_found = True
 
         log('Live Arena | Starts battle: ' + str(self.battles_counter))
-        pattern = ARCHIVE_PATTERN_FIRST
+        pattern = ARCHIVE_PATTERN_FIRST[:]
         if start_pixels[1]:
             log("I'm first")
         elif start_pixels[2]:
             log("I'm second")
             pattern.reverse()
 
+        log(pattern)
+
         if pixels_wait([stage_1], msg='Stage 1 | Picking characters', timeout=2, mistake=5)[0]:
             sleep(.5)
-
             for i in range(len(pattern)):
                 if pixels_wait([first], msg='Picking characters', timeout=2, mistake=10)[0]:
                     sleep(.2)
@@ -260,8 +268,10 @@ class ArenaLive:
                         unit = find_character()
                         team.append(unit['name'])
                         sleep(.1)
-                        self._confirm()
+                        log(f"Picked: {unit['name']}")
                         slots_counter += 1
+
+                    self._confirm()
 
         if pixels_wait([stage_2], msg='Stage 2 | Ban hero', timeout=2, mistake=5)[0]:
             sleep(.5)
@@ -322,20 +332,9 @@ class ArenaLive:
         #     'open_hour': None
         # }
         # live_arena_open_hours = [[6, 8], [14, 16], [20, 22]]
-        # utc_timestamp = datetime.utcnow().timestamp()
+        utc_timestamp = datetime.utcnow().timestamp()
         utc_datetime = datetime.fromtimestamp(utc_timestamp)
         parsed_time = time_mgr.timestamp_to_datetime(utc_datetime)
-        # hour = parsed_time['hour']
-        #
-        # length = len(live_arena_open_hours)
-        # for i in range(len(live_arena_open_hours)):
-        #     arr = live_arena_open_hours[i]
-        #     for j in range(len(arr)):
-        #         if arr[0] < hour < arr[1]:
-        #             res['is_active'] = True
-        #             break
-        #         elif arr[1] <= hour and i < length:
-        #             res['open_hour'] = live_arena_open_hours[i + 1]
 
         year = parsed_time['year']
         month = parsed_time['month']
@@ -346,20 +345,24 @@ class ArenaLive:
         pause.until(datetime(year, month, day, hour, 1, 0, tzinfo=timezone.utc))
 
     def run(self, props=None):
+        self.terminate = False
         # self.check_availability()
+
+        # required
+        close_popup_recursive()
 
         if props is not None:
             self._apply_props(props)
 
-        has_pool = bool(len(self.pool))
-        is_active = pixel_check_new([822, 472, [41, 162, 33]], 10)
-
-        if not has_pool:
-            log('Live Arena is Terminated | The POOL is NOT specified')
+        is_active = pixel_check_new([822, 472, [41, 162, 33]], mistake=10)
 
         if not is_active:
             log('Live Arena | NOT Active')
             go_index_page()
+
+        has_pool = bool(len(self.pool))
+        if not has_pool:
+            log('Live Arena is Terminated | The POOL is NOT specified')
 
         if has_pool and is_active:
             log('Live Arena | Active')

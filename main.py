@@ -8,13 +8,10 @@ from classes.app import *
 from constants.index import IS_DEV
 from bot import TelegramBOT
 
-# from features.hydra.index import *
-
 app = App()
 
 if not IS_DEV and getattr(sys, 'frozen', False):
     _path = os.path.join(sys._MEIPASS, './vendor/tesseract/tesseract.exe')
-    print(_path)
     pytesseract.pytesseract.tesseract_cmd = _path
 else:
     # @TODO Should be in the env file
@@ -86,8 +83,8 @@ if IS_DEV:
     app.load_config({
         'tasks': [
             {'name': 'dungeon', 'enable': 1, 'props': DUNGEON_PROPS},
-            {'name': 'arena_live', 'enable': 0, 'props': ARENA_LIVE_PROPS},
-            {'name': 'hydra', 'enable': 0, 'props': HYDRA_PROPS},
+            {'name': 'arena_live', 'enable': 1, 'props': ARENA_LIVE_PROPS},
+            {'name': 'hydra', 'enable': 1, 'props': HYDRA_PROPS},
             {'name': 'iron_twins', 'enable': 0},
             {'name': 'faction_wars', 'enable': 0},
             {'name': 'arena_classic', 'enable': 0, 'props': {'refill': 0}},
@@ -101,63 +98,88 @@ if IS_DEV:
 
 
 def main():
-    # @TODO Refactor
     if IS_DEV or app.validation():
-
-        telegram_bot = TelegramBOT()
-        telegram_bot.add({
-            'name': 'report',
-            'description': 'Report',
-            'handler': {
-                'type': 'message',
-                'callback': app.report,
-            },
-        })
-        telegram_bot.add({
-            'name': 'launch',
-            'description': 'Launch all tasks again',
-            'handler': {
-                'callback': app.run,
-            },
-        })
-
-        # def test_cb(msg, length=5):
-        #     for k in range(length):
-        #         print(msg)
-        #         sleep(.5)
-        #
-        #     return 'Done'
-        #
-        # test_commands = [
-        #     {'name': 'test_1', 'description': 'description_1', 'handler': {
-        #         'callback': lambda *args: test_cb('1'),
-        #     }},
-        #     {'name': 'test_2', 'description': 'description_2', 'handler': {
-        #         'callback': lambda *args: test_cb('2'),
-        #     }},
-        #     {'name': 'test_3', 'description': 'description_3', 'handler': {
-        #         'callback': lambda *args: test_cb('3'),
-        #     }},
-        # ]
-        # for i in range(len(test_commands)):
-        #     telegram_bot.add(test_commands[i])
-
-        commands = list(map(lambda command: {
-            'name': command['name'],
-            'description': f"Runs '{command['name']}' task",
-            'handler': {
-                'callback': app.get_entry(entry_name=command['name'], prepare=True)['instance'].run,
-            },
-        }, app.config['tasks']))
-
-        for i in range(len(commands)):
-            telegram_bot.add(commands[i])
-
-        telegram_bot_thread = threading.Thread(target=telegram_bot.run)
-        telegram_bot_thread.start()
-        telegram_bot.updater.idle()
+        has_telegram_token = 'telegram_token' in app.config
+        telegram_bot_thread = None
 
         try:
+            if has_telegram_token:
+                telegram_bot = TelegramBOT({
+                    'token': app.config['telegram_token']
+                })
+
+                # all callbacks should return truthy values in case of success
+                telegram_bot.add({
+                    'name': 'report',
+                    'description': 'Report',
+                    'handler': {
+                        'callback': lambda upd, ctx: app.report(),
+                    },
+                })
+                telegram_bot.add({
+                    'name': 'run',
+                    'description': 'Runs all tasks again',
+                    'handler': {
+                        'callback': lambda upd, ctx: app.run(),
+                    },
+                })
+                telegram_bot.add({
+                    'name': 'relogin',
+                    'description': 'Re-log in',
+                    'handler': {
+                        'callback': lambda upd, ctx: app.relogin(),
+                    },
+                })
+                telegram_bot.add({
+                    'name': 'screen',
+                    'description': 'Capture and send a screenshot',
+                    'handler': {
+                        'callback': lambda upd, ctx: ctx.bot.send_photo(
+                            chat_id=upd.message.chat_id,
+                            photo=app.screen()
+                        ),
+                    },
+                })
+
+                # def test_cb(msg, length=5):
+                #     for k in range(length):
+                #         print(msg)
+                #         sleep(.5)
+                #
+                #     return 'Done'
+                #
+                # test_commands = [
+                #     {'name': 'test_1', 'description': 'description_1', 'handler': {
+                #         'callback': lambda *args: test_cb('1'),
+                #     }},
+                #     {'name': 'test_2', 'description': 'description_2', 'handler': {
+                #         'callback': lambda *args: test_cb('2'),
+                #     }},
+                #     {'name': 'test_3', 'description': 'description_3', 'handler': {
+                #         'callback': lambda *args: test_cb('3'),
+                #     }},
+                # ]
+                # for i in range(len(test_commands)):
+                #     telegram_bot.add(test_commands[i])
+
+                commands = list(map(lambda command: {
+                    'name': command['name'],
+                    'description': f"Runs '{command['name']}' task",
+                    'handler': {
+                        'callback': lambda upd, ctx: app.get_entry(
+                            entry_name=command['name'], prepare=True
+                        )['instance'].run(),
+                    },
+                }, app.config['tasks']))
+
+                for i in range(len(commands)):
+                    telegram_bot.add(commands[i])
+
+                telegram_bot_thread = threading.Thread(target=telegram_bot.run)
+                telegram_bot_thread.start()
+                telegram_bot.updater.idle()
+
+
             app.start()
             # go_index_page()
             if app.config['start_immediate']:
@@ -171,8 +193,9 @@ def main():
         finally:
             log('All tasks are done')
 
-        # Wait for the bot thread to finish
-        telegram_bot_thread.join()
+            if has_telegram_token and telegram_bot_thread:
+                # Wait for the bot thread to finish
+                telegram_bot_thread.join()
     else:
         log_save('An App is outdated')
 

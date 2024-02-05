@@ -1,10 +1,12 @@
 {
+  "telegram_token": "6722044970:AAGZ5EtkQPVFpSzHqhKeAiCf3sXD-PRX6_w",
   "start_immediate": 0,
   "tasks": [
     {
       "name": "arena_live",
-      "enable": 0,
+      "enable": 1,
       "props": {
+        "refill": 1,
         "pool": [
           {
             "name": "Arbiter",
@@ -36,11 +38,11 @@
             "role": "a"
           },
           {
-            "name": "Rotos",
+            "name": "Mortu-Macaab",
             "role": "a"
           },
           {
-            "name": "Mortu-Macaab",
+            "name": "Rotos",
             "role": "a"
           },
           {
@@ -52,7 +54,7 @@
             "role": "a"
           },
           {
-            "name": "Lady Mikage",
+            "name": "Tormin",
             "role": "s"
           },
           {
@@ -60,7 +62,7 @@
             "role": "s"
           },
           {
-            "name": "Tormin",
+            "name": "Lady Mikage",
             "role": "s"
           },
           {
@@ -80,22 +82,23 @@
           "Mighty Ukko",
           "Lydia the Deathsiren",
           "Pythion"
-        ],
-        "refill": 1
+        ]
       }
     },
     {
       "name": "arena_classic",
       "enable": 1,
       "props": {
-        "refill": 0
+        "refill": 0,
+        "initial_refresh": 1
       }
     },
     {
       "name": "arena_tag",
       "enable": 1,
       "props": {
-        "refill": 0
+        "refill": 0,
+        "initial_refresh":  1
       }
     },
     {
@@ -114,7 +117,7 @@
         "refill": 1,
         "super_raid": false,
         "locations": [
-          {"id": 3}
+          {"id": 6}
         ]
       }
     },
@@ -175,11 +178,11 @@
       "props": {
         "stages": [6, 5, 4]
       }
+    },
+    {
+      "name": "rewards",
+      "enable": 1
     }
   ],
-  "after_each": [
-    {
-      "check_rewards": 1
-    }
-  ]
+  "after_each": ["rewards"]
 }

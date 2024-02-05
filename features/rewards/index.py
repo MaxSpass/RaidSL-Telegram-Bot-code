@@ -34,16 +34,17 @@ QUESTS_TABS = [
 
 
 class Rewards:
-    cache = {
-        'regular_quests': {
-            'name': 'Regular Quests',
-            'total': 0,
-        },
-        'play_time': {
-            'name': 'Play-Time',
-            'total': 0,
+    def __init__(self, props=None):
+        self.cache = {
+            'regular_quests': {
+                'name': 'Regular Quests',
+                'total': 0,
+            },
+            'play_time': {
+                'name': 'Play-Time',
+                'total': 0,
+            }
         }
-    }
 
     def finish(self, quest_type):
         go_index_page()
@@ -156,6 +157,7 @@ class Rewards:
 
         return s
 
-    def run(self):
+    def run(self, props=None):
+        close_popup_recursive()
         self.quests_run()
         self.play_time_run()

@@ -450,12 +450,12 @@ class Hydra:
                     log(self.LOCATION_NAME + " | Checking hydra screen after each iteration")
                     close_popup()
 
-    def run(self, props):
-        self.apply_props(props)
+    def run(self, props=None):
+        if props is not None:
+            self.apply_props(props)
 
         self.enter()
         self.attack()
 
         self.finish()
-
         go_index_page()

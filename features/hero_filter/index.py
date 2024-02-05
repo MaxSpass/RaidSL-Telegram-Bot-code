@@ -1,5 +1,6 @@
 import random
 import pyperclip
+import keyboard
 from helpers.common import *
 
 
@@ -15,9 +16,12 @@ input_field = [442, 99, [230, 224, 203]]
 input_clear = [656, 102, [24, 47, 56]]
 include_vault = [287, 142, [16, 43, 64]]
 
-pick_first = [50, 400]
-
 class HeroFilter:
+    PICK_SLOTS = {
+        '1': [50, 400],
+        '2': [50, 490],
+    }
+
     is_filter_opened = False
     is_input_focused = False
     def open(self, x2=900, y2=520):
@@ -46,9 +50,10 @@ class HeroFilter:
             sleep(.5)
             self.is_input_focused = True
             # interval = random.randint(2, 5) / 10
-            # pyautogui.write(name, interval=interval)
+
             pyperclip.copy(name)
-            pyautogui.hotkey("ctrl", "v")
+            keyboard.press_and_release('ctrl + v')
+            sleep(.5)
         else:
             log('Filter is not opened')
 
@@ -68,10 +73,11 @@ class HeroFilter:
         else:
             log('Filter is not opened')
 
-    def pick(self):
+    def pick(self, slot='1'):
+        # n=1 pick a hero from the first cell by default
         if self.is_filter_opened:
-            # pick a hero from the first cell
-            click(pick_first[0], pick_first[1])
+            pick_slot = self.PICK_SLOTS[str(slot)]
+            click(pick_slot[0], pick_slot[1])
             sleep(.3)
         else:
             log('Filter is not opened')

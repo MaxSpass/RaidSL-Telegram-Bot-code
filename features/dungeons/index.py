@@ -278,9 +278,9 @@ class Dungeons:
 
         # @TODO Works with the last stage/floor only
         # click last floor @TODO Temp commented
-        # click(850, 475)
+        click(850, 475)
 
-        click(850, 375)
+        # click(850, 375)
         sleep(.5)
 
         # @TODO validate
@@ -340,6 +340,8 @@ class Dungeons:
         return res
 
     def run(self, props=None):
+        self.terminate = False
+
         if props is not None:
             self._apply_props(props)
             self._log(f'Bank: {self.bank}')

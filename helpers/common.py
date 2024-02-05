@@ -16,6 +16,8 @@ import pytesseract
 
 time_mgr = TimeMgr()
 
+special_offer_popup = [300, 370, [22, 124, 156]]
+
 
 def get_time_for_log():
     return '{}'.format(str(datetime.now().strftime("%H:%M:%S")))
@@ -38,7 +40,7 @@ def log(message):
     if type(message) is dict:
         output = json.dumps(message, indent=2)
     elif type(message) is list:
-        output = np.array(message)
+        output = np.array(message, dtype=object)
     elif type(message) is str:
         output = message
     else:
@@ -359,11 +361,17 @@ def make_lambda(predicate, *args):
     return lambda: predicate(*args)
 
 
+def image_path(image):
+    # @TODO Does not work as expected
+    return os.path.join(os.getcwd(), 'image', image)
+
+
 def find_needle(image_name, region=None, confidence=.8):
     if region is None:
         region = [0, 0, 900, 530]
 
     path_image = os.path.join(os.getcwd(), 'images/needles/' + image_name)
+    # path_image = image_path(os.path.join('needles', image_name))
     return capture_by_source(path_image, region,
                              confidence=confidence)
 
@@ -415,12 +423,25 @@ def close_popup():
 
     # closes special offer popup when it appears
     sleep(0.3)
-    special_offer_popup = [300, 370, [22, 124, 156], 5]
-    if pixel_check_new(special_offer_popup):
+    special_offer_button = pixel_check_new(special_offer_popup, mistake=5)
+    if special_offer_button:
         x = special_offer_popup[0]
         y = special_offer_popup[1]
         click(x, y)
         log('Special offer popup closed')
+
+    return [close_popup_button, special_offer_button]
+
+
+def close_popup_recursive(timeout=2, delay=1):
+    def _check():
+        res = close_popup()
+        return res[0] is not None or res[1]
+
+    while _check():
+        sleep(timeout)
+
+    sleep(delay)
 
 
 def go_index_page():
@@ -515,6 +536,7 @@ def parse_energy_cost(variants):
 
 
 def parse_energy_bank(variants):
+    # works with examples: 1234/130, 18/12 and etc
     log(variants)
     extract_first_number = lambda x: int(re.search(r'(?<!\d)\d+(?=/\d+)', x.replace(',', '')).group()) if re.search(
         r'(?<!\d)\d+/\d+', x) else None
@@ -526,7 +548,7 @@ def parse_energy_bank(variants):
     return res
 
 
-def read_text(configs, region, timeout=0.1, parser=None, update_screenshot=True):
+def read_text(configs, region, timeout=0.1, parser=None, update_screenshot=True, scale=2):
     res = []
     screenshot = None
 
@@ -543,7 +565,7 @@ def read_text(configs, region, timeout=0.1, parser=None, update_screenshot=True)
         # greyscale
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         # resize
-        image = cv2.resize(image, (round(width * 2), round(height * 2)), interpolation=cv2.INTER_AREA)
+        image = cv2.resize(image, (round(width * scale), round(height * scale)), interpolation=cv2.INTER_AREA)
         # cv2.imshow('Matches', image)
         # cv2.waitKey()
         text = pytesseract.image_to_string(image, config=config)
@@ -608,28 +630,39 @@ def read_energy_bank(region=None):
 
     if not region:
         # index page
-        # region = axis_to_region(332, 38, 414, 56)
         region = axis_to_region(332, 30, 414, 64)
 
-        # in dungeon (does not work well)
-        # region = axis_to_region(480, 38, 590, 56)
-
     configs = [
-        # '--psm 1 --oem 3',
-        # '--psm 3 --oem 3',
-        # '--psm 4 --oem 3',
-        # '--psm 5 --oem 3',
         '--psm 6 --oem 3',
         '--psm 7 --oem 3',
         '--psm 8 --oem 3',
         '--psm 9 --oem 3',
         '--psm 10 --oem 3',
-        # '--psm 11 --oem 3',
-        # '--psm 12 --oem 3',
-        # '--psm 13 --oem 3',
     ]
 
-    return read_text(configs=configs, region=region, parser=parse_energy_bank)
+    return read_text(configs=configs, region=region, parser=parse_energy_bank, scale=10)
+
+
+def read_keys_bank(region=None):
+    log('Computing keys bank...')
+
+    if not region:
+        region = axis_to_region(480, 30, 566, 64)
+
+    configs = [
+        '--psm 1 --oem 3',
+        '--psm 3 --oem 3',
+        '--psm 4 --oem 3',
+        '--psm 6 --oem 3',
+        '--psm 7 --oem 3',
+        '--psm 8 --oem 3',
+        '--psm 9 --oem 3',
+        '--psm 10 --oem 3',
+        '--psm 11 --oem 3',
+        '--psm 12 --oem 3',
+    ]
+
+    return read_text(configs=configs, region=region, parser=parse_energy_bank, scale=10)
 
 
 def generic_bank_energy():
