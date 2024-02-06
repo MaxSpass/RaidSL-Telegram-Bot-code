@@ -5,6 +5,8 @@ button_refresh = [817, 133, [22, 124, 156]]
 refill_free = [455, 380, [187, 130, 5]]
 refill_paid = [440, 376, [255, 33, 51]]
 defeat = [443, 51, [229, 40, 104]]
+tab_battle = [110, 115, [2, 93, 154]]
+reward_dot = [154, 299, [225, 0, 0]]
 
 PAID_REFILL_LIMIT = 0
 OUTPUT_ITEMS_AMOUNT = 10
@@ -76,9 +78,10 @@ class ArenaFactory:
         go_index_page()
 
         click_on_progress_info()
-        # classic arena
         click(600, self.x_axis_info)
         sleep(1)
+
+        self._check_reward()
 
     def _refill(self):
         refilled = False
@@ -133,6 +136,31 @@ class ArenaFactory:
                 s = 'Won: ' + str(w) + ' | Lost: ' + str(l)
 
         return s
+
+    def _check_reward(self):
+        # @TODO Support classic arena only
+        if pixel_check_new(reward_dot, mistake=10):
+            click(reward_dot[0], reward_dot[1])
+            sleep(1)
+
+            dot = find_needle_reward_arena_classic()
+            for i in range(3):
+                swipe('right', 600, 350, 400, speed=.6, sleep_after_end=.2)
+                dot = find_needle_reward_arena_classic()
+                if dot is not None:
+                    x = dot[0]
+                    y = dot[1]+10
+                    # click on the chest
+                    click(x, y)
+                    sleep(1)
+                    # click on the claim
+                    click(455, 455)
+                    sleep(1)
+                    break
+
+            click(tab_battle[0], tab_battle[1])
+            sleep(.3)
+
 
     def attack(self):
         results_local = []

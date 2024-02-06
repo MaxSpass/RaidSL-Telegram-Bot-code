@@ -366,9 +366,11 @@ def image_path(image):
     return os.path.join(os.getcwd(), 'image', image)
 
 
-def find_needle(image_name, region=None, confidence=.8):
+def find_needle(image_name, region=None, confidence=None):
     if region is None:
         region = [0, 0, 900, 530]
+    if confidence is None:
+        confidence = .8
 
     path_image = os.path.join(os.getcwd(), 'images/needles/' + image_name)
     # path_image = image_path(os.path.join('needles', image_name))
@@ -401,6 +403,17 @@ def find_needle_bank_energy(region=None):
         region = axis_to_region(220, 32, 790, 68)
 
     return find_needle('bank_energy.jpg', region)
+
+
+def find_needle_red_dot(region=None, confidence=None):
+    return find_needle('red_dot.jpg', region=region, confidence=confidence)
+
+
+def find_needle_reward_arena_classic(region=None):
+    if not region:
+        region = axis_to_region(177, 430, 880, 450)
+
+    return find_needle('arena_classic_reward.jpg', region=region)
 
 
 def battles_click():

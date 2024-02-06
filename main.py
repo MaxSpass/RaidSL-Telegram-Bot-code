@@ -98,6 +98,22 @@ if IS_DEV:
 
 
 def main():
+    # track_mouse_position()
+    # return
+
+    # region = axis_to_region(480, 30, 566, 64)
+    # show_pyautogui_image(pyautogui.screenshot(region=region))
+    # energy_cost = read_energy_cost()
+    # log(energy_cost)
+    # energy = read_energy_bank()
+    # log(energy)
+    # keys = read_keys_bank()
+    # log(keys)
+
+    # close_popup_recursive()
+    # log('done')
+    # return
+
     if IS_DEV or app.validation():
         has_telegram_token = 'telegram_token' in app.config
         telegram_bot_thread = None

@@ -1,5 +1,7 @@
 from helpers.common import *
 
+red_dot_region = axis_to_region(170, 170, 790, 360)
+
 
 def get_button_claim():
     return capture_by_source('images/needles/button_claim.jpg', axis_to_region(670, 150, 750, 520),
@@ -7,8 +9,7 @@ def get_button_claim():
 
 
 def get_red_dot():
-    return capture_by_source('images/needles/red_dot.jpg', axis_to_region(170, 170, 790, 360),
-                             confidence=.7)
+    return find_needle_red_dot(region=red_dot_region, confidence=.7)
 
 
 # regular quests items pixel coordinates
