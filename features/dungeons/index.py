@@ -1,5 +1,4 @@
 from helpers.common import *
-from more_itertools import first_true
 
 DUNGEON_MINOTAUR = "Minotaur's Labyrinth"
 DUNGEON_GOLEM = "Ice Golem's Peak"
@@ -85,17 +84,6 @@ DUNGEON_LOCATIONS = {
 }
 
 
-# props
-# { 'String', [ Int, 'battle' | 'energy' ], {
-# refill_force: Boolean,
-# refill_max: Int,
-# difficulty: 'normal' | 'hard'
-# enable_super_raid: Boolean
-# }}
-
-# @TODO
-# - passing 'difficulty' and 'enable_super_raid'
-# - choosing certain lvl/stage for each dungeon
 class Dungeons:
     LOCATION_NAME = 'Dungeon'
     BUTTON_START = [850, 475, [187, 130, 5]]
@@ -111,7 +99,7 @@ class Dungeons:
     DUNGEON_DIFFICULTY_HARD = 'hard'
     DUNGEON_BANK_MIN_LIMIT = 8
     DUNGEON_DIFFICULTY_DEFAULT = DUNGEON_DIFFICULTY_HARD
-    DUNGEON_SUPER_RAID_DEFAULT = False
+    DUNGEON_SUPER_RAID_DEFAULT = True
     DIFFICULTIES = {
         DUNGEON_DIFFICULTY_NORMAL: DIFFICULTY_NORMAL,
         DUNGEON_DIFFICULTY_HARD: DIFFICULTY_HARD,
@@ -128,9 +116,6 @@ class Dungeons:
         self.super_raid = self.DUNGEON_SUPER_RAID_DEFAULT
 
         self._apply_props(props)
-
-        # for i in range(len(self.dungeons)):
-        #     print(self.dungeons[i])
 
     def _apply_props(self, props=None):
         # # @TODO it starts working from Index Page only
@@ -226,7 +211,7 @@ class Dungeons:
         # click on the "Stage selection"
         dungeons_results_finish()
         # moving to the Index Page for starting new Dungeon location
-        go_index_page()
+        close_popup_recursive()
 
     def _start_battle(self):
         sleep(1)
@@ -312,7 +297,7 @@ class Dungeons:
         if not skip:
             _name = self.current['name']
             waiting_battle_end_regular(f'{_name} battle end', x=28, y=88)
-            sleep(1)
+            sleep(.5)
 
             result = not pixel_check_new(self.DEFEAT)
             self._save_result(result)
@@ -331,11 +316,11 @@ class Dungeons:
 
             if has_battles:
                 if not res:
-                    res = f'{self.LOCATION_NAME} Report\n'
+                    res = f'{self.LOCATION_NAME} Report'
 
                 win_rate = calculate_win_rate(value['victory'], value['defeat'])
-                line = f"{key} | Battles: {value['victory'] + value['defeat']}, Win rate: {win_rate}"
-                res += f"{line}\n"
+                line = f"\n{key} | Battles: {value['victory'] + value['defeat']}, Win rate: {win_rate}"
+                res += f"{line}"
 
         return res
 

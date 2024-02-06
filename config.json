@@ -113,9 +113,7 @@
       "name": "dungeon",
       "enable": 1,
       "props": {
-        "bank": 2000,
         "refill": 1,
-        "super_raid": false,
         "locations": [
           {"id": 6}
         ]

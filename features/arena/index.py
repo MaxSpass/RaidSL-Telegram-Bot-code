@@ -81,7 +81,7 @@ class ArenaFactory:
         click(600, self.x_axis_info)
         sleep(1)
 
-        self._check_reward()
+        self.obtain()
 
     def _refill(self):
         refilled = False
@@ -137,7 +137,7 @@ class ArenaFactory:
 
         return s
 
-    def _check_reward(self):
+    def obtain(self):
         # @TODO Support classic arena only
         if pixel_check_new(reward_dot, mistake=10):
             click(reward_dot[0], reward_dot[1])

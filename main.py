@@ -8,14 +8,15 @@ from classes.app import *
 from constants.index import IS_DEV
 from bot import TelegramBOT
 
-app = App()
-
 if not IS_DEV and getattr(sys, 'frozen', False):
     _path = os.path.join(sys._MEIPASS, './vendor/tesseract/tesseract.exe')
     pytesseract.pytesseract.tesseract_cmd = _path
 else:
     # @TODO Should be in the env file
-    pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files (x86)\Tesseract-OCR\tesseract.exe'
+    pytesseract.pytesseract.tesseract_cmd = os.path.normpath(r'C:\Program Files (x86)\Tesseract-OCR\tesseract.exe')
+
+
+app = App()
 
 if IS_DEV:
     ARENA_LIVE_PROPS = {
@@ -101,19 +102,6 @@ def main():
     # track_mouse_position()
     # return
 
-    # region = axis_to_region(480, 30, 566, 64)
-    # show_pyautogui_image(pyautogui.screenshot(region=region))
-    # energy_cost = read_energy_cost()
-    # log(energy_cost)
-    # energy = read_energy_bank()
-    # log(energy)
-    # keys = read_keys_bank()
-    # log(keys)
-
-    # close_popup_recursive()
-    # log('done')
-    # return
-
     if IS_DEV or app.validation():
         has_telegram_token = 'telegram_token' in app.config
         telegram_bot_thread = None
@@ -195,11 +183,10 @@ def main():
                 telegram_bot_thread.start()
                 telegram_bot.updater.idle()
 
-
             app.start()
-            # go_index_page()
             if app.config['start_immediate']:
                 app.run()
+
         except KeyboardInterrupt:
             error = traceback.format_exc()
             log_save(error)

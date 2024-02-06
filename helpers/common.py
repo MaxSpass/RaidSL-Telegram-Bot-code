@@ -8,7 +8,6 @@ import np
 import cv2
 import json
 import re
-# from text_recognition import *
 from datetime import datetime
 from constants.index import IS_DEV
 from helpers.time_mgr import *
@@ -334,23 +333,6 @@ def find_perfect_pixel():
                 tracker.append([x, y])
 
 
-# def recognize_text(region):
-#     screenshot = pyautogui.screenshot(region=region)
-#     screenshot.save(r"E:\Main\BACKEND\core\text.png")
-#     img = cv2.imread(r"E:\Main\BACKEND\core\text.png", cv2.IMREAD_GRAYSCALE)
-#
-#     # img = cv2.resize(img, (0, 0), None, 4.0, 4.0)
-#     # img = cv2.threshold(img, 160, 255, cv2.THRESH_BINARY)[1]
-#     # config = '--psm 6 -c tessedit_char_whitelist="0123456789/"'
-#     # config = '--oem 3 --psm 6 outputbase digits'
-#     # text = pytesseract.image_to_string(img, config=config)
-#
-#     img = cv2.resize(img, (0, 0), fx=3.0, fy=3.0)
-#     bin_inverted = ~cv2.threshold(img, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
-#     text = pytesseract.image_to_string(bin_inverted)
-#     return text
-
-
 def click_on_progress_info(delay=0.5):
     # keys/coins info
     click(760, 46)
@@ -516,8 +498,6 @@ def get_higher_occurrence(arr):
 
 
 def parse_dealt_damage(variants):
-    log(variants)
-
     # only digits
     def _parse(s):
         arr = re.split(r'\D+', s)
@@ -550,7 +530,6 @@ def parse_energy_cost(variants):
 
 def parse_energy_bank(variants):
     # works with examples: 1234/130, 18/12 and etc
-    log(variants)
     extract_first_number = lambda x: int(re.search(r'(?<!\d)\d+(?=/\d+)', x.replace(',', '')).group()) if re.search(
         r'(?<!\d)\d+/\d+', x) else None
 
@@ -639,21 +618,25 @@ def read_energy_cost():
 
 def read_energy_bank(region=None):
     log('Computing energy bank...')
-    # returns energy cost
 
     if not region:
         # index page
-        region = axis_to_region(332, 30, 414, 64)
+        region = axis_to_region(352, 38, 414, 56)
 
     configs = [
+        '--psm 1 --oem 3',
+        '--psm 3 --oem 3',
+        '--psm 4 --oem 3',
         '--psm 6 --oem 3',
         '--psm 7 --oem 3',
         '--psm 8 --oem 3',
         '--psm 9 --oem 3',
         '--psm 10 --oem 3',
+        '--psm 11 --oem 3',
+        '--psm 12 --oem 3',
     ]
 
-    return read_text(configs=configs, region=region, parser=parse_energy_bank, scale=10)
+    return read_text(configs=configs, region=region, parser=parse_energy_bank, scale=4)
 
 
 def read_keys_bank(region=None):
@@ -675,7 +658,7 @@ def read_keys_bank(region=None):
         '--psm 12 --oem 3',
     ]
 
-    return read_text(configs=configs, region=region, parser=parse_energy_bank, scale=10)
+    return read_text(configs=configs, region=region, parser=parse_energy_bank, scale=6)
 
 
 def generic_bank_energy():
