@@ -165,6 +165,7 @@ class Hydra:
             log(f'No Hydra head with name: {name}')
 
     def _reset_focus(self):
+        # works with critically low FPS
         def _click():
             x = BUTTON_AUTO_DISABLED[0]
             y = BUTTON_AUTO_DISABLED[1]
@@ -178,7 +179,6 @@ class Hydra:
             _click()
 
         await_click([BUTTON_AUTO_DISABLED], mistake=10)
-        # pyautogui.click(x=50, y=470, clicks=2, interval=.1)
         log(self.LOCATION_NAME + ' | Reset focus')
 
     def _format_name(self, name):
