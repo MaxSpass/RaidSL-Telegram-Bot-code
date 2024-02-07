@@ -13,6 +13,7 @@ HEALTH_FRAME_HEIGHT = 10
 
 COLOR_ALIVE = [221, 42, 42]
 COLOR_DEAD = [175, 23, 200]
+BUTTON_AUTO_DISABLED = [47, 460, [206, 174, 66]]
 
 # x1, 44, x2, 94
 HEADS_POSITIONS = [
@@ -164,7 +165,20 @@ class Hydra:
             log(f'No Hydra head with name: {name}')
 
     def _reset_focus(self):
-        pyautogui.click(x=50, y=470, clicks=2, interval=.1)
+        def _click():
+            x = BUTTON_AUTO_DISABLED[0]
+            y = BUTTON_AUTO_DISABLED[1]
+            click(x, y)
+            sleep(.1)
+
+        if pixel_check_new(BUTTON_AUTO_DISABLED, mistake=10):
+            _click()
+
+        while not pixel_check_new(BUTTON_AUTO_DISABLED, mistake=10):
+            _click()
+
+        await_click([BUTTON_AUTO_DISABLED], mistake=10)
+        # pyautogui.click(x=50, y=470, clicks=2, interval=.1)
         log(self.LOCATION_NAME + ' | Reset focus')
 
     def _format_name(self, name):
