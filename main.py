@@ -190,7 +190,7 @@ def main():
                     'description': f"Runs '{command['name']}' task",
                     'handler': {
                         'callback': lambda upd, ctx: app.get_entry(
-                            entry_name=command['name'], prepare=True
+                            entry_name=command['name']
                         )['instance'].run(),
                     },
                 }, app.config['tasks']))
