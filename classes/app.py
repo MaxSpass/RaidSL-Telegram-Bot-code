@@ -45,7 +45,7 @@ def prepare_window():
         time.sleep(.5)
 
         # going back to the index page
-        go_index_page()
+        close_popup_recursive()
 
         burger = find_needle_burger()
         if burger is not None:
@@ -59,7 +59,7 @@ def prepare_window():
 
             # waiting and closing sudden popups
             sleep(3)
-            go_index_page()
+            close_popup_recursive()
         else:
             log('No Burger needle found')
 
@@ -119,16 +119,6 @@ class App:
         # After each tasks
         if 'after_each' in config_json:
             _config['after_each'] = config_json['after_each']
-
-        # after_each_length = len(config_json['after_each'])
-        # if after_each_length:
-        #     for i in range(after_each_length):
-        #         task = config_json['after_each'][i]
-        #         for key, val in task.items():
-        #             if bool(val):
-        #                 _config['after_each'].append({
-        #                     'name': key
-        #                 })
 
         return _config
 
@@ -213,16 +203,11 @@ class App:
         signal.signal(signal.SIGINT, self.kill)
         signal.signal(signal.SIGTERM, self.kill)
         # prepare_window()
-        return 0
 
     def prepare(self):
         prepare_window()
-        return 1
 
-    def get_entry(self, entry_name, prepare=False):
-        # if prepare:
-        #     self.prepare()
-
+    def get_entry(self, entry_name):
         return self.entries[entry_name]
 
     def run(self):

@@ -1,5 +1,8 @@
 from helpers.common import *
 
+# when fake battle is needed
+FAKE_BATTLE = False
+
 DUNGEON_MINOTAUR = "Minotaur's Labyrinth"
 DUNGEON_GOLEM = "Ice Golem's Peak"
 DUNGEON_SPIDER = "Spider's Den"
@@ -53,34 +56,13 @@ DUNGEON_DATA = [
 DUNGEON_NO_DIFFICULTIES = ['1', '6', '7']
 
 DUNGEON_LOCATIONS = {
-    '1': {
-        'swipe': 1,
-        'click': {'x': 420, 'y': 300},
-    },
-    '2': {
-        'swipe': 1,
-        'click': {'x': 540, 'y': 160},
-    },
-    '3': {
-        'swipe': 1,
-        'click': {'x': 680, 'y': 300},
-    },
-    '4': {
-        'swipe': 1,
-        'click': {'x': 775, 'y': 175},
-    },
-    '5': {
-        'swipe': 2,
-        'click': {'x': 490, 'y': 300},
-    },
-    '6': {
-        'swipe': 2,
-        'click': {'x': 650, 'y': 170},
-    },
-    '7': {
-        'swipe': 2,
-        'click': {'x': 810, 'y': 340},
-    },
+    '1': {'swipe': 1, 'click': {'x': 420, 'y': 300}},
+    '2': {'swipe': 1, 'click': {'x': 540, 'y': 160}},
+    '3': {'swipe': 1, 'click': {'x': 680, 'y': 300}},
+    '4': {'swipe': 1, 'click': {'x': 775, 'y': 175}},
+    '5': {'swipe': 2, 'click': {'x': 490, 'y': 300}},
+    '6': {'swipe': 2, 'click': {'x': 650, 'y': 170}},
+    '7': {'swipe': 2, 'click': {'x': 810, 'y': 340}},
 }
 
 
@@ -113,18 +95,74 @@ class Dungeons:
 
         self.bank = 0
         self.refill = 0
+        self.locations = []
         self.super_raid = self.DUNGEON_SUPER_RAID_DEFAULT
 
-        self._apply_props(props)
+        # @TODO Temp dirty fix
+        self.props = props
+        # self._apply_props(props)
+        # self._distribute_energy()
 
+    # @TODO These responsibility must be on the different scope
+    def _get_available_energy(self):
+        # @TODO These responsibility must be on the different scope
+        close_popup_recursive()
+        return read_available_energy()
+
+    def _distribute_energy(self):
+        available_energy = self.bank
+        length = len(self.locations)
+        if len(self.locations):
+            new_dungeon = []
+            for i in range(length):
+                _dungeon = None
+                _location = self.locations[i]
+                if 'id' in _location:
+                    _id = str(_location['id'])
+                    j, dungeon = find(DUNGEON_DATA, lambda x: x['id'] == _id)
+
+                    if dungeon:
+                        _dungeon = dungeon
+
+                        if _id not in DUNGEON_NO_DIFFICULTIES:
+                            _dungeon['difficulty'] = _location['difficulty'] \
+                                if 'difficulty' in _location \
+                                else self.DUNGEON_DIFFICULTY_DEFAULT
+
+                        if 'energy' in _location:
+                            _e = int(_location['energy'])
+                            if _e <= available_energy:
+                                _dungeon['energy'] = _e
+                                if available_energy >= _e:
+                                    available_energy -= _e
+
+                if _dungeon:
+                    # self.dungeons.append(_dungeon)
+                    new_dungeon.append(_dungeon)
+
+            self.dungeons = new_dungeon
+
+            if available_energy > 0:
+                # @TODO REFACTOR !!!
+                # calculating energy for 'not defined energy' locations
+                # no_energy_quantity = len(list(filter(lambda x: 'energy' not in x, self.dungeons)))
+                no_energy_quantity = len(self.dungeons)
+                if no_energy_quantity:
+                    energy_for_each = round(available_energy / no_energy_quantity) if available_energy > 0 else 0
+                    for i in range(len(self.dungeons)):
+                        _d = self.dungeons[i]
+                        # if 'energy' not in self.dungeons[i]:
+                        self.dungeons[i]['energy'] = energy_for_each
+
+        for i in range(len(self.dungeons)):
+            print(self.dungeons[i])
     def _apply_props(self, props=None):
-        # # @TODO it starts working from Index Page only
-        # go_index_page()
+        if props is None:
+            props = self.props
 
         if props is not None:
-            length = len(props['locations'])
+            self.bank = int(props['bank']) if 'bank' in props and bool(props['bank']) else self._get_available_energy()
 
-            self.bank = int(props['bank']) if 'bank' in props else read_energy_bank()
             if self.bank is None:
                 self.bank = 0
 
@@ -136,49 +174,12 @@ class Dungeons:
             if 'refill' in props:
                 self.refill = int(props['refill'])
 
+            if 'locations' in props:
+                self.locations = props['locations']
+
+            # @TODO Consider to remove
             if 'super_raid' in props:
                 self.super_raid = bool(props['super_raid'])
-
-            available_energy = self.bank
-
-            if 'locations' in props and length:
-                for i in range(length):
-                    _dungeon = None
-                    _location = props['locations'][i]
-                    if 'id' in _location:
-                        _id = str(_location['id'])
-                        j, dungeon = find(DUNGEON_DATA, lambda x: x['id'] == _id)
-
-                        if dungeon:
-                            _dungeon = dungeon
-
-                            if _id not in DUNGEON_NO_DIFFICULTIES:
-                                _dungeon['difficulty'] = _location['difficulty'] \
-                                    if 'difficulty' in _location \
-                                    else self.DUNGEON_DIFFICULTY_DEFAULT
-
-                            if 'energy' in _location:
-                                _e = int(_location['energy'])
-                                if _e <= available_energy:
-                                    _dungeon['energy'] = _e
-                                    if available_energy >= _e:
-                                        available_energy -= _e
-
-                    if _dungeon:
-                        self.dungeons.append(_dungeon)
-
-                if available_energy > 0:
-                    # calculating energy for 'not defined energy' locations
-                    no_energy_quantity = len(list(filter(lambda x: 'energy' not in x, self.dungeons)))
-                    if no_energy_quantity:
-                        energy_for_each = round(available_energy / no_energy_quantity) if available_energy > 0 else 0
-                        for i in range(len(self.dungeons)):
-                            _d = self.dungeons[i]
-                            if 'energy' not in self.dungeons[i]:
-                                self.dungeons[i]['energy'] = energy_for_each
-
-        # for i in range(len(self.dungeons)):
-        #     print(self.dungeons[i])
 
     def _initialize(self, dungeon):
         self.current = dungeon
@@ -214,6 +215,9 @@ class Dungeons:
         close_popup_recursive()
 
     def _start_battle(self):
+        if FAKE_BATTLE:
+            return
+
         sleep(1)
         if self._is_first_battle():
             # click on 'Start'
@@ -268,13 +272,8 @@ class Dungeons:
         # click(850, 375)
         sleep(.5)
 
-        # @TODO validate
-        if self.super_raid:
-            if not pixel_check_new(self.CHECKBOX_SUPER_RAID, mistake=10):
-                self._click_on_super_raid()
-        else:
-            if pixel_check_new(self.CHECKBOX_SUPER_RAID, mistake=10):
-                self._click_on_super_raid()
+        if not pixel_check_new(self.CHECKBOX_SUPER_RAID, mistake=10):
+            self._click_on_super_raid()
 
     def attack(self):
         skip = False
@@ -295,9 +294,10 @@ class Dungeons:
                 skip = True
 
         if not skip:
-            _name = self.current['name']
-            waiting_battle_end_regular(f'{_name} battle end', x=28, y=88)
-            sleep(.5)
+            if not FAKE_BATTLE:
+                _name = self.current['name']
+                waiting_battle_end_regular(f'{_name} battle end', x=28, y=88)
+                sleep(.5)
 
             result = not pixel_check_new(self.DEFEAT)
             self._save_result(result)
@@ -329,7 +329,12 @@ class Dungeons:
 
         if props is not None:
             self._apply_props(props)
-            self._log(f'Bank: {self.bank}')
+        else:
+            self._apply_props(self.props)
+            # self.bank = self._get_available_energy()
+
+        self._distribute_energy()
+        self._log(f'Bank: {self.bank}')
 
         if not self.terminate:
             for i in range(len(self.dungeons)):
@@ -343,10 +348,9 @@ class Dungeons:
                 while self._able_attacking(cost):
                     self._log('Start battle')
                     self.attack()
-                    # @TODO Validate
-                    # decreasing energy of the certain Dungeon
                     self.current['energy'] -= cost
 
-                self._exit_location()
+                if not FAKE_BATTLE:
+                    self._exit_location()
 
         self.finish()

@@ -7,6 +7,11 @@ import threading
 from classes.app import *
 from constants.index import IS_DEV
 from bot import TelegramBOT
+from PIL import Image
+from io import BytesIO
+# from features.faction_wars.index import *
+
+pyautogui.FAILSAFE = False
 
 if not IS_DEV and getattr(sys, 'frozen', False):
     _path = os.path.join(sys._MEIPASS, './vendor/tesseract/tesseract.exe')
@@ -14,7 +19,6 @@ if not IS_DEV and getattr(sys, 'frozen', False):
 else:
     # @TODO Should be in the env file
     pytesseract.pytesseract.tesseract_cmd = os.path.normpath(r'C:\Program Files (x86)\Tesseract-OCR\tesseract.exe')
-
 
 app = App()
 
@@ -49,24 +53,24 @@ if IS_DEV:
         'refill': 1
     }
     HYDRA_PROPS = {
-        'runs_limit': 2,
+        'runs_limit': 3,
         'runs': [
             {
                 'stage': 4,
                 'team_preset': 1,
-                'min_damage': 170,
+                'min_damage': 150,
                 'skip': 0
             },
             {
                 'stage': 3,
                 'team_preset': 4,
-                'min_damage': 50,
+                'min_damage': 30,
                 'skip': 0
             },
             {
                 'stage': 1,
                 'team_preset': 3,
-                'min_damage': 200,
+                'min_damage': 180,
                 'skip': 0
             },
         ],
@@ -102,7 +106,22 @@ def main():
     # track_mouse_position()
     # return
 
+    # app.prepare()
+    # faction_new = FactionWars({
+    #     "stages": {
+    #       "5": 20
+    #     }
+    #   })
+    # faction_new.run()
+    # return
+
     if IS_DEV or app.validation():
+        app.start()
+        app.prepare()
+
+        if app.config['start_immediate']:
+            app.run()
+
         has_telegram_token = 'telegram_token' in app.config
         telegram_bot_thread = None
 
@@ -182,10 +201,6 @@ def main():
                 telegram_bot_thread = threading.Thread(target=telegram_bot.run)
                 telegram_bot_thread.start()
                 telegram_bot.updater.idle()
-
-            app.start()
-            if app.config['start_immediate']:
-                app.run()
 
         except KeyboardInterrupt:
             error = traceback.format_exc()

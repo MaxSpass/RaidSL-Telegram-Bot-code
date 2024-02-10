@@ -12,6 +12,8 @@ from datetime import datetime
 from constants.index import IS_DEV
 from helpers.time_mgr import *
 import pytesseract
+from PIL import Image
+import PIL
 
 time_mgr = TimeMgr()
 
@@ -29,7 +31,8 @@ def log_save(message):
         current_date = time_mgr.timestamp_to_datetime()
         file_name = 'log-' + f'{current_date["day"]}-{current_date["month"]}-{current_date["year"]}' + '.txt'
         f = open(file_name, "a")
-        f.write(time + ' | ' + message + '\n')
+        string = str(f"{time} | {message} | \n".encode('utf-8'))
+        f.write(string)
         f.close()
 
 
@@ -233,6 +236,12 @@ def dungeons_scroll(direction='bottom', times=2):
 def dungeons_replay():
     sleep(0.5)
     click(500, 480)
+    sleep(0.3)
+
+
+def dungeons_start():
+    sleep(0.5)
+    click(815, 465)
     sleep(0.3)
 
 
@@ -539,6 +548,17 @@ def parse_energy_bank(variants):
     res = list(filter(lambda x: x is not None, res))
     return res
 
+def scale_up(screenshot, factor=1):
+    image = Image.frombytes("RGB", screenshot.size, screenshot.tobytes())
+
+    # Calculate the new dimensions
+    new_width = image.width * factor
+    new_height = image.height * factor
+
+    # Resize the image with Lanczos interpolation
+    scaled_image = image.resize((new_width, new_height), Image.LANCZOS)
+
+    return np.array(scaled_image)
 
 def read_text(configs, region, timeout=0.1, parser=None, update_screenshot=True, scale=2):
     res = []
@@ -552,17 +572,17 @@ def read_text(configs, region, timeout=0.1, parser=None, update_screenshot=True,
             screenshot = pyautogui.screenshot(region=region)
 
         config = configs[i]
-        image = screenshot_to_image(screenshot)
-        height, width = image.shape[:2]
+        # proper resize
+        image = scale_up(screenshot, factor=scale)
+        # image = screenshot_to_image(screenshot)
+
         # greyscale
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        # resize
-        image = cv2.resize(image, (round(width * scale), round(height * scale)), interpolation=cv2.INTER_AREA)
-        # cv2.imshow('Matches', image)
-        # cv2.waitKey()
         text = pytesseract.image_to_string(image, config=config)
         res.append(text.strip())
         sleep(timeout)
+
+    # log(res)
 
     if parser:
         res = parser(res)
@@ -613,15 +633,21 @@ def read_energy_cost():
         '--psm 13 --oem 3',
     ]
 
-    return read_text(configs=configs, region=region, parser=parse_energy_cost)
+    return read_text(configs=configs, region=region, parser=parse_energy_cost, scale=2)
 
 
-def read_energy_bank(region=None):
-    log('Computing energy bank...')
+def read_available_energy(region=None):
+    log('Computing available energy...')
+    x1 = 352
+
+    # computing generic x1
+    position = find_needle_bank_energy()
+    if position:
+        x1 = position[0] - 75
 
     if not region:
         # index page
-        region = axis_to_region(352, 38, 414, 56)
+        region = axis_to_region(x1, 38, 414, 56)
 
     configs = [
         '--psm 1 --oem 3',
@@ -643,7 +669,7 @@ def read_keys_bank(region=None):
     log('Computing keys bank...')
 
     if not region:
-        region = axis_to_region(480, 30, 566, 64)
+        region = axis_to_region(480, 38, 566, 56)
 
     configs = [
         '--psm 1 --oem 3',
@@ -658,33 +684,4 @@ def read_keys_bank(region=None):
         '--psm 12 --oem 3',
     ]
 
-    return read_text(configs=configs, region=region, parser=parse_energy_bank, scale=6)
-
-
-def generic_bank_energy():
-    # @TODO In progress
-    ICON_WIDTH = 17
-    ICON_HEIGHT = 22
-    CAPTURE_WIDTH = 100
-    CAPTURE_HEIGHT = 26
-    position = find_needle_bank_energy()
-    if position:
-        x_p = position[0]
-        y_p = position[1]
-        x_offset = round(ICON_WIDTH / 2)
-        y_offset = round(ICON_HEIGHT / 2)
-
-        x = x_p - CAPTURE_WIDTH + x_offset
-        y = y_p - CAPTURE_HEIGHT + y_offset
-
-        # x2 = x1 + CAPTURE_WIDTH
-        # y2 = y_p + y_offset
-
-        region = [x, y, x + CAPTURE_WIDTH, y + CAPTURE_HEIGHT]
-
-        check_image(region)
-
-        return read_energy_bank(region=region)
-
-    else:
-        return 0
+    return read_text(configs=configs, region=region, parser=parse_energy_bank, scale=4)

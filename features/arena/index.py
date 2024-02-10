@@ -255,6 +255,8 @@ class ArenaFactory:
 
         if self.initial_refresh:
             self._refresh_arena()
+            # @TODO Test
+            sleep(1)
 
         while self.terminate is False:
             self.attack()
