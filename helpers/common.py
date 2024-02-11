@@ -51,6 +51,7 @@ def log(message):
     print(time + ' | ', output)
     log_save(str(message))
 
+
 def folder_ensure(folder_path):
     # Check if the folder exists
     if not os.path.exists(folder_path):
@@ -59,6 +60,7 @@ def folder_ensure(folder_path):
         print(f"Folder '{folder_path}' created successfully.")
     else:
         print(f"Folder '{folder_path}' already exists.")
+
 
 def sleep(duration):
     # seconds_str = 'seconds'
@@ -121,6 +123,7 @@ def debug_save_screenshot(prefix_name=None):
     folder_ensure(DEBUG_FOLDER)
     screenshot = pyautogui.screenshot(region=region)
     screenshot.save(os.path.join(DEBUG_FOLDER, f"{file_name}.jpg"))
+
 
 def pixel_check_old(x, y, rgb, mistake=0):
     pixel = pyautogui.pixel(x, y)
@@ -410,11 +413,18 @@ def find_needle_burger():
     return find_needle('burger.jpg')
 
 
-def find_needle_bank_energy(region=None):
+def find_needle_energy_bank(region=None):
     if not region:
         region = axis_to_region(220, 32, 790, 68)
 
     return find_needle('bank_energy.jpg', region)
+
+
+def find_needle_energy_cost(region=None):
+    if not region:
+        region = axis_to_region(720, 460, 860, 505)
+
+    return find_needle('energy_cost.jpg', region)
 
 
 def find_needle_red_dot(region=None, confidence=None):
@@ -569,6 +579,7 @@ def parse_energy_bank(variants):
     res = list(filter(lambda x: x is not None, res))
     return res
 
+
 def scale_up(screenshot, factor=1):
     image = Image.frombytes("RGB", screenshot.size, screenshot.tobytes())
 
@@ -580,6 +591,7 @@ def scale_up(screenshot, factor=1):
     scaled_image = image.resize((new_width, new_height), Image.LANCZOS)
 
     return np.array(scaled_image)
+
 
 def read_text(configs, region, timeout=0.1, parser=None, update_screenshot=True, scale=2):
     res = []
@@ -599,11 +611,15 @@ def read_text(configs, region, timeout=0.1, parser=None, update_screenshot=True,
 
         # greyscale
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+        # cv2.imshow('Matches', image)
+        # cv2.waitKey()
+
         text = pytesseract.image_to_string(image, config=config)
         res.append(text.strip())
         sleep(timeout)
 
-    # log(res)
+    log(res)
 
     if parser:
         res = parser(res)
@@ -635,10 +651,30 @@ def read_dealt_damage():
     return read_text(configs=configs, region=region, timeout=.5, parser=parse_dealt_damage)
 
 
-def read_energy_cost():
+def read_energy_cost(region=None):
     log('Computing energy cost...')
-    # returns energy cost
-    region = axis_to_region(720, 460, 860, 505)
+
+    x1 = 818
+    y1 = 470
+    x2 = 860
+    y2 = 860
+
+    # computing generic x1
+    position = find_needle_energy_cost()
+    if position:
+        x_offset = 70
+        y_offset = 20
+        x1 = position[0] - x_offset
+        y1 = position[1] - y_offset
+        x2 = position[0] + x_offset
+        y2 = position[1] + y_offset
+
+    if not region:
+        # index page
+        region = axis_to_region(x1, y1, x2, y2)
+        show_pyautogui_image(pyautogui.screenshot(region=region))
+
+    # region = axis_to_region(720, 460, 860, 505)
     configs = [
         '--psm 1 --oem 3',
         '--psm 3 --oem 3',
@@ -654,7 +690,7 @@ def read_energy_cost():
         '--psm 13 --oem 3',
     ]
 
-    return read_text(configs=configs, region=region, parser=parse_energy_cost, scale=2)
+    return read_text(configs=configs, region=region, parser=parse_energy_cost, scale=4)
 
 
 def read_available_energy(region=None):
@@ -662,7 +698,7 @@ def read_available_energy(region=None):
     x1 = 352
 
     # computing generic x1
-    position = find_needle_bank_energy()
+    position = find_needle_energy_bank()
     if position:
         x1 = position[0] - 75
 

@@ -345,7 +345,6 @@ class Dungeons:
                 cost = read_energy_cost()
                 self._log(f'Energy cost: {cost}')
 
-                counter = 0
                 while self._able_attacking(cost):
                     self._log('Start battle')
                     self.attack()
