@@ -189,7 +189,9 @@ class App:
             log(error)
 
     def screen(self):
-        screenshot = pyautogui.screenshot(region=[0, 0, WINDOW_SIZE[0], WINDOW_SIZE[1]])
+        width = WINDOW_SIZE[0] - 7*2
+        height = WINDOW_SIZE[1] - 7
+        screenshot = pyautogui.screenshot(region=[0, 0, width, height])
 
         # Convert the screenshot to bytes
         image_bytes = BytesIO()

@@ -197,9 +197,14 @@ class Hydra:
         return can_continue
 
     def _certain_hydra_or_all_hydra_screens(self):
-        # @TODO
-        return pixels_wait([screen_certain_hydra, screen_all_hydra], msg="Certain Hydra/All Hydra",
-                           timeout=2, mistake=10)
+        wait_limit = 3600 * 5
+        return pixels_wait(
+            [screen_certain_hydra, screen_all_hydra],
+            msg="Certain Hydra/All Hydra",
+            timeout=2,
+            mistake=10,
+            wait_limit=wait_limit
+        )
 
     def _update_heads(self):
         prev_heads = self.heads
@@ -433,7 +438,7 @@ class Hydra:
 
                     await_click([button_start], timeout=1, mistake=10)
 
-                    if pixels_wait([icon_pause], timeout=2, mistake=10, msg='Pause icon')[0]:
+                    if pixels_wait([icon_pause], timeout=2, mistake=10, msg='Pause icon', wait_limit=100)[0]:
                         log(self.LOCATION_NAME + ' | ' + 'Battle just started')
                         self.scan()
 

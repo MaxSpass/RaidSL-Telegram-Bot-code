@@ -28,7 +28,7 @@ class TelegramBOT:
             ]
 
             # Create the Updater and pass it your bot's token
-            self.updater = Updater(token=self.token)
+            self.updater = Updater(token=self.token, use_context=True)
             # Get the dispatcher to register handlers
             self.dp = self.updater.dispatcher
             # Register the /start command

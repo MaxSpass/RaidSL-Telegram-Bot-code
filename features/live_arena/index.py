@@ -231,7 +231,13 @@ class ArenaLive:
             return res
 
         def wait_start_pixels():
-            return pixels_wait([cant_find_opponent, first, second], msg="Start screen 1", timeout=0.1, mistake=5)
+            return pixels_wait(
+                [cant_find_opponent, first, second],
+                msg="Start screen 1",
+                timeout=0.1,
+                mistake=5,
+                wait_limit=65
+            )
 
         start_pixels = wait_start_pixels()
         opponent_found = False
@@ -257,10 +263,10 @@ class ArenaLive:
 
         log(pattern)
 
-        if pixels_wait([stage_1], msg='Stage 1 | Picking characters', timeout=2, mistake=5)[0]:
+        if pixels_wait([stage_1], msg='Stage 1 | Picking characters', timeout=2, mistake=5, wait_limit=65)[0]:
             sleep(.5)
             for i in range(len(pattern)):
-                if pixels_wait([first], msg='Picking characters', timeout=2, mistake=10)[0]:
+                if pixels_wait([first], msg='Picking characters', timeout=2, mistake=10, wait_limit=65)[0]:
                     sleep(.2)
 
                     # picking heroes logic
@@ -273,7 +279,7 @@ class ArenaLive:
 
                     self._confirm()
 
-        if pixels_wait([stage_2], msg='Stage 2 | Ban hero', timeout=2, mistake=5)[0]:
+        if pixels_wait([stage_2], msg='Stage 2 | Ban hero', timeout=2, mistake=5, wait_limit=65)[0]:
             sleep(.5)
             # Banning random second slot
             random_slot = random.choice(enemy_slots)
@@ -283,9 +289,9 @@ class ArenaLive:
             sleep(.5)
             self._confirm()
 
-        if pixels_wait([stage_3], msg='Stage 3 | Choosing leader', timeout=2, mistake=5)[0]:
+        if pixels_wait([stage_3], msg='Stage 3 | Choosing leader', timeout=2, mistake=5, wait_limit=65)[0]:
             sleep(.5)
-            if pixels_wait([first], msg='Choosing leader', timeout=2, mistake=10)[0]:
+            if pixels_wait([first], msg='Choosing leader', timeout=2, mistake=10, wait_limit=65)[0]:
                 leaders_indicis = find_leaders_indicis()
 
                 for i in range(len(leaders_indicis)):
@@ -297,14 +303,26 @@ class ArenaLive:
                     sleep(.5)
                 self._confirm()
 
-        my_turn_or_defeat = pixels_wait([battle_start, defeat], msg='My turn or Defeat', timeout=2, mistake=20)
+        my_turn_or_defeat = pixels_wait(
+            [battle_start, defeat],
+            msg='My turn or Defeat',
+            timeout=2,
+            mistake=20,
+            wait_limit=120
+        )
 
         # Battle just started
         if my_turn_or_defeat[0]:
             click(auto_mode[0], auto_mode[1])
-            battle_result = pixels_wait([victory, defeat], msg='Victory or Defeat', timeout=2, mistake=20)
+            battle_result = pixels_wait(
+                [victory, defeat],
+                msg='Victory or Defeat',
+                timeout=2,
+                mistake=20,
+                wait_limit=1200
+            )
             self._save_result(battle_result[0])
-        else:
+        elif my_turn_or_defeat[1]:
             self._save_result(False)
 
         click(return_start_panel[0], return_start_panel[1])

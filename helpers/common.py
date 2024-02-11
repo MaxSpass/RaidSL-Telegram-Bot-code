@@ -20,8 +20,8 @@ time_mgr = TimeMgr()
 special_offer_popup = [300, 370, [22, 124, 156]]
 
 
-def get_time_for_log():
-    return '{}'.format(str(datetime.now().strftime("%H:%M:%S")))
+def get_time_for_log(s=':'):
+    return '{}'.format(str(datetime.now().strftime(f"%H{s}%M{s}%S")))
 
 
 def log_save(message):
@@ -51,6 +51,14 @@ def log(message):
     print(time + ' | ', output)
     log_save(str(message))
 
+def folder_ensure(folder_path):
+    # Check if the folder exists
+    if not os.path.exists(folder_path):
+        # If the folder doesn't exist, create it
+        os.makedirs(folder_path)
+        print(f"Folder '{folder_path}' created successfully.")
+    else:
+        print(f"Folder '{folder_path}' already exists.")
 
 def sleep(duration):
     # seconds_str = 'seconds'
@@ -102,6 +110,17 @@ def random_easying():
         pyautogui.easeInElastic
     ])
 
+
+def debug_save_screenshot(prefix_name=None):
+    DEBUG_FOLDER = 'debug'
+    # @TODO Region is hardcoded
+    region = [0, 0, 906, 533]
+
+    time = get_time_for_log(s='-')
+    file_name = f"{time}-{str(prefix_name).lower()}" if prefix_name else time
+    folder_ensure(DEBUG_FOLDER)
+    screenshot = pyautogui.screenshot(region=region)
+    screenshot.save(os.path.join(DEBUG_FOLDER, f"{file_name}.jpg"))
 
 def pixel_check_old(x, y, rgb, mistake=0):
     pixel = pyautogui.pixel(x, y)
@@ -169,6 +188,8 @@ def pixels_wait(pixels, msg=None, timeout=5, mistake=0, wait_limit=None):
         checked_pixels = restart()
         log(str(counter) + ' seconds left')
         if type(wait_limit) is int and counter >= wait_limit:
+            # debug
+            debug_save_screenshot(prefix_name=msg)
             break
 
     return checked_pixels
