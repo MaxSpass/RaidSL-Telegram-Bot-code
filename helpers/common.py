@@ -168,7 +168,7 @@ def pixels_wait(pixels, msg=None, timeout=5, mistake=0, wait_limit=None):
         counter += timeout
         checked_pixels = restart()
         log(str(counter) + ' seconds left')
-        if type(wait_limit) is int and counter < wait_limit:
+        if type(wait_limit) is int and counter >= wait_limit:
             break
 
     return checked_pixels

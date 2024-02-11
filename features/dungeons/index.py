@@ -69,7 +69,10 @@ DUNGEON_LOCATIONS = {
 class Dungeons:
     LOCATION_NAME = 'Dungeon'
     BUTTON_START = [850, 475, [187, 130, 5]]
-    CHECKBOX_SUPER_RAID = [655, 336, [108, 237, 255]]
+    # @TODO Duplication
+    STAGE_ENTER = [850, 200, [93, 25, 27]]
+    # @TODO Duplication
+    SUPER_RAID = [655, 336, [108, 237, 255]]
     REFILL_PAID = [440, 376, [255, 33, 51]]
     DEFEAT = [443, 51, [229, 40, 104]]
     DIFFICULTY_SELECT = [144, 490, [13, 35, 45]]
@@ -189,10 +192,6 @@ class Dungeons:
                 'defeat': 0,
             }
 
-    def _is_first_battle(self):
-        _id = self.current['id']
-        return (self.results[_id]['victory'] + self.results[_id]['defeat']) == 0
-
     def _able_attacking(self, cost):
         return self.current['energy'] >= cost
 
@@ -218,18 +217,19 @@ class Dungeons:
         if FAKE_BATTLE:
             return
 
-        sleep(1)
-        if self._is_first_battle():
+        if pixels_wait([self.STAGE_ENTER], msg="await 'Stage enter'", mistake=10, wait_limit=2)[0]:
             # click on 'Start'
-            await_click([self.BUTTON_START], msg='await button start', timeout=1, mistake=10)
+            log('Start')
+            await_click([self.BUTTON_START], msg="await 'Button Start'", timeout=1, mistake=10)
         else:
             # click on 'Replay'
+            log('Replay')
             dungeons_replay()
         sleep(1)
 
     def _click_on_super_raid(self):
-        x = self.CHECKBOX_SUPER_RAID[0]
-        y = self.CHECKBOX_SUPER_RAID[1]
+        x = self.SUPER_RAID[0]
+        y = self.SUPER_RAID[1]
         click(x, y)
         sleep(.3)
 
@@ -272,7 +272,7 @@ class Dungeons:
         # click(850, 375)
         sleep(.5)
 
-        if not pixel_check_new(self.CHECKBOX_SUPER_RAID, mistake=10):
+        if not pixel_check_new(self.SUPER_RAID, mistake=10):
             self._click_on_super_raid()
 
     def attack(self):
@@ -345,6 +345,7 @@ class Dungeons:
                 cost = read_energy_cost()
                 self._log(f'Energy cost: {cost}')
 
+                counter = 0
                 while self._able_attacking(cost):
                     self._log('Start battle')
                     self.attack()

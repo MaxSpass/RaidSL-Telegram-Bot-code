@@ -10,7 +10,7 @@ DEMON_LORD_REWARD_COORDINATES = {
     6: (580, 380),
 }
 
-# @TODO checking for a 'refill'
+# @TODO Refactor
 class DemonLord:
     def __init__(self, props=None):
         self.results = {
@@ -66,12 +66,13 @@ class DemonLord:
             if pixel_check_old(870, 457, [246, 0, 0]):
                 # click on the "Claim reward button"
                 click(870, 457)
-                sleep(1)
-                # click on the "Obtain reward button"
-                click(460, 444)
-                sleep(1)
-                # click on the "Obtain reward button"
-                click(460, 444)
+
+                # click on the "Obtain reward button" twice
+                for i in range(2):
+                    sleep(5)
+                    click(460, 444)
+                    sleep(5)
+
                 log('Obtained reward from Demon Lord ' + stage)
                 self.results['obtained'].append(stage)
             else:
@@ -86,9 +87,11 @@ class DemonLord:
             stage = self.stages[0]
             x = DEMON_LORD_REWARD_COORDINATES[stage][0]
             y = DEMON_LORD_REWARD_COORDINATES[stage][1]
+
             # click on the certain demon lord
             click(x, y)
             sleep(.5)
+
             # click on battle
             click(860, 480)
             sleep(.5)

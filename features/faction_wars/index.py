@@ -61,7 +61,9 @@ class FactionWars():
     RGB_FREE_CRYPT = [30, 36, 49]
     RGB_FREE_STAGE = [187, 130, 5]
     BATTLE_VICTORY = [452, 42, [30, 186, 239]]
+    # @TODO Duplication
     SUPER_RAID = [653, 335, [108, 237, 255]]
+    # @TODO Duplication
     STAGE_ENTER = [850, 200, [93, 25, 27]]
     STAGE_DEFAULT = '21'
     STAGES_POSITION = {

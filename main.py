@@ -140,6 +140,13 @@ def main():
                     },
                 })
                 telegram_bot.add({
+                    'name': 'prepare',
+                    'description': 'Prepare the window',
+                    'handler': {
+                        'callback': lambda upd, ctx: app.prepare(),
+                    },
+                })
+                telegram_bot.add({
                     'name': 'run',
                     'description': 'Runs all tasks again',
                     'handler': {
