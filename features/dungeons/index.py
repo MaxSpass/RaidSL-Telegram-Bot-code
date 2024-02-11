@@ -193,7 +193,7 @@ class Dungeons:
             }
 
     def _able_attacking(self, cost):
-        return self.current['energy'] >= cost
+        return bool(cost) and self.current['energy'] >= cost
 
     def _save_result(self, condition):
         _id = self.current['id']
