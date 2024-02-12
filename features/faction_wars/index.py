@@ -200,7 +200,7 @@ class FactionWars():
                             log(f"keys: {str(keys)}")
 
                             # computing keys cost
-                            cost = read_energy_cost()
+                            cost = read_run_cost(scale=8)
                             log(f"cost: {str(cost)}")
 
                             if cost and keys:

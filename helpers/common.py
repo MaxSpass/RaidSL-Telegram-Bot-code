@@ -593,7 +593,8 @@ def scale_up(screenshot, factor=1):
     return np.array(scaled_image)
 
 
-def read_text(configs, region, timeout=0.1, parser=None, update_screenshot=True, scale=2):
+def read_text(configs, region, timeout=0.1, parser=None, update_screenshot=False, scale=2, debug=False):
+    # debug = True
     res = []
     screenshot = None
 
@@ -612,8 +613,10 @@ def read_text(configs, region, timeout=0.1, parser=None, update_screenshot=True,
         # greyscale
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-        # cv2.imshow('Matches', image)
-        # cv2.waitKey()
+        # @TODO Debug
+        if debug and i == 0:
+            cv2.imshow('Matches', image)
+            cv2.waitKey()
 
         text = pytesseract.image_to_string(image, config=config)
         res.append(text.strip())
@@ -648,31 +651,22 @@ def read_dealt_damage():
         '--psm 10 --oem 3',
     ]
 
-    return read_text(configs=configs, region=region, timeout=.5, parser=parse_dealt_damage)
+    return read_text(configs=configs, region=region, timeout=.5, update_screenshot=True, parser=parse_dealt_damage)
 
 
-def read_energy_cost(region=None):
-    log('Computing energy cost...')
+def read_run_cost(region=None, scale=4):
+    log('Computing run cost...')
 
-    x1 = 818
-    y1 = 470
-    x2 = 860
-    y2 = 860
-
-    # computing generic x1
-    position = find_needle_energy_cost()
-    if position:
-        x_offset = 70
-        y_offset = 20
-        x1 = position[0] - x_offset
-        y1 = position[1] - y_offset
-        x2 = position[0] + x_offset
-        y2 = position[1] + y_offset
+    # x1 = 820
+    x1 = 740
+    y1 = 477
+    x2 = 852
+    y2 = 494
 
     if not region:
         # index page
         region = axis_to_region(x1, y1, x2, y2)
-        show_pyautogui_image(pyautogui.screenshot(region=region))
+        # show_pyautogui_image(pyautogui.screenshot(region=region))
 
     # region = axis_to_region(720, 460, 860, 505)
     configs = [
@@ -690,7 +684,7 @@ def read_energy_cost(region=None):
         '--psm 13 --oem 3',
     ]
 
-    return read_text(configs=configs, region=region, parser=parse_energy_cost, scale=4)
+    return read_text(configs=configs, region=region, parser=parse_energy_cost, scale=scale)
 
 
 def read_available_energy(region=None):
@@ -726,7 +720,8 @@ def read_keys_bank(region=None):
     log('Computing keys bank...')
 
     if not region:
-        region = axis_to_region(480, 38, 566, 56)
+        # @TODO Test
+        region = axis_to_region(504, 43, 566, 55)
 
     configs = [
         '--psm 1 --oem 3',
@@ -741,4 +736,4 @@ def read_keys_bank(region=None):
         '--psm 12 --oem 3',
     ]
 
-    return read_text(configs=configs, region=region, parser=parse_energy_bank, scale=4)
+    return read_text(configs=configs, region=region, parser=parse_energy_bank, scale=6)

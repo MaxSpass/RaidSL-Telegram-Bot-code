@@ -63,7 +63,7 @@ class DemonLord:
             click(x, y)
             sleep(0.5)
             stage = str(lvl)
-            if pixel_check_old(870, 457, [246, 0, 0]):
+            if pixel_check_new([870, 457, [246, 2, 0]], mistake=10):
                 # click on the "Claim reward button"
                 click(870, 457)
 

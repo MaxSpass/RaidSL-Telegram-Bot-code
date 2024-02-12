@@ -342,7 +342,7 @@ class Dungeons:
                 self._log(f"Starting {self.current['name']}")
                 self.enter()
 
-                cost = read_energy_cost()
+                cost = read_run_cost()
                 self._log(f'Energy cost: {cost}')
 
                 while self._able_attacking(cost):
