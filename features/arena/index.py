@@ -6,8 +6,8 @@ refill_free = [455, 380, [187, 130, 5]]
 refill_paid = [440, 376, [255, 33, 51]]
 defeat = [443, 51, [229, 40, 104]]
 tab_battle = [110, 115, [2, 93, 154]]
-reward_dot = [154, 299, [225, 0, 0]]
 
+RGB_RED_DOT = [225, 0, 0]
 PAID_REFILL_LIMIT = 0
 OUTPUT_ITEMS_AMOUNT = 10
 
@@ -32,6 +32,7 @@ class ArenaFactory:
             button_locations,
             item_locations,
             refill_coordinates,
+            tiers_coordinates,
             props=None
     ):
         self.name = name
@@ -40,6 +41,7 @@ class ArenaFactory:
         self.button_locations = button_locations
         self.item_locations = item_locations
         self.refill_coordinates = refill_coordinates
+        self.tiers_coordinates = tiers_coordinates
 
         self.refill = PAID_REFILL_LIMIT
         self.initial_refresh = False
@@ -138,18 +140,20 @@ class ArenaFactory:
         return s
 
     def obtain(self):
-        # @TODO Support classic arena only
-        if pixel_check_new(reward_dot, mistake=10):
-            click(reward_dot[0], reward_dot[1])
+        x = self.tiers_coordinates[0]
+        y = self.tiers_coordinates[1]
+        tiers_pixel = [x, y, RGB_RED_DOT]
+        if pixel_check_new(tiers_pixel, mistake=20):
+            click(x, y)
             sleep(1)
 
-            dot = find_needle_reward_arena_classic()
+            dot = find_needle_arena_reward()
             for i in range(3):
                 swipe('right', 600, 350, 400, speed=.6, sleep_after_end=.2)
-                dot = find_needle_reward_arena_classic()
+                dot = find_needle_arena_reward()
                 if dot is not None:
                     x = dot[0]
-                    y = dot[1]+10
+                    y = dot[1]+20
                     # click on the chest
                     click(x, y)
                     sleep(1)
@@ -241,17 +245,12 @@ class ArenaFactory:
         self._show_results(self._get_last_results())
 
     def run(self, props=None):
-        # self.terminate = False for further executions
         self.terminate = False
 
         if props is not None:
             self._apply_props(props)
 
         self.enter()
-
-        # refreshes arena, when it's a first time calling
-        # if not len(self.results):
-        #     self._refresh_arena()
 
         if self.initial_refresh:
             self._refresh_arena()
@@ -268,9 +267,6 @@ class ArenaFactory:
                 if last_results.count(False) > 0 or len(last_results) < OUTPUT_ITEMS_AMOUNT:
                     self._refresh_arena()
 
-            # Temp | test
-            # self.terminate = True
-
         self.finish()
 
 
@@ -284,6 +280,7 @@ class ArenaClassic(ArenaFactory):
             button_locations=CLASSIC_BUTTON_LOCATIONS,
             item_locations=CLASSIC_ITEM_LOCATIONS,
             refill_coordinates=CLASSIC_COINS_REFILL,
+            tiers_coordinates=CLASSIC_TIERS_COORDINATE,
             props=props
         )
 
@@ -298,5 +295,6 @@ class ArenaTag(ArenaFactory):
             button_locations=TAG_BUTTON_LOCATIONS,
             item_locations=TAG_ITEM_LOCATIONS,
             refill_coordinates=TAG_COINS_REFILL,
+            tiers_coordinates=TAG_TIERS_COORDINATE,
             props=props
         )

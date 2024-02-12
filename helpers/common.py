@@ -431,11 +431,11 @@ def find_needle_red_dot(region=None, confidence=None):
     return find_needle('red_dot.jpg', region=region, confidence=confidence)
 
 
-def find_needle_reward_arena_classic(region=None):
+def find_needle_arena_reward(region=None):
     if not region:
-        region = axis_to_region(177, 430, 880, 450)
+        region = axis_to_region(177, 424, 880, 450)
 
-    return find_needle('arena_classic_reward.jpg', region=region)
+    return find_needle('arena_reward.jpg', region=region, confidence=.6)
 
 
 def battles_click():
@@ -622,12 +622,10 @@ def read_text(configs, region, timeout=0.1, parser=None, update_screenshot=False
         res.append(text.strip())
         sleep(timeout)
 
-    log(res)
-
+    # log(res)
     if parser:
         res = parser(res)
-
-    log(res)
+    # log(res)
 
     return get_higher_occurrence(res)
 

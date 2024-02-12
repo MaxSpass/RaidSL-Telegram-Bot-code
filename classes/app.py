@@ -16,15 +16,15 @@ import pytesseract
 CONFIG_PATH = "config.json"
 WINDOW_SIZE = [920, 540]
 INSTANCES_MAP = {
-   'arena_live': ArenaLive,
-   'arena_classic': ArenaClassic,
-   'arena_tag': ArenaTag,
-   'demon_lord': DemonLord,
-   'hydra': Hydra,
-   'dungeon': Dungeons,
-   'faction_wars': FactionWars,
-   'iron_twins': IronTwins,
-   'rewards': Rewards,
+    'arena_live': ArenaLive,
+    'arena_classic': ArenaClassic,
+    'arena_tag': ArenaTag,
+    'demon_lord': DemonLord,
+    'hydra': Hydra,
+    'dungeon': Dungeons,
+    'faction_wars': FactionWars,
+    'iron_twins': IronTwins,
+    'rewards': Rewards,
 }
 
 def prepare_window():
@@ -70,6 +70,18 @@ def prepare_window():
         raise Exception("Game windows is NOT prepared")
 
 
+def make_command_key(input_string):
+    # Remove special characters and convert to lowercase
+    clean_string = re.sub(r'[^a-zA-Z0-9\s]', '', input_string).lower()
+    # Replace spaces with underscores
+    formatted_string = clean_string.replace(' ', '_')
+    return formatted_string
+
+
+def make_title(input_string):
+    return input_string.replace('_', ' ').title()
+
+
 class App:
     def __init__(self):
         self.config = None
@@ -90,24 +102,41 @@ class App:
             _config['telegram_token'] = str(config_json['telegram_token'])
 
         # Tasks
-        tasks_length = len(config_json['tasks'])
-        if tasks_length:
-            for i in range(tasks_length):
+        commands_length = len(config_json['tasks'])
+        if commands_length:
+            for i in range(commands_length):
                 task = config_json['tasks'][i]
                 if 'enable' not in task or bool(task['enable']):
-                    _name = task['name'].lower()
+
+                    _task = task['task'].lower()
                     _props = task['props'] if 'props' in task else None
+                    _title = task['title'] if 'title' in task else make_title(_task)
+                    _command = task['command'] \
+                        if 'command' in task \
+                        else make_command_key(f"{_task} {task['title']}") \
+                        if 'title' in task \
+                        else _task
 
-                    task_d = {'name': _name, 'props': _props}
+                    # The most important data object for command registration
+                    task_d = {
+                        'task': _task,
+                        'command': _command,
+                        'title': _title,
+                        'props': _props,
+                    }
 
-                    # task_d['props'] = task['props']
-
+                    # @TODO Removed: and _task not in self.entries
                     # accumulated instances
-                    if _name in INSTANCES_MAP and _name not in self.entries:
-                        # @TODO should take from memory later on
-                        self.entries[_name] = {
-                            'instance': INSTANCES_MAP[_name](_props),
-                        }
+                    if _command not in self.entries:
+                        if _task in INSTANCES_MAP:
+                            # @TODO should take from memory later on
+                            self.entries[_command] = {
+                                'instance': INSTANCES_MAP[_task](_props),
+                            }
+                        else:
+                            raise f"No {_task} among all instances"
+                    else:
+                        raise f"{_command} is already exist, please provide the different"
 
                     _config['tasks'].append(task_d)
 
@@ -116,7 +145,7 @@ class App:
                 'instance': INSTANCES_MAP['rewards']()
             }
 
-        # After each tasks
+        # After each commands
         if 'after_each' in config_json:
             _config['after_each'] = config_json['after_each']
 
@@ -189,7 +218,7 @@ class App:
             log(error)
 
     def screen(self):
-        width = WINDOW_SIZE[0] - 7*2
+        width = WINDOW_SIZE[0] - 7 * 2
         height = WINDOW_SIZE[1] - 7
         screenshot = pyautogui.screenshot(region=[0, 0, width, height])
 
@@ -209,8 +238,8 @@ class App:
     def prepare(self):
         prepare_window()
 
-    def get_entry(self, entry_name):
-        return self.entries[entry_name]
+    def get_entry(self, command_name):
+        return self.entries[command_name]
 
     def run(self):
         self.prepare()
@@ -222,7 +251,7 @@ class App:
         # Looping: Tasks List
         for i in range(len(self.config['tasks'])):
             task = self.config['tasks'][i]
-            task_name = task['name'].lower()
+            task_name = task['task'].lower()
             log('BOT is starting the TASK: ' + task_name.upper())
 
             # Run instance

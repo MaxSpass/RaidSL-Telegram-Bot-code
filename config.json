@@ -3,7 +3,7 @@
   "start_immediate": 0,
   "tasks": [
     {
-      "name": "arena_live",
+      "task": "arena_live",
       "enable": 1,
       "props": {
         "refill": 1,
@@ -86,7 +86,7 @@
       }
     },
     {
-      "name": "arena_classic",
+      "task": "arena_classic",
       "enable": 1,
       "props": {
         "refill": 0,
@@ -94,7 +94,7 @@
       }
     },
     {
-      "name": "arena_tag",
+      "task": "arena_tag",
       "enable": 1,
       "props": {
         "refill": 0,
@@ -102,11 +102,11 @@
       }
     },
     {
-      "name": "iron_twins",
+      "task": "iron_twins",
       "enable": 1
     },
     {
-      "name": "faction_wars",
+      "task": "faction_wars",
       "enable": 1,
       "props": {
         "stages": {
@@ -115,17 +115,30 @@
       }
     },
     {
-      "name": "dungeon",
+      "task": "dungeon",
+      "title": "Sand Devil",
       "enable": 1,
-      "props": {
-        "refill": 0,
-        "locations": [
-          {"id": 1}
-        ]
-      }
+      "props": {"locations": [{"id": 6}], "refill": 0}
     },
     {
-      "name": "hydra",
+      "task": "dungeon",
+      "title": "Minotaur",
+      "enable": 1,
+      "props": {"locations": [{"id": 1}], "refill": 0}
+    },
+    {
+      "task": "dungeon",
+      "title": "Spider",
+      "enable": 1,
+      "props": {"locations": [{"id": 3}], "refill": 0}
+    },
+    {
+      "name": "Rewards",
+      "task": "rewards",
+      "enable": 1
+    },
+    {
+      "task": "hydra",
       "enable": 1,
       "props": {
         "runs_limit": 5,
@@ -176,15 +189,11 @@
       }
     },
     {
-      "name": "demon_lord",
+      "task": "demon_lord",
       "enable": 1,
       "props": {
         "stages": [6, 5, 4]
       }
-    },
-    {
-      "name": "rewards",
-      "enable": 1
     }
   ],
   "after_each": ["rewards"]

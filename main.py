@@ -1,14 +1,15 @@
-import pyautogui
-import sys
-import random
+# import os.path
+# import pyautogui
+# import sys
+# import random
+# import pytesseract
 import traceback
-import pytesseract
 import threading
 from classes.app import *
 from constants.index import IS_DEV
 from bot import TelegramBOT
-from PIL import Image
-from io import BytesIO
+# from PIL import Image
+# from io import BytesIO
 # from features.faction_wars.index import *
 
 pyautogui.FAILSAFE = False
@@ -21,86 +22,6 @@ else:
     pytesseract.pytesseract.tesseract_cmd = os.path.normpath(r'C:\Program Files (x86)\Tesseract-OCR\tesseract.exe')
 
 app = App()
-
-if IS_DEV:
-    ARENA_LIVE_PROPS = {
-        'pool': [
-            {'name': 'Arbiter', 'role': 's', 'priority': 1},
-            {'name': 'Sun Wukong', 'role': 'a', 'priority': 1},
-            {'name': 'Duchess Lilitu', 'role': 's', 'priority': 1},
-            {'name': 'Cupidus', 'role': 'a', 'priority': 1},
-            {'name': 'Venus', 'role': 's', 'priority': 1},
-            {'name': 'Leorius the Proud', 'role': 'a'},
-            {'name': 'Rotos', 'role': 'a'},
-            {'name': 'Mortu-Macaab', 'role': 'a'},
-            {'name': 'Ramantu Drakesblood', 'role': 'a'},
-            {'name': 'Candraphon', 'role': 'a'},
-            {'name': 'Lady Mikage', 'role': 's'},
-            {'name': 'Pythion', 'role': 's'},
-            {'name': 'Maulie Tankard', 'role': 's'},
-            {'name': 'Lydia the Deathsiren', 'role': 's'},
-            {'name': 'Mighty Ukko', 'role': 's'},
-        ],
-        'leaders': [
-            'Arbiter',
-            'Sun Wukong',
-            'Mortu-Macaab',
-            'Duchess Lilitu',
-            'Mighty Ukko',
-            'Lydia the Deathsiren',
-            'Pythion',
-        ],
-        'refill': 1
-    }
-    HYDRA_PROPS = {
-        'runs_limit': 3,
-        'runs': [
-            {
-                'stage': 4,
-                'team_preset': 1,
-                'min_damage': 150,
-                'skip': 0
-            },
-            {
-                'stage': 3,
-                'team_preset': 4,
-                'min_damage': 30,
-                'skip': 0
-            },
-            {
-                'stage': 1,
-                'team_preset': 3,
-                'min_damage': 180,
-                'skip': 0
-            },
-        ],
-    }
-    DUNGEON_PROPS = {
-        "bank": False,
-        "refill": False,
-        "super_raid": False,
-        "locations": [
-            {"id": 6, "energy": 40},
-            {"id": 3, "energy": 40},
-        ]
-    }
-
-    app.load_config({
-        'tasks': [
-            {'name': 'dungeon', 'enable': 1, 'props': DUNGEON_PROPS},
-            {'name': 'arena_live', 'enable': 1, 'props': ARENA_LIVE_PROPS},
-            {'name': 'hydra', 'enable': 1, 'props': HYDRA_PROPS},
-            {'name': 'iron_twins', 'enable': 0},
-            {'name': 'faction_wars', 'enable': 0},
-            {'name': 'arena_classic', 'enable': 0, 'props': {'refill': 0}},
-            {'name': 'arena_tag', 'enable': 0, 'props': {'refill': 0}},
-            {'name': 'demon_lord', 'enable': 0},
-        ],
-        'after_each': [
-            {'check_rewards': 1}
-        ],
-    })
-
 
 def main():
     # track_mouse_position()
@@ -133,35 +54,35 @@ def main():
 
                 # all callbacks should return truthy values in case of success
                 telegram_bot.add({
-                    'name': 'report',
+                    'command': 'report',
                     'description': 'Report',
                     'handler': {
                         'callback': lambda upd, ctx: app.report(),
                     },
                 })
                 telegram_bot.add({
-                    'name': 'prepare',
+                    'command': 'prepare',
                     'description': 'Prepare the window',
                     'handler': {
                         'callback': lambda upd, ctx: app.prepare(),
                     },
                 })
                 telegram_bot.add({
-                    'name': 'run',
+                    'command': 'run',
                     'description': 'Runs all tasks again',
                     'handler': {
                         'callback': lambda upd, ctx: app.run(),
                     },
                 })
                 telegram_bot.add({
-                    'name': 'relogin',
+                    'command': 'relogin',
                     'description': 'Re-log in',
                     'handler': {
                         'callback': lambda upd, ctx: app.relogin(),
                     },
                 })
                 telegram_bot.add({
-                    'name': 'screen',
+                    'command': 'screen',
                     'description': 'Capture and send a screenshot',
                     'handler': {
                         'callback': lambda upd, ctx: ctx.bot.send_photo(
@@ -192,17 +113,18 @@ def main():
                 # for i in range(len(test_commands)):
                 #     telegram_bot.add(test_commands[i])
 
-                commands = list(map(lambda command: {
-                    'name': command['name'],
-                    'description': f"Runs '{command['name']}' task",
+                commands = list(map(lambda task: {
+                    'command': task['command'],
+                    'description': f"Command '{task['title']}'",
                     'handler': {
                         'callback': lambda upd, ctx: app.get_entry(
-                            entry_name=command['name']
+                            command_name=task['command']
                         )['instance'].run(),
                     },
                 }, app.config['tasks']))
 
                 for i in range(len(commands)):
+                    print(commands[i])
                     telegram_bot.add(commands[i])
 
                 telegram_bot_thread = threading.Thread(target=telegram_bot.run)

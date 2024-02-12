@@ -16,12 +16,12 @@ class TelegramBOT:
         else:
             self.commands = [
                 {
-                    'name': 'start',
+                    'command': 'start',
                     'description': 'Start the bot',
                     'handler': {'type': 'message', 'callback': self._start}
                 },
                 {
-                    'name': 'help',
+                    'command': 'help',
                     'description': 'Show available commands',
                     'handler': {'type': 'message', 'callback': self._help}
                 },
@@ -33,12 +33,12 @@ class TelegramBOT:
             self.dp = self.updater.dispatcher
             # Register the /start command
             for i in range(len(self.commands)):
-                name = self.commands[i]['name']
+                command = self.commands[i]['command']
                 handler = self.commands[i]['handler']['callback']
-                self.dp.add_handler(CommandHandler(name, handler))
+                self.dp.add_handler(CommandHandler(command, handler))
 
     def _all_commands(self):
-        commands = list(map(lambda x: f"/{x['name']} - {x['description']}", self.commands))
+        commands = list(map(lambda x: f"/{x['command']} - {x['description']}", self.commands))
         return '\n\n'.join(commands)
 
     def _start(self, update: Updater, context: CallbackContext) -> None:
@@ -51,21 +51,21 @@ class TelegramBOT:
 
     def add(self, obj):
         self.commands.append(obj)
-        name = obj['name']
+        command = obj['command']
         handler = obj['handler']
         callback = handler['callback']
 
         def final_callback(upd, ctx):
             res = callback(upd, ctx)
             status = "Done" if bool(res) or res is None else "Error"
-            message = f'{status} - {name}'
+            message = f'{status} - {command}'
 
             if res and type(res) is str:
                 message += f'\n{res}'
 
             upd.message.reply_text(message)
 
-        self.dp.add_handler(CommandHandler(name, final_callback))
+        self.dp.add_handler(CommandHandler(command, final_callback))
 
     def run(self):
         log('An App is waiting for some command')

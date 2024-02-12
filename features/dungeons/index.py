@@ -2,6 +2,7 @@ from helpers.common import *
 
 # when fake battle is needed
 FAKE_BATTLE = False
+# FAKE_BATTLE = True
 
 DUNGEON_MINOTAUR = "Minotaur's Labyrinth"
 DUNGEON_GOLEM = "Ice Golem's Peak"
@@ -10,38 +11,8 @@ DUNGEON_DRAGON = "Dragon's Lair"
 DUNGEON_FIRE = "Fire Knight's Castle"
 DUNGEON_SAND_DEVIL = "Sand Devil's Necropolis"
 DUNGEON_PHANTOM = "Phantom Shogun's Grove"
-# TODO is not considered here
-DUNGEON_IRON_TWINS = "Iron Twins Fortress"
 
-# DUNGEON_POSITION_PRESETS = {
-#     'primary': {
-#         {'stage': 1, 'swipes': 0, 'x': 0, 'y': 0},
-#         {'stage': 2, 'swipes': 0, 'x': 0, 'y': 0},
-#         {'stage': 3, 'swipes': 0, 'x': 0, 'y': 0},
-#         {'stage': 4, 'swipes': 0, 'x': 0, 'y': 0},
-#         {'stage': 5, 'swipes': 0, 'x': 0, 'y': 0},
-#         {'stage': 6, 'swipes': 0, 'x': 0, 'y': 0},
-#         {'stage': 7, 'swipes': 0, 'x': 0, 'y': 0},
-#         {'stage': 8, 'swipes': 0, 'x': 0, 'y': 0},
-#         {'stage': 9, 'swipes': 0, 'x': 0, 'y': 0},
-#         {'stage': 10, 'swipes': 0, 'x': 0, 'y': 0},
-#         {'stage': 11, 'swipes': 0, 'x': 0, 'y': 0},
-#         {'stage': 12, 'swipes': 0, 'x': 0, 'y': 0},
-#         {'stage': 13, 'swipes': 0, 'x': 0, 'y': 0},
-#         {'stage': 14, 'swipes': 0, 'x': 0, 'y': 0},
-#         {'stage': 15, 'swipes': 0, 'x': 0, 'y': 0},
-#         {'stage': 16, 'swipes': 0, 'x': 0, 'y': 0},
-#         {'stage': 17, 'swipes': 0, 'x': 0, 'y': 0},
-#         {'stage': 18, 'swipes': 0, 'x': 0, 'y': 0},
-#         {'stage': 19, 'swipes': 0, 'x': 0, 'y': 0},
-#         {'stage': 20, 'swipes': 0, 'x': 0, 'y': 0},
-#         {'stage': 21, 'swipes': 0, 'x': 0, 'y': 0},
-#         {'stage': 22, 'swipes': 0, 'x': 0, 'y': 0},
-#         {'stage': 23, 'swipes': 0, 'x': 0, 'y': 0},
-#         {'stage': 24, 'swipes': 0, 'x': 0, 'y': 0},
-#         {'stage': 25, 'swipes': 0, 'x': 0, 'y': 0},
-#     }
-# }
+DUNGEON_NO_DIFFICULTIES = ['1', '6', '7']
 
 DUNGEON_DATA = [
     {'id': '1', 'name': DUNGEON_MINOTAUR},
@@ -52,8 +23,6 @@ DUNGEON_DATA = [
     {'id': '6', 'name': DUNGEON_SAND_DEVIL},
     {'id': '7', 'name': DUNGEON_PHANTOM},
 ]
-
-DUNGEON_NO_DIFFICULTIES = ['1', '6', '7']
 
 DUNGEON_LOCATIONS = {
     '1': {'swipe': 1, 'click': {'x': 420, 'y': 300}},

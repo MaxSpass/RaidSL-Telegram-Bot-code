@@ -303,8 +303,8 @@ class ArenaLive:
                     sleep(.5)
                 self._confirm()
 
-        my_turn_or_defeat = pixels_wait(
-            [battle_start, defeat],
+        my_turn_or_defeat_or_victory = pixels_wait(
+            [battle_start, defeat, victory],
             msg='My turn or Defeat',
             timeout=2,
             mistake=20,
@@ -312,7 +312,7 @@ class ArenaLive:
         )
 
         # Battle just started
-        if my_turn_or_defeat[0]:
+        if my_turn_or_defeat_or_victory[0]:
             click(auto_mode[0], auto_mode[1])
             battle_result = pixels_wait(
                 [victory, defeat],
@@ -322,8 +322,10 @@ class ArenaLive:
                 wait_limit=1200
             )
             self._save_result(battle_result[0])
-        elif my_turn_or_defeat[1]:
+        elif my_turn_or_defeat_or_victory[1]:
             self._save_result(False)
+        elif my_turn_or_defeat_or_victory[2]:
+            self._save_result(True)
 
         click(return_start_panel[0], return_start_panel[1])
         sleep(3)
