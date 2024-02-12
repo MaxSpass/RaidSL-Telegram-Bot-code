@@ -27,15 +27,6 @@ def main():
     # track_mouse_position()
     # return
 
-    # app.prepare()
-    # faction_new = FactionWars({
-    #     "stages": {
-    #       "5": 20
-    #     }
-    #   })
-    # faction_new.run()
-    # return
-
     if IS_DEV or app.validation():
         app.start()
         app.prepare()
