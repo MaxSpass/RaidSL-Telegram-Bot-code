@@ -43,7 +43,10 @@ class Dungeons:
     # @TODO Duplication
     SUPER_RAID = [655, 336, [108, 237, 255]]
     REFILL_PAID = [440, 376, [255, 33, 51]]
-    DEFEAT = [443, 51, [229, 40, 104]]
+
+    RESULT_VICTORY = [450, 40, [15, 121, 182]]
+    RESULT_DEFEAT = [450, 40, [178, 23, 38]]
+
     DIFFICULTY_SELECT = [144, 490, [13, 35, 45]]
     RGB_DIFFICULTY = [34, 47, 60]
     DIFFICULTY_NORMAL = [144, 394, RGB_DIFFICULTY]
@@ -68,7 +71,6 @@ class Dungeons:
         self.bank = 0
         self.refill = 0
         self.locations = []
-        self.super_raid = self.DUNGEON_SUPER_RAID_DEFAULT
 
         # @TODO Temp dirty fix
         self.props = props
@@ -148,10 +150,6 @@ class Dungeons:
 
             if 'locations' in props:
                 self.locations = props['locations']
-
-            # @TODO Consider to remove
-            if 'super_raid' in props:
-                self.super_raid = bool(props['super_raid'])
 
     def _initialize(self, dungeon):
         self.current = dungeon
@@ -268,7 +266,7 @@ class Dungeons:
                 waiting_battle_end_regular(f'{_name} battle end', x=28, y=88)
                 sleep(.5)
 
-            result = not pixel_check_new(self.DEFEAT)
+            result = not pixel_check_new(self.RESULT_DEFEAT)
             self._save_result(result)
 
     def finish(self):

@@ -83,27 +83,6 @@ def main():
                     },
                 })
 
-                # def test_cb(msg, length=5):
-                #     for k in range(length):
-                #         print(msg)
-                #         sleep(.5)
-                #
-                #     return 'Done'
-                #
-                # test_commands = [
-                #     {'name': 'test_1', 'description': 'description_1', 'handler': {
-                #         'callback': lambda *args: test_cb('1'),
-                #     }},
-                #     {'name': 'test_2', 'description': 'description_2', 'handler': {
-                #         'callback': lambda *args: test_cb('2'),
-                #     }},
-                #     {'name': 'test_3', 'description': 'description_3', 'handler': {
-                #         'callback': lambda *args: test_cb('3'),
-                #     }},
-                # ]
-                # for i in range(len(test_commands)):
-                #     telegram_bot.add(test_commands[i])
-
                 commands = list(map(lambda task: {
                     'command': task['command'],
                     'description': f"Command '{task['title']}'",
@@ -115,7 +94,6 @@ def main():
                 }, app.config['tasks']))
 
                 for i in range(len(commands)):
-                    print(commands[i])
                     telegram_bot.add(commands[i])
 
                 telegram_bot_thread = threading.Thread(target=telegram_bot.run)

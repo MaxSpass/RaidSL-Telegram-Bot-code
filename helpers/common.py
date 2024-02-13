@@ -165,7 +165,7 @@ def pixel_wait(msg, x, y, rgb, timeout=5, mistake=0):
     return True
 
 
-def pixels_wait(pixels, msg=None, timeout=5, mistake=0, wait_limit=None):
+def pixels_wait(pixels, msg=None, timeout=5, mistake=0, wait_limit=None, debug=False):
     length = len(pixels)
     pixels_str = 'pixel'
     if length > 1:
@@ -176,24 +176,24 @@ def pixels_wait(pixels, msg=None, timeout=5, mistake=0, wait_limit=None):
     def restart():
         res = []
         for i in range(len(pixels)):
-            x = pixels[i][0]
-            y = pixels[i][1]
-            rgb = pixels[i][2]
-            res.append(pixel_check_old(x, y, rgb, mistake=mistake))
+            res.append(pixel_check_new(pixels[i], mistake=mistake))
         return res
 
     checked_pixels = restart()
     counter = 0
+    has_wait_limit = type(wait_limit) is int
 
     while checked_pixels.count(False) == length:
         sleep(timeout)
         counter += timeout
         checked_pixels = restart()
         log(str(counter) + ' seconds left')
-        if type(wait_limit) is int and counter >= wait_limit:
-            # debug
-            debug_save_screenshot(prefix_name=msg)
+        if has_wait_limit and counter >= wait_limit:
             break
+
+    if debug and has_wait_limit and counter >= wait_limit:
+        # debug
+        debug_save_screenshot(prefix_name=msg)
 
     return checked_pixels
 
@@ -276,8 +276,8 @@ def dungeons_results_finish():
     sleep(0.5)
 
 
-def calculate_win_rate(w, d):
-    t = w + d
+def calculate_win_rate(w, l):
+    t = w + l
     wr = w * 100 / t
     wr_str = str(round(wr)) + '%'
     return wr_str
