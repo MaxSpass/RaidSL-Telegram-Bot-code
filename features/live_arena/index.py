@@ -63,6 +63,16 @@ ARCHIVE_PATTERN_FIRST = [1, 2, 2]
 error_dialog_button_left = [357, 287, [22, 124, 156]]
 error_dialog_button_right = [550, 291, [22, 124, 156]]
 
+rgb_reward = [220, 0, 0]
+rewards_pixels = [
+    [875, 118, rgb_reward],
+    [875, 472, rgb_reward],
+    [875, 422, rgb_reward],
+    [875, 372, rgb_reward],
+    [875, 322, rgb_reward],
+    [875, 272, rgb_reward],
+]
+
 
 # @TODO Issues: keyboard locale, enemy's leaving the battle
 # Requires: checking amount of keys
@@ -178,6 +188,16 @@ class ArenaLive:
         # live arena
         click(self.x_config, self.y_config)
         sleep(3)
+
+    def obtain(self):
+        for i in range(len(rewards_pixels)):
+            pixel = rewards_pixels[i]
+            if pixel_check_new(pixel, mistake=30):
+                x = pixel[0]
+                y = pixel[1]
+                click(x, y)
+                sleep(.5)
+
 
     def attack(self):
         sorted_pool = copy.deepcopy(self.pool)
@@ -425,6 +445,7 @@ class ArenaLive:
         if has_pool and is_active:
             log('Live Arena | Active')
             self.enter()
+            self.obtain()
 
             while self._is_available():
                 self._claim_free_refill_coins()

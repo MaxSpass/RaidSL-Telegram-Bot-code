@@ -1,19 +1,14 @@
 from helpers.common import *
 
-# twin fortress
 TWIN_ATTACKS_LIMIT = 6
 
-defeat = [443, 51, [229, 40, 104]]
-
-# @TODO Checking first battle
+# @TODO Refactor is needed
 class IronTwins:
     LOCATION_NAME = 'Iron Twins Fortress'
+    RESULT_DEFEAT = [450, 40, [178, 23, 38]]
 
     def __init__(self, props=None):
-        self.results = {
-            'runs': TWIN_ATTACKS_LIMIT,
-            'attempts': [],
-        }
+        self.results = []
         self.completed = False
 
     def _check_refill(self):
@@ -23,11 +18,13 @@ class IronTwins:
         if ruby_button is not None:
             self.completed = True
 
+    def _enter_stage(self):
+        click(830, 460)
+        sleep(.5)
 
     def enter(self):
-        go_index_page()
+        close_popup_recursive()
         sleep(1)
-        go_index_page()
 
         click_on_progress_info()
         # Fortress Keys
@@ -37,46 +34,39 @@ class IronTwins:
         dungeons_scroll()
 
     def attack(self):
-        attack_limit = self.results['runs']
-        click(830, 460)
-        sleep(.5)
-
+        self._enter_stage()
         self._check_refill()
 
-        while attack_limit > 0 and not self.completed:
-            if attack_limit == self.results['runs']:
-                # starts first battle
-                click(830, 460)
-                sleep(.5)
-            else:
-                # repeat all subsequent battles
-                dungeons_replay()
+        self.completed = not dungeons_is_able()
 
-            self._check_refill()
+        if not self.completed:
 
-            if self.completed:
-                log('terminate')
-                break
+            while self.results.count(True) < TWIN_ATTACKS_LIMIT and not self.completed:
+                dungeons_start_battle()
 
-            waiting_battle_end_regular(self.LOCATION_NAME + ' battle end', x=28, y=88)
+                self._check_refill()
+                if self.completed:
+                    log('Terminated')
+                    break
 
-            res = not pixel_check_new(defeat)
-            self.results['attempts'].append(res)
-            if res:
-                attack_limit -= 1
+                waiting_battle_end_regular(self.LOCATION_NAME + ' battle end', x=28, y=88)
+
+                res = not pixel_check_new(self.RESULT_DEFEAT, mistake=10)
+                self.results.append(res)
+
+            dungeons_click_stage_select()
 
     def finish(self):
-        dungeons_results_finish()
-        go_index_page()
+        dungeons_click_stage_select()
+        close_popup_recursive()
         log('DONE - ' + self.LOCATION_NAME)
 
     def report(self):
-        attempts = self.results['attempts']
         s = None
 
-        if len(attempts):
-            s = self.LOCATION_NAME + ' | Completed ' + str(attempts.count(True)) + ' keys in ' + str(
-                len(attempts)) + ' attempts '
+        if len(self.results):
+            s = self.LOCATION_NAME + ' | Completed ' + str(self.results.count(True)) + ' keys in ' + str(
+                len(self.results)) + ' attempts '
 
         return s
 
@@ -86,5 +76,5 @@ class IronTwins:
             self.attack()
             self.finish()
         else:
-            go_index_page()
+            close_popup_recursive()
             log(f'{self.LOCATION_NAME} is Done')

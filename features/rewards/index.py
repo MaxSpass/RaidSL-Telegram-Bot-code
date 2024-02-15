@@ -12,6 +12,7 @@ def get_red_dot():
     return find_needle_red_dot(region=red_dot_region, confidence=.7)
 
 
+RGB_INDICATOR = [225, 0, 0]
 # regular quests items pixel coordinates
 QUESTS_TABS = [
     {'pixel': {'x': 24, 'y': 84}},
@@ -60,7 +61,7 @@ class Rewards:
             x = tab['pixel']['x']
             y = tab['pixel']['y']
 
-            if pixel_check_old(x, y, [225, 0, 0], 10) is None:
+            if pixel_check_new([x, y, RGB_INDICATOR], 20) is None:
                 continue
 
             # Weekly quests tab (special case)
@@ -116,7 +117,7 @@ class Rewards:
 
     def quests_run(self):
         if is_index_page():
-            if pixel_check_new([276, 480, [225, 0, 0]], 10):
+            if pixel_check_new([276, 480, RGB_INDICATOR], mistake=20):
                 # enter
                 click(276, 480)
                 sleep(1)
@@ -133,8 +134,7 @@ class Rewards:
         if is_index_page():
             x = 860
             y = 408
-            # @TODO Needs to be tested
-            if pixel_check_new([x, y, [225, 0, 0]], 20):
+            if pixel_check_new([x, y, RGB_INDICATOR], mistake=20):
                 # enter
                 click(x, y)
                 sleep(1)
@@ -146,6 +146,48 @@ class Rewards:
                 log('Play-Time rewards are not available')
         else:
             log("Skipped! No Index Page found")
+
+    def clan_war_rewards(self):
+        # grabs "clan war" related rewards
+        CLAN_WAR_INDEX_DOT = [757, 122, RGB_INDICATOR]
+        CLAN_WAR_REWARD_DOT = [402, 128, RGB_INDICATOR]
+
+        close_popup_recursive()
+
+        if await_click([CLAN_WAR_INDEX_DOT], mistake=30, wait_limit=2)[0]:
+            await_click([CLAN_WAR_REWARD_DOT], mistake=30, wait_limit=3)
+
+        close_popup_recursive()
+
+    def clan_quests_rewards(self):
+        # grabs "clan quests" related rewards
+        CLAN_INDEX_DOT = [556, 479, RGB_INDICATOR]
+        CLAN_REWARD_MENU_DOT = [152, 302, RGB_INDICATOR]
+        CLAN_TABS = [
+            [550, 80, RGB_INDICATOR],
+            [422, 80, RGB_INDICATOR],
+            [292, 80, RGB_INDICATOR],
+        ]
+        CLAN_BUTTON_COLLECT = [855, 192, [187, 130, 5]]
+
+        close_popup_recursive()
+
+        if await_click([CLAN_INDEX_DOT], mistake=30, wait_limit=2)[0]:
+            if await_click([CLAN_REWARD_MENU_DOT], mistake=30, wait_limit=3)[0]:
+                for i in range(len(CLAN_TABS)):
+                    tab_pixel = CLAN_TABS[i]
+                    if pixel_check_new(tab_pixel, mistake=30):
+                        x = tab_pixel[0]
+                        y = tab_pixel[1]
+                        click(x, y)
+                        sleep(.5)
+
+                        while pixel_check_new(CLAN_BUTTON_COLLECT, mistake=30):
+                            x_collect = CLAN_BUTTON_COLLECT[0]
+                            y_collect = CLAN_BUTTON_COLLECT[1]
+                            click(x_collect, y_collect)
+
+        close_popup_recursive()
 
     def report(self):
         s = None
@@ -162,3 +204,5 @@ class Rewards:
         close_popup_recursive()
         self.quests_run()
         self.play_time_run()
+        self.clan_war_rewards()
+        self.clan_quests_rewards()

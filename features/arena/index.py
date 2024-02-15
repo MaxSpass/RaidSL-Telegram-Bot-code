@@ -209,7 +209,7 @@ class ArenaFactory:
                     click_on_battle()
 
                 if self.terminate:
-                    log('terminate')
+                    log('Terminated')
                     break
 
                 click_on_start()

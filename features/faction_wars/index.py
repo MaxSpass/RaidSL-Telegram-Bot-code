@@ -18,21 +18,21 @@ FACTION_SHADOWKIN = 'Shadowkin'
 FACTION_SYLVAN_WATCHER = 'Sylvan Watcher'
 
 FACTION_POSITION = {
-    '1': {'pixel': {'x': 223, 'y': 216}},
-    '2': {'pixel': {'x': 297, 'y': 120}},
-    '3': {'pixel': {'x': 291, 'y': 332}},
-    '4': {'pixel': {'x': 419, 'y': 216}},
-    '5': {'pixel': {'x': 531, 'y': 119}},
-    '6': {'pixel': {'x': 633, 'y': 328}},
-    '7': {'pixel': {'x': 701, 'y': 217}},
-    '8': {'pixel': {'x': 767, 'y': 117}},
-    '9': {'pixel': {'x': 22, 'y': 328}},
-    '10': {'pixel': {'x': 213, 'y': 214}},
-    '11': {'pixel': {'x': 295, 'y': 328}},
-    '12': {'pixel': {'x': 391, 'y': 119}},
-    '13': {'pixel': {'x': 481, 'y': 216}},
-    '14': {'pixel': {'x': 622, 'y': 328}},
-    '15': {'pixel': {'x': 726, 'y': 212}},
+    '1': {'axis': {'x': 223, 'y': 216}},
+    '2': {'axis': {'x': 297, 'y': 120}},
+    '3': {'axis': {'x': 291, 'y': 332}},
+    '4': {'axis': {'x': 419, 'y': 216}},
+    '5': {'axis': {'x': 531, 'y': 119}},
+    '6': {'axis': {'x': 633, 'y': 328}},
+    '7': {'axis': {'x': 701, 'y': 217}},
+    '8': {'axis': {'x': 767, 'y': 117}},
+    '9': {'axis': {'x': 22, 'y': 328}},
+    '10': {'axis': {'x': 213, 'y': 214}},
+    '11': {'axis': {'x': 295, 'y': 328}},
+    '12': {'axis': {'x': 391, 'y': 119}},
+    '13': {'axis': {'x': 481, 'y': 216}},
+    '14': {'axis': {'x': 622, 'y': 328}},
+    '15': {'axis': {'x': 726, 'y': 212}},
 }
 
 FACTION_DATA = [
@@ -61,10 +61,6 @@ class FactionWars():
     RGB_FREE_CRYPT = [30, 36, 49]
     RGB_FREE_STAGE = [187, 130, 5]
     BATTLE_VICTORY = [452, 42, [30, 186, 239]]
-    # @TODO Duplication
-    SUPER_RAID = [653, 335, [108, 237, 255]]
-    # @TODO Duplication
-    STAGE_ENTER = [850, 200, [93, 25, 27]]
     STAGE_DEFAULT = '21'
     STAGES_POSITION = {
         '21': [860, 479, RGB_FREE_STAGE],
@@ -92,7 +88,7 @@ class FactionWars():
     def _prepare_crypts(self):
         def _prepare_item(crypt):
             _position = FACTION_POSITION[crypt['id']]
-            crypt['pixel'] = _position['pixel']
+            crypt['axis'] = _position['axis']
             return crypt
 
         return list(map(_prepare_item, FACTION_DATA))
@@ -103,19 +99,32 @@ class FactionWars():
         else:
             return self.STAGE_DEFAULT
 
-    def _prepare_run(self, name, stage_lvl):
+    def _prepare_run(self, name, expect=16):
         if name not in self.results:
             self.results[name] = {
-                stage_lvl: 0,
+                "commitment": 0,
+                "completed": False,
+                "expect": expect
             }
 
-        return 1
-
-    def _save_result(self, name, stage_lvl):
-        if stage_lvl not in self.results[name]:
-            self.results[name][stage_lvl] = 0
+    def _save_result(self, name, commitment=None, completed=None):
+        crypt = self.results[name]
+        if commitment:
+            crypt["commitment"] = crypt["commitment"] + commitment
+        if completed:
+            crypt["completed"] = completed
         else:
-            self.results[name][stage_lvl] += 1
+            crypt["completed"] = crypt["commitment"] >= crypt["expect"]
+
+        log('Save crypt result: ' + str(crypt))
+    def _get_result_by_name(self, name):
+        return self.results[name]
+
+    def _is_available(self, name, pixel):
+        is_not_completed = name not in self.results or (name in self.results and not self.results[name]["completed"])
+        is_open = pixel_check_new(pixel, mistake=10)
+
+        return is_not_completed and is_open
 
     def _swipe_left_border(self, times=2):
         for i in range(times):
@@ -164,36 +173,28 @@ class FactionWars():
                 _crypt = slide[j]
                 _name = _crypt['name']
                 _id = _crypt['id']
+                pixel = [_crypt['axis']['x'], _crypt['axis']['y']] + [self.RGB_FREE_CRYPT]
 
-                pixel = _crypt['pixel']
-                x = pixel['x']
-                y = pixel['y']
-
-                is_new = _name not in self.results
-                is_open = pixel_check_new([x, y, self.RGB_FREE_CRYPT], mistake=10)
-                if is_new and is_open:
+                available = self._is_available(_name, pixel=pixel)
+                if available:
                     log(f"Crypt is available: {_name}")
 
-                    await_click([[x, y, self.RGB_FREE_CRYPT]], mistake=10)
+                    await_click([pixel], mistake=10)
                     sleep(1)
 
                     stage_lvl = self._get_stage_by_id(_id)
                     stage = self.STAGES_POSITION[stage_lvl]
 
                     if pixel_check_new(stage, mistake=10):
-                        # preparing results object
-                        self._prepare_run(_name, stage_lvl)
 
                         x_stage = stage[0]
                         y_stage = stage[1]
                         click(x_stage, y_stage)
                         sleep(.5)
 
-                        if pixel_check_new(self.STAGE_ENTER, mistake=10):
+                        if dungeons_is_able():
                             # enable "Super Raid Mode"
-                            if not pixel_check_new(self.SUPER_RAID, mistake=10):
-                                click(653, 335)
-                                sleep(0.3)
+                            enable_super_raid()
 
                             # computing keys bank
                             keys = read_keys_bank()
@@ -209,28 +210,20 @@ class FactionWars():
                                     runs = math.floor(keys / cost)
                                     log(f"runs: {str(runs)}")
 
-                                    counter = 0
-                                    while runs > 0:
-                                        if counter == 0:
-                                            # click 'Start' button
-                                            dungeons_start()
-                                        else:
-                                            # click 'Replay' button
-                                            dungeons_replay()
+                                    self._prepare_run(_name, expect=runs)
 
-                                        counter += 1
+                                    while not self._get_result_by_name(_name)["completed"]:
+                                        dungeons_start_battle()
 
                                         waiting_battle_end_regular(f"{self.LOCATION_NAME} | {_name}", x=28, y=88)
                                         sleep(1)
 
                                         # battle has been won
                                         if pixel_check_new(self.BATTLE_VICTORY, mistake=5):
-                                            self._save_result(_name, stage_lvl)
-                                            runs -= 1
+                                            self._save_result(name=_name, commitment=cost)
 
                                     # click in the "Stage Selection"
-                                    click(820, 50)
-                                    sleep(2)
+                                    dungeons_click_stage_select()
 
                                     # going to the index page and enter to the factions again
                                     self.enter()
@@ -245,7 +238,7 @@ class FactionWars():
                             # going back one lvl upper
                             close_popup()
                             # save results for keeping it in memory
-                            self._save_result(_name, stage_lvl)
+                            self._save_result(name=_name, completed=True)
                             log('Crypt is already attacked')
 
         self.finish()

@@ -181,7 +181,7 @@ def pixels_wait(pixels, msg=None, timeout=5, mistake=0, wait_limit=None, debug=F
 
     checked_pixels = restart()
     counter = 0
-    has_wait_limit = type(wait_limit) is int
+    has_wait_limit = type(wait_limit) is int or type(wait_limit) is float
 
     while checked_pixels.count(False) == length:
         sleep(timeout)
@@ -264,17 +264,43 @@ def dungeons_replay():
 
 
 def dungeons_start():
-    sleep(0.5)
-    click(815, 465)
-    sleep(0.3)
+    BUTTON_START = [850, 475, [187, 130, 5]]
+    await_click([BUTTON_START], msg="await 'Button Start'", timeout=1, mistake=10)
 
 
-def dungeons_results_finish():
+def dungeons_click_stage_select():
     # click on the "Stage selection"
-    sleep(1)
-    click(820, 53)
     sleep(0.5)
+    click(820, 55)
+    sleep(2)
 
+def dungeons_start_battle():
+    # @TODO Duplication
+    STAGE_ENTER = [850, 200, [93, 25, 27]]
+    if pixels_wait([STAGE_ENTER], msg="await 'Stage enter'", mistake=10, wait_limit=2)[0]:
+        # click on 'Start'
+        dungeons_start()
+    else:
+        # click on 'Replay'
+        dungeons_replay()
+    sleep(1)
+
+def dungeons_is_able():
+    # @TODO Duplication
+    STAGE_ENTER = [850, 200, [93, 25, 27]]
+    return pixel_check_new(STAGE_ENTER, mistake=10)
+
+def enable_super_raid(pixel=None):
+    SUPER_RAID_PIXEL = [655, 336, [108, 237, 255]]
+
+    if not pixel:
+        pixel = SUPER_RAID_PIXEL
+
+    while not pixel_check_new(pixel, mistake=10):
+        x = pixel[0]
+        y = pixel[1]
+        click(x, y)
+        sleep(.3)
 
 def calculate_win_rate(w, l):
     t = w + l
@@ -734,4 +760,4 @@ def read_keys_bank(region=None):
         '--psm 12 --oem 3',
     ]
 
-    return read_text(configs=configs, region=region, parser=parse_energy_bank, scale=6)
+    return read_text(configs=configs, region=region, parser=parse_energy_bank, scale=10, debug=False)

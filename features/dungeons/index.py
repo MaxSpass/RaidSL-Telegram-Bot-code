@@ -37,11 +37,6 @@ DUNGEON_LOCATIONS = {
 
 class Dungeons:
     LOCATION_NAME = 'Dungeon'
-    BUTTON_START = [850, 475, [187, 130, 5]]
-    # @TODO Duplication
-    STAGE_ENTER = [850, 200, [93, 25, 27]]
-    # @TODO Duplication
-    SUPER_RAID = [655, 336, [108, 237, 255]]
     REFILL_PAID = [440, 376, [255, 33, 51]]
 
     RESULT_VICTORY = [450, 40, [15, 121, 182]]
@@ -56,7 +51,6 @@ class Dungeons:
     DUNGEON_DIFFICULTY_HARD = 'hard'
     DUNGEON_BANK_MIN_LIMIT = 8
     DUNGEON_DIFFICULTY_DEFAULT = DUNGEON_DIFFICULTY_HARD
-    DUNGEON_SUPER_RAID_DEFAULT = True
     DIFFICULTIES = {
         DUNGEON_DIFFICULTY_NORMAL: DIFFICULTY_NORMAL,
         DUNGEON_DIFFICULTY_HARD: DIFFICULTY_HARD,
@@ -176,29 +170,14 @@ class Dungeons:
 
     def _exit_location(self):
         # click on the "Stage selection"
-        dungeons_results_finish()
+        dungeons_click_stage_select()
         # moving to the Index Page for starting new Dungeon location
         close_popup_recursive()
 
     def _start_battle(self):
         if FAKE_BATTLE:
             return
-
-        if pixels_wait([self.STAGE_ENTER], msg="await 'Stage enter'", mistake=10, wait_limit=2)[0]:
-            # click on 'Start'
-            log('Start')
-            await_click([self.BUTTON_START], msg="await 'Button Start'", timeout=1, mistake=10)
-        else:
-            # click on 'Replay'
-            log('Replay')
-            dungeons_replay()
-        sleep(1)
-
-    def _click_on_super_raid(self):
-        x = self.SUPER_RAID[0]
-        y = self.SUPER_RAID[1]
-        click(x, y)
-        sleep(.3)
+        dungeons_start_battle()
 
     def _log(self, message):
         log(f"{self.LOCATION_NAME} | {message}")
@@ -239,8 +218,8 @@ class Dungeons:
         # click(850, 375)
         sleep(.5)
 
-        if not pixel_check_new(self.SUPER_RAID, mistake=10):
-            self._click_on_super_raid()
+        # enable "Super Raid Mode"
+        enable_super_raid()
 
     def attack(self):
         skip = False
@@ -266,7 +245,7 @@ class Dungeons:
                 waiting_battle_end_regular(f'{_name} battle end', x=28, y=88)
                 sleep(.5)
 
-            result = not pixel_check_new(self.RESULT_DEFEAT)
+            result = not pixel_check_new(self.RESULT_DEFEAT, mistake=10)
             self._save_result(result)
 
     def finish(self):
