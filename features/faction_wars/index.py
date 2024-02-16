@@ -106,17 +106,19 @@ class FactionWars():
                 "completed": False,
                 "expect": expect
             }
+            log(f"Prepare run: {str(self.results[name])}")
 
     def _save_result(self, name, commitment=None, completed=None):
-        crypt = self.results[name]
-        if commitment:
-            crypt["commitment"] = crypt["commitment"] + commitment
-        if completed:
-            crypt["completed"] = completed
-        else:
-            crypt["completed"] = crypt["commitment"] >= crypt["expect"]
+        if name in self.results:
+            crypt = self.results[name]
+            if commitment:
+                crypt["commitment"] = crypt["commitment"] + commitment
+            if completed:
+                crypt["completed"] = completed
+            else:
+                crypt["completed"] = crypt["commitment"] >= crypt["expect"]
 
-        log('Save crypt result: ' + str(crypt))
+            log('Save crypt result: ' + str(crypt))
     def _get_result_by_name(self, name):
         return self.results[name]
 
@@ -209,8 +211,9 @@ class FactionWars():
                                     log(f'Attacking: {_name}')
                                     runs = math.floor(keys / cost)
                                     log(f"runs: {str(runs)}")
+                                    expect = runs*cost
 
-                                    self._prepare_run(_name, expect=runs)
+                                    self._prepare_run(_name, expect=expect)
 
                                     while not self._get_result_by_name(_name)["completed"]:
                                         dungeons_start_battle()
@@ -237,6 +240,8 @@ class FactionWars():
                         else:
                             # going back one lvl upper
                             close_popup()
+                            # fake preparation the crypt
+                            self._prepare_run(_name, expect=0)
                             # save results for keeping it in memory
                             self._save_result(name=_name, completed=True)
                             log('Crypt is already attacked')
