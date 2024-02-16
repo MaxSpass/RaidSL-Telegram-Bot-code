@@ -274,6 +274,7 @@ def dungeons_click_stage_select():
     click(820, 55)
     sleep(2)
 
+
 def dungeons_start_battle():
     # @TODO Duplication
     STAGE_ENTER = [850, 200, [93, 25, 27]]
@@ -285,10 +286,12 @@ def dungeons_start_battle():
         dungeons_replay()
     sleep(1)
 
+
 def dungeons_is_able():
     # @TODO Duplication
     STAGE_ENTER = [850, 200, [93, 25, 27]]
     return pixel_check_new(STAGE_ENTER, mistake=10)
+
 
 def enable_super_raid(pixel=None):
     SUPER_RAID_PIXEL = [655, 336, [108, 237, 255]]
@@ -301,6 +304,7 @@ def enable_super_raid(pixel=None):
         y = pixel[1]
         click(x, y)
         sleep(.3)
+
 
 def calculate_win_rate(w, l):
     t = w + l
@@ -761,3 +765,43 @@ def read_keys_bank(region=None):
     ]
 
     return read_text(configs=configs, region=region, parser=parse_energy_bank, scale=10, debug=False)
+
+
+def dominant_color_hue(region, rank=1):
+    screenshot = pyautogui.screenshot(region=region)
+    image = screenshot_to_image(screenshot)
+
+    # Convert the image to the HSV color space
+    hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+
+    # Calculate the histogram of the image in the Hue channel
+    histogram = cv2.calcHist([hsv_image], [0], None, [180], [0, 180])
+
+    # Find the rank-th dominant color bin
+    dominant_color_bin = np.argsort(histogram.flatten())[-rank]
+
+    # Convert the bin index to the corresponding hue value
+    dominant_color_hue = int(dominant_color_bin * 180 / 256)
+
+    return dominant_color_hue
+
+def dominant_color_rgb(region, rank=1):
+    screenshot = pyautogui.screenshot(region=region)
+    image = screenshot_to_image(screenshot)
+
+    # Reshape the image into a 2D array of pixels
+    pixels = image.reshape((-1, 3))
+
+    # Calculate the histogram of pixel values
+    histogram = np.zeros((256, 256, 256))
+    for pixel in pixels:
+        r, g, b = pixel
+        histogram[r, g, b] += 1
+
+    # Find the rank-th dominant color (index) in the flattened histogram
+    dominant_color_index = np.argsort(histogram.flatten())[-rank]
+
+    # Convert the index to RGB values
+    r, g, b = np.unravel_index(dominant_color_index, (256, 256, 256))
+
+    return (r, g, b)

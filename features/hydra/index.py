@@ -13,7 +13,16 @@ HEALTH_FRAME_HEIGHT = 10
 
 COLOR_ALIVE = [221, 42, 42]
 COLOR_DEAD = [175, 23, 200]
-BUTTON_AUTO_DISABLED = [47, 460, [206, 174, 66]]
+
+# auto button (bottom/left corner)
+BUTTON_AUTO_PIXEL_DISABLED = [47, 460, [206, 174, 66]]
+BUTTON_AUTO_REGION = axis_to_region(22, 479, 76, 496)
+BUTTON_AUTO_HUE_ACTIVE = 65
+BUTTON_AUTO_HUE_DISABLED = 17
+
+# pause button (top/right corner)
+BUTTON_PAUSE = [866, 66, [216, 206, 156]]
+BUTTON_AUTO = [50, 470, [20, 30, 37]]
 
 # x1, 44, x2, 94
 HEADS_POSITIONS = [
@@ -62,10 +71,6 @@ DEFAULT_ACCEPT_DAMAGE = 0
 DEFAULT_PRIORITY = {'head_of_decay': 2, 'head_of_blight': 1}
 DEFAULT_RUNS_LIMIT = 2
 DEFAULT_RUNS_LIMIT_MAX = 10
-
-# pause icon is on the top/right corner
-icon_pause = [866, 66, [216, 206, 156]]
-icon_auto = [50, 470, [20, 30, 37]]
 
 button_battle = [855, 455, [165, 113, 8]]
 button_start = [855, 455, [212, 155, 5]]
@@ -131,8 +136,11 @@ class Hydra:
             log(self.LOCATION_NAME + ' | Dealt Damage is NOT enough')
             await_click([button_free_regroup], timeout=1)
 
-    def _check_end(self):
+    def _is_battle_finished(self):
         return pixel_check_new(battle_end)
+
+    def _is_battle_in_progress(self):
+        return pixel_check_new(BUTTON_PAUSE, mistake=10)
 
     def _sort_by_priority(self, queue):
         p1 = []
@@ -165,20 +173,24 @@ class Hydra:
             log(f'No Hydra head with name: {name}')
 
     def _reset_focus(self):
+        if not self._is_battle_in_progress():
+            log("Resetting focus is interrupted: no 'BUTTON_PAUSE' found")
+            return
+
         # works with critically low FPS
         def _click():
-            x = BUTTON_AUTO_DISABLED[0]
-            y = BUTTON_AUTO_DISABLED[1]
+            x = BUTTON_AUTO_PIXEL_DISABLED[0]
+            y = BUTTON_AUTO_PIXEL_DISABLED[1]
             click(x, y)
             sleep(.1)
 
-        if pixel_check_new(BUTTON_AUTO_DISABLED, mistake=10):
+        if pixel_check_new(BUTTON_AUTO_PIXEL_DISABLED, mistake=10):
             _click()
 
-        while not pixel_check_new(BUTTON_AUTO_DISABLED, mistake=10):
+        while not pixel_check_new(BUTTON_AUTO_PIXEL_DISABLED, mistake=10):
             _click()
 
-        await_click([BUTTON_AUTO_DISABLED], mistake=10)
+        await_click([BUTTON_AUTO_PIXEL_DISABLED], mistake=10)
         log(self.LOCATION_NAME + ' | Reset focus')
 
     def _format_name(self, name):
@@ -335,7 +347,7 @@ class Hydra:
         # self.focused_head = 'head_of_decay'
         # queue = [{'name': 'head_of_blight', 'reason': 1, 'priority': 1}]
 
-        while not self._check_end():
+        while not self._is_battle_finished():
             heads = self._update_heads()
             state_prev = heads['prev']
             state_current = heads['current']
@@ -438,7 +450,7 @@ class Hydra:
 
                     await_click([button_start], timeout=1, mistake=10)
 
-                    if pixels_wait([icon_pause], timeout=2, mistake=10, msg='Pause icon', wait_limit=100)[0]:
+                    if pixels_wait([BUTTON_PAUSE], timeout=2, mistake=10, msg='Pause icon', wait_limit=100)[0]:
                         log(self.LOCATION_NAME + ' | ' + 'Battle just started')
                         self.scan()
 
