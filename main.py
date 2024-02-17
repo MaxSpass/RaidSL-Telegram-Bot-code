@@ -1,13 +1,14 @@
-# import os.path
-# import pyautogui
-# import sys
-# import random
-# import pytesseract
 import traceback
 import threading
 from classes.app import *
 from constants.index import IS_DEV
 from bot import TelegramBOT
+# import pyautogui
+# import os.path
+# import pyautogui
+# import sys
+# import random
+# import pytesseract
 # from PIL import Image
 # from io import BytesIO
 # from features.faction_wars.index import *

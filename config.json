@@ -141,7 +141,7 @@
       "task": "hydra",
       "enable": 1,
       "props": {
-        "runs_limit": 5,
+        "runs_limit": 3,
         "runs": [
           {
             "stage": 4,
@@ -158,9 +158,9 @@
             }
           },
           {
-            "stage": 3,
-            "team_preset": 4,
-            "min_damage": 30,
+            "stage": 1,
+            "team_preset": 3,
+            "min_damage": 180,
             "skip": 0,
             "priority": {
               "head_of_decay": 2,
@@ -172,9 +172,9 @@
             }
           },
           {
-            "stage": 1,
-            "team_preset": 3,
-            "min_damage": 150,
+            "stage": 3,
+            "team_preset": 4,
+            "min_damage": 35,
             "skip": 0,
             "priority": {
               "head_of_decay": 2,

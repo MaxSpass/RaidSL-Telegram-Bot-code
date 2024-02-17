@@ -32,6 +32,7 @@ def prepare_window():
     GAME_WINDOW = 'Raid: Shadow Legends'
     is_prepared = False
     wins = pyautogui.getWindowsWithTitle(GAME_WINDOW)
+    win = None
     if len(wins):
         win = wins[0]
         win.activate()
@@ -62,12 +63,13 @@ def prepare_window():
             close_popup_recursive()
         else:
             log('No Burger needle found')
-
     else:
         log('No RAID window found')
 
     if not is_prepared:
         raise Exception("Game windows is NOT prepared")
+
+    return win
 
 
 def make_command_key(input_string):
@@ -85,6 +87,7 @@ def make_title(input_string):
 class App:
     def __init__(self):
         self.config = None
+        self.window = None
         self.entries = {}
         self.read_config()
 
@@ -218,9 +221,23 @@ class App:
             log(error)
 
     def screen(self):
-        width = WINDOW_SIZE[0] - 7 * 2
-        height = WINDOW_SIZE[1] - 7
-        screenshot = pyautogui.screenshot(region=[0, 0, width, height])
+        WINDOW_TOP_BAR_HEIGHT = 25
+        BORDER_WIDTH = 7
+
+        x = self.window.left
+        y = self.window.top
+        width = self.window.width
+        height = self.window.height
+
+        # calculates region
+        region = [
+            x + BORDER_WIDTH,
+            y + BORDER_WIDTH + WINDOW_TOP_BAR_HEIGHT,
+            width - BORDER_WIDTH * 2,
+            height - BORDER_WIDTH * 2 - WINDOW_TOP_BAR_HEIGHT,
+        ]
+
+        screenshot = pyautogui.screenshot(region=region)
 
         # Convert the screenshot to bytes
         image_bytes = BytesIO()
@@ -236,7 +253,7 @@ class App:
         # prepare_window()
 
     def prepare(self):
-        prepare_window()
+        self.window = prepare_window()
 
     def get_entry(self, command_name):
         return self.entries[command_name]

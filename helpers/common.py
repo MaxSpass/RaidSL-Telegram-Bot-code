@@ -23,11 +23,16 @@ special_offer_popup = [300, 370, [22, 124, 156]]
 def get_time_for_log(s=':'):
     return '{}'.format(str(datetime.now().strftime(f"%H{s}%M{s}%S")))
 
+def format_string_for_log(input_string):
+    # Remove special characters and convert to lowercase
+    clean_string = re.sub(r'[^a-zA-Z0-9-\-\s]', '', input_string).lower()
+    # Replace spaces with underscores
+    formatted_string = clean_string.replace(' ', '_')
+    return formatted_string
 
 def log_save(message):
     if not IS_DEV:
         time = get_time_for_log()
-
         current_date = time_mgr.timestamp_to_datetime()
         file_name = 'log-' + f'{current_date["day"]}-{current_date["month"]}-{current_date["year"]}' + '.txt'
         f = open(file_name, "a")
@@ -117,9 +122,8 @@ def debug_save_screenshot(prefix_name=None):
     DEBUG_FOLDER = 'debug'
     # @TODO Region is hardcoded
     region = [0, 0, 906, 533]
-
     time = get_time_for_log(s='-')
-    file_name = f"{time}-{str(prefix_name).lower()}" if prefix_name else time
+    file_name = format_string_for_log(f"{time}-{str(prefix_name).lower()}" if prefix_name else time)
     folder_ensure(DEBUG_FOLDER)
     screenshot = pyautogui.screenshot(region=region)
     screenshot.save(os.path.join(DEBUG_FOLDER, f"{file_name}.jpg"))

@@ -7,15 +7,22 @@ from helpers.common import *
 #     '3': {'x': 44, 'y': 374},
 #     '4': {'x': 44, 'y': 494},
 # }
+
 # hydra
 PRESET_POSITIONS = {
-    '1': {'x': 44, 'y': 136},
-    '2': {'x': 44, 'y': 257},
-    '3': {'x': 44, 'y': 378},
-    '4': {'x': 44, 'y': 498},
+    '1': {'x': 46, 'y': 136},
+    '2': {'x': 46, 'y': 257},
+    '3': {'x': 46, 'y': 378},
+    '4': {'x': 46, 'y': 498},
 }
 
-rgb_active_team = [71, 223, 255]
+PRESET_ACTIVE_TEAM_RGB = [71, 223, 255]
+# check dominant color: \images\docs\hero_preset.jpg
+PRESET_CHECKBOX_LOCKED_HUE = 71
+PRESET_CHECKBOX_CHECKED_HUE = 72
+PRESET_CHECKBOX_UNCHECKED_HUE = 73
+PRESET_CHECKBOX_LOCKED_SIZE = 28
+PRESET_CHECKBOX_OFFSET = PRESET_CHECKBOX_LOCKED_SIZE / 2
 
 def get_presets(x2, y2):
     return capture_by_source('images/needles/presets.jpg', axis_to_region(0, 0, x2, y2),
@@ -24,6 +31,18 @@ def get_presets(x2, y2):
 class HeroPreset():
     def __init__(self):
         self.is_presets_opened = False
+
+    def _get_hue_by_preset(self, preset_position):
+        x = preset_position['x']
+        y = preset_position['y']
+        region = [
+            x - PRESET_CHECKBOX_OFFSET,
+            y - PRESET_CHECKBOX_OFFSET,
+            PRESET_CHECKBOX_LOCKED_SIZE,
+            PRESET_CHECKBOX_LOCKED_SIZE
+        ]
+
+        return dominant_color_hue(region=region, rank=1)
 
     def open(self, x2=900, y2=520):
         # avoid sudden notification in this area
@@ -50,21 +69,37 @@ class HeroPreset():
 
     def pick(self, preset_index):
         index = str(preset_index)
+        is_checked = False
 
         # @TODO Does not support scrolling
         if index in PRESET_POSITIONS:
             p = PRESET_POSITIONS[index]
             x = p['x']
             y = p['y']
-            if not pixel_check_new([x, y, rgb_active_team], mistake=5):
+            checkbox_hue = self._get_hue_by_preset(p)
+            if checkbox_hue == PRESET_CHECKBOX_UNCHECKED_HUE:
                 click(x, y)
+                is_checked = True
+                log(f'Presets | The team #{index} just picked')
+            elif checkbox_hue == PRESET_CHECKBOX_CHECKED_HUE:
+                is_checked = True
+                log(f'Presets | The team #{index} is already picked')
+            elif checkbox_hue == PRESET_CHECKBOX_LOCKED_HUE:
+                log(f'Presets | The team #{index} has been locked')
+
+            # if not pixel_check_new([x, y, PRESET_ACTIVE_TEAM_RGB], mistake=5):
+            #     click(x, y)
         else:
             log('Presets | No preset_index found')
 
+        return is_checked
+
     def choose(self, preset_index=1):
+        res = None
         self.open()
         if self.is_presets_opened:
-            self.pick(preset_index)
+            res = self.pick(preset_index)
             self.close()
         sleep(.5)
+        return res
 

@@ -84,7 +84,7 @@ battle_end = [26, 90, [255, 255, 255]]
 screen_all_hydra = [526, 81, [254, 223, 90]]
 screen_certain_hydra = [447, 304, [14, 42, 64]]
 
-preset = HeroPreset()
+hero_preset = HeroPreset()
 
 
 class Hydra:
@@ -270,6 +270,9 @@ class Hydra:
             'current': current_heads,
         }
 
+    def _get_team_preset(self):
+        return self.current['team_preset'] if 'team_preset' in self.current else None
+
     def _prepare_run_props(self, run):
         stage = str(run['stage'])
 
@@ -327,7 +330,7 @@ class Hydra:
             line_3 = ''
 
             if len(value["results"]):
-                avg = sum(value["results"]) / len(value["results"])
+                avg = round(sum(value["results"]) / len(value["results"]), 2)
                 line_3 = f'Results: {value["results"]}, Avg: {avg}M'
 
             res += line_1 + ' | ' + line_2 + ' | ' + line_3 + '\n'
@@ -436,23 +439,31 @@ class Hydra:
                 await_click([clash_not_started], timeout=1, mistake=10, wait_limit=2)
 
         def hydra_start():
+            # True is by default, because team_preset is optional
+            is_picked = True
+
             while self._while_stage_available():
                 log(self.LOCATION_NAME + ' | ' + 'Internal method called - hydra_start')
                 # skips then logic, when all_hydra_screen appears
                 is_certain = self._certain_hydra_or_all_hydra_screens()[0]
                 if is_certain:
-
                     if 'team_preset' in self.current:
-                        preset.choose(self.current['team_preset'])
+                        is_picked = hero_preset.choose(self.current['team_preset'])
 
-                    if not pixel_check_new(start_on_auto, mistake=10):
-                        click(start_on_auto[0], start_on_auto[1])
+                    if is_picked:
+                        if not pixel_check_new(start_on_auto, mistake=10):
+                            click(start_on_auto[0], start_on_auto[1])
 
-                    await_click([button_start], timeout=1, mistake=10)
+                        await_click([button_start], timeout=1, mistake=10)
 
-                    if pixels_wait([BUTTON_PAUSE], timeout=2, mistake=10, msg='Pause icon', wait_limit=100)[0]:
-                        log(self.LOCATION_NAME + ' | ' + 'Battle just started')
-                        self.scan()
+                        if pixels_wait([BUTTON_PAUSE], timeout=2, mistake=10, msg='Pause icon', wait_limit=100)[0]:
+                            log(self.LOCATION_NAME + ' | ' + 'Battle just started')
+                            self.scan()
+
+            # depending on the case: saved damage/regroup the team
+            if self._certain_hydra_or_all_hydra_screens()[0] and is_picked:
+                log(self.LOCATION_NAME + " | Checking hydra screen after each iteration")
+                close_popup()
 
         for i in range(len(self.runs)):
             if 'skip' in self.runs[i] and bool(self.runs[i]['skip']):
@@ -470,16 +481,11 @@ class Hydra:
 
                 if screens[0]:
                     log(self.LOCATION_NAME + ' | ' + 'All Hydra')
-                    hydra_start()
                 elif screens[1]:
                     log(self.LOCATION_NAME + ' | ' + 'Certain Hydra')
                     hydra_enter(HYDRA_DATA[stage])
-                    hydra_start()
 
-                # depending on the case: saved damage/regroup the team
-                if self._certain_hydra_or_all_hydra_screens()[0]:
-                    log(self.LOCATION_NAME + " | Checking hydra screen after each iteration")
-                    close_popup()
+                hydra_start()
 
     def run(self, props=None):
         if props is not None:
