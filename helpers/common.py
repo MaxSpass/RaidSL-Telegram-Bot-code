@@ -280,6 +280,7 @@ def dungeons_click_stage_select():
 
 
 def dungeons_start_battle():
+    log('Function: dungeons_start_battle')
     # @TODO Duplication
     STAGE_ENTER = [850, 200, [93, 25, 27]]
     if pixels_wait([STAGE_ENTER], msg="await 'Stage enter'", mistake=10, wait_limit=2)[0]:
@@ -292,22 +293,29 @@ def dungeons_start_battle():
 
 
 def dungeons_is_able():
+    log('Function: dungeons_is_able')
     # @TODO Duplication
     STAGE_ENTER = [850, 200, [93, 25, 27]]
     return pixel_check_new(STAGE_ENTER, mistake=10)
 
 
 def enable_super_raid(pixel=None):
+    log('Function: enable_super_raid')
+    # @TODO Duplication
+    STAGE_ENTER_RGB = [93, 25, 27]
     SUPER_RAID_PIXEL = [655, 336, [108, 237, 255]]
 
     if not pixel:
         pixel = SUPER_RAID_PIXEL
 
-    while not pixel_check_new(pixel, mistake=10):
-        x = pixel[0]
-        y = pixel[1]
-        click(x, y)
-        sleep(.3)
+    x_enter = pixel[0]
+    y_enter = pixel[1]
+    if not pixel_check_new([x_enter, y_enter, STAGE_ENTER_RGB], mistake=10):
+        while not pixel_check_new(pixel, mistake=10):
+            x = pixel[0]
+            y = pixel[1]
+            click(x, y)
+            sleep(.3)
 
 
 def calculate_win_rate(w, l):
