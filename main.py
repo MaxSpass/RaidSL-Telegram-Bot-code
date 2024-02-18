@@ -3,6 +3,7 @@ import threading
 from classes.app import *
 from constants.index import IS_DEV
 from bot import TelegramBOT
+
 # import pyautogui
 # import os.path
 # import pyautogui
@@ -84,17 +85,36 @@ def main():
                     },
                 })
 
-                commands = list(map(lambda task: {
-                    'command': task['command'],
-                    'description': f"Command '{task['title']}'",
-                    'handler': {
-                        'callback': lambda upd, ctx: app.get_entry(
-                            command_name=task['command']
-                        )['instance'].run(),
-                    },
-                }, app.config['tasks']))
+                # register main commands according to 'tasks'
+                regular_command = []
+                if len(app.config['tasks']):
+                    regular_command = list(map(lambda task: {
+                        'command': task['command'],
+                        'description': f"command '{task['title']}'",
+                        'handler': {
+                            'callback': lambda upd, ctx: app.get_entry(
+                                command_name=task['command']
+                            )['instance'].run(),
+                        },
+                    }, app.config['tasks']))
+
+                # register addition commands according to 'presets'
+                presets_commands = []
+                if len(app.config['presets']):
+                    presets_commands = list(map(lambda preset: {
+                        'command': make_command_key(f"preset {preset['name']}"),
+                        'description': f"commands in a row: {', '.join(preset['commands'])}",
+                        'handler': {
+                            'callback': lambda upd, ctx: list(map(lambda x: app.get_entry(
+                                command_name=x
+                            )['instance'].run(), preset['commands'])),
+                        },
+                    }, app.config['presets']))
+
+                commands = regular_command + presets_commands
 
                 for i in range(len(commands)):
+                    print(commands[i])
                     telegram_bot.add(commands[i])
 
                 telegram_bot_thread = threading.Thread(target=telegram_bot.run)

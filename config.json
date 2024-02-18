@@ -196,5 +196,30 @@
       }
     }
   ],
+  "presets": [
+    {
+      "name": "primary",
+      "commands": [
+        "arena_classic",
+        "arena_tag",
+        "iron_twins",
+        "rewards",
+        "faction_wars",
+        "rewards",
+        "arena_tag",
+        "rewards",
+        "arena_classic",
+        "dungeon_minotaur"
+      ]
+    },
+    {
+      "name": "secondary",
+      "commands": [
+        "rewards",
+        "arena_classic",
+        "dungeon_minotaur"
+      ]
+    }
+  ],
   "after_each": ["rewards"]
 }

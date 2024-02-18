@@ -36,6 +36,7 @@ QUESTS_TABS = [
 
 
 class Rewards:
+    NAME = 'Rewards'
     def __init__(self, props=None):
         self.cache = {
             'regular_quests': {
@@ -201,6 +202,7 @@ class Rewards:
         return s
 
     def run(self, props=None):
+        log(f"{self.NAME} | Running")
         close_popup_recursive()
         self.quests_run()
         self.play_time_run()

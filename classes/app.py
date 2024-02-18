@@ -95,6 +95,7 @@ class App:
         _config = {
             'start_immediate': True,
             'tasks': [],
+            'presets': [],
             'after_each': []
         }
 
@@ -105,9 +106,9 @@ class App:
             _config['telegram_token'] = str(config_json['telegram_token'])
 
         # Tasks
-        commands_length = len(config_json['tasks'])
-        if commands_length:
-            for i in range(commands_length):
+        tasks_length = len(config_json['tasks'])
+        if tasks_length:
+            for i in range(tasks_length):
                 task = config_json['tasks'][i]
                 if 'enable' not in task or bool(task['enable']):
 
@@ -147,6 +148,23 @@ class App:
             self.entries['rewards'] = {
                 'instance': INSTANCES_MAP['rewards']()
             }
+
+            # handling presets
+            presets_length = len(config_json['presets'])
+            if presets_length:
+                presets_filtered = []
+                for i in range(presets_length):
+                    preset_name = config_json['presets'][i]['name']
+                    preset_tasks = config_json['presets'][i]['commands']
+
+                    presets_filtered.append({
+                        'name': preset_name,
+                        'commands': list(filter(
+                            lambda x: any(dct['command'] == x for dct in _config['tasks']), preset_tasks
+                        ))
+                    })
+
+                    _config['presets'] = presets_filtered
 
         # After each commands
         if 'after_each' in config_json:
