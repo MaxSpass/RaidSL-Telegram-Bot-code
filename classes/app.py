@@ -239,6 +239,8 @@ class App:
             log(error)
 
     def screen(self):
+        # hidden window
+        # <Win32Window left="-32000", top="-32000", width="160", height="28", title="Raid: Shadow Legends">
         WINDOW_TOP_BAR_HEIGHT = 25
         BORDER_WIDTH = 7
 

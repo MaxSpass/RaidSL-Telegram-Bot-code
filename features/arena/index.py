@@ -75,9 +75,7 @@ class ArenaFactory:
         sleep(3)
 
     def enter(self):
-        go_index_page()
-        sleep(1)
-        go_index_page()
+        close_popup_recursive()
 
         click_on_progress_info()
         click(600, self.x_axis_info)
@@ -240,7 +238,7 @@ class ArenaFactory:
         return self._show_results(self.results, is_detailed=True)
 
     def finish(self):
-        go_index_page()
+        close_popup_recursive()
         log('DONE - ' + self.name)
         self._show_results(self._get_last_results())
 
