@@ -58,3 +58,7 @@ def read_text_in_region(region):
     return text
 
 # check_results()
+
+# for i in range(10):
+#     make_uniq_screenshot()
+#     sleep(1)

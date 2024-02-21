@@ -9,17 +9,17 @@
         "refill": 1,
         "pool": [
           {
-            "name": "Arbiter",
-            "role": "s",
-            "priority": 1
-          },
-          {
             "name": "Sun Wukong",
             "role": "a",
             "priority": 1
           },
           {
             "name": "Duchess Lilitu",
+            "role": "s",
+            "priority": 1
+          },
+          {
+            "name": "Arbiter",
             "role": "s",
             "priority": 1
           },
@@ -38,11 +38,11 @@
             "role": "a"
           },
           {
-            "name": "Mortu-Macaab",
+            "name": "Rotos",
             "role": "a"
           },
           {
-            "name": "Rotos",
+            "name": "Mortu-Macaab",
             "role": "a"
           },
           {
@@ -202,14 +202,14 @@
       "commands": [
         "arena_classic",
         "arena_tag",
-        "iron_twins",
         "rewards",
         "faction_wars",
         "rewards",
         "arena_tag",
         "rewards",
         "arena_classic",
-        "dungeon_minotaur"
+        "iron_twins",
+        "dungeon_sand_devil"
       ]
     },
     {
@@ -217,7 +217,7 @@
       "commands": [
         "rewards",
         "arena_classic",
-        "dungeon_minotaur"
+        "dungeon_sand_devil"
       ]
     }
   ],

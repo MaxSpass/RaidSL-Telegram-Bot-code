@@ -152,8 +152,10 @@ class FactionWars():
     def report(self):
         s = None
 
-        if len(self.results):
-            s = f"{self.LOCATION_NAME} | Completed: {str(self.results.keys())}"
+        items = self.results.items()
+        if len(items):
+            progress = ', '.join(list(map(lambda arr: f"{arr[0]}: {str(arr[1]['commitment'])}keys", items)))
+            s = f"{self.LOCATION_NAME} | {progress}"
 
         return s
 
