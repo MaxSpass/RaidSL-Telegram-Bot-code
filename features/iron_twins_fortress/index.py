@@ -1,6 +1,6 @@
 from helpers.common import *
 
-TWIN_ATTACKS_LIMIT = 6
+TWIN_KEYS_LIMIT = 6
 
 # @TODO Refactor is needed
 class IronTwins:
@@ -12,7 +12,7 @@ class IronTwins:
         self.terminate = False
         self.completed = False
 
-        self.keys = TWIN_ATTACKS_LIMIT
+        self.keys = TWIN_KEYS_LIMIT
 
         self._apply_props(props)
 
@@ -23,13 +23,14 @@ class IronTwins:
         if ruby_button is not None:
             # self.completed = True
             self.terminate = True
+            close_popup()
 
     def _enter_stage(self):
         click(830, 460)
         sleep(.5)
 
     def _is_available(self):
-        return self.results.count(True) < self.keys and dungeons_is_able()
+        return self.results.count(True) < self.keys or dungeons_is_able()
 
     def _apply_props(self, props=None):
         if props:
