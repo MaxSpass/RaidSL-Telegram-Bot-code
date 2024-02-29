@@ -1,3 +1,5 @@
+import pyautogui
+
 from helpers.common import *
 
 # clan boss
@@ -10,10 +12,12 @@ from helpers.common import *
 
 # hydra
 PRESET_POSITIONS = {
-    '1': {'x': 46, 'y': 136},
-    '2': {'x': 46, 'y': 257},
-    '3': {'x': 46, 'y': 378},
-    '4': {'x': 46, 'y': 498},
+    # '1': {'x': 46, 'y': 136},
+    # '2': {'x': 46, 'y': 257},
+    '1': {'x': 46, 'y': 134},
+    '2': {'x': 46, 'y': 254},
+    '3': {'x': 46, 'y': 374},
+    '4': {'x': 46, 'y': 494},
 }
 
 PRESET_ACTIVE_TEAM_RGB = [71, 223, 255]
@@ -50,8 +54,10 @@ class HeroPreset():
         # clan boss = x2:150, y2:350
         presets_position = get_presets(x2, y2)
         if presets_position is not None:
-            x = presets_position[0]
-            y = presets_position[1]
+            # Offset is needed for avoiding calculating hue color bug
+            offset = 6
+            x = presets_position[0] + offset
+            y = presets_position[1] + offset
             click(x, y)
             sleep(1)
             self.is_presets_opened = True
@@ -72,6 +78,7 @@ class HeroPreset():
         is_checked = False
 
         # @TODO Does not support scrolling
+        # @TODO Does not work with #1 slot
         if index in PRESET_POSITIONS:
             p = PRESET_POSITIONS[index]
             x = p['x']
