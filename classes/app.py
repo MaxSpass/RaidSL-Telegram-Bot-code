@@ -7,6 +7,7 @@ from features.faction_wars.index import *
 from features.iron_twins_fortress.index import *
 from features.dungeons.index import *
 from features.hydra.index import *
+from features.doom_tower.index import *
 from io import BytesIO
 import atexit
 import signal
@@ -25,6 +26,7 @@ INSTANCES_MAP = {
     'faction_wars': FactionWars,
     'iron_twins': IronTwins,
     'rewards': Rewards,
+    'doom_tower': DoomTower,
 }
 
 def prepare_window():

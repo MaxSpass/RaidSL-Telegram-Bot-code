@@ -78,7 +78,6 @@ class HeroPreset():
         is_checked = False
 
         # @TODO Does not support scrolling
-        # @TODO Does not work with #1 slot
         if index in PRESET_POSITIONS:
             p = PRESET_POSITIONS[index]
             x = p['x']

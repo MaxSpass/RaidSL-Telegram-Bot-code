@@ -24,7 +24,15 @@ BUTTON_AUTO_HUE_DISABLED = 17
 BUTTON_PAUSE = [866, 66, [216, 206, 156]]
 BUTTON_AUTO = [50, 470, [20, 30, 37]]
 
-# x1, 44, x2, 94
+HYDRA_HEADS = [
+    {'name': 'head_of_blight', 'needle': 'hydra/head_of_blight.png'},
+    {'name': 'head_of_decay', 'needle': 'hydra/head_of_decay.png'},
+    {'name': 'head_of_mischief', 'needle': 'hydra/head_of_mischief.png'},
+    {'name': 'head_of_suffering', 'needle': 'hydra/head_of_suffering.png'},
+    {'name': 'head_of_torment', 'needle': 'hydra/head_of_torment.png'},
+    {'name': 'head_of_wrath', 'needle': 'hydra/head_of_wrath.png'},
+]
+
 HEADS_POSITIONS = [
     {
         'avatar': {'x': 15, 'y': 42},
@@ -51,20 +59,13 @@ HEADS_POSITIONS = [
         'stack': {'x': 666, 'y': 96}
     }
 ]
-HYDRA_DATA = {
+
+HYDRA_LOCATIONS = {
     '1': {'swipes': 0, 'x': 616, 'y': 140, 'min_damage': 6.66},
     '2': {'swipes': 0, 'x': 616, 'y': 270, 'min_damage': 20.4},
     '3': {'swipes': 0, 'x': 616, 'y': 390, 'min_damage': 29.4},
     '4': {'swipes': 1, 'x': 616, 'y': 350, 'min_damage': 36.6},
 }
-HEADS = [
-    {'name': 'head_of_blight', 'needle': 'hydra/head_of_blight.png'},
-    {'name': 'head_of_decay', 'needle': 'hydra/head_of_decay.png'},
-    {'name': 'head_of_mischief', 'needle': 'hydra/head_of_mischief.png'},
-    {'name': 'head_of_suffering', 'needle': 'hydra/head_of_suffering.png'},
-    {'name': 'head_of_torment', 'needle': 'hydra/head_of_torment.png'},
-    {'name': 'head_of_wrath', 'needle': 'hydra/head_of_wrath.png'},
-]
 
 DEFAULT_TEAM_PRESET = 1
 DEFAULT_ACCEPT_DAMAGE = 0
@@ -236,9 +237,9 @@ class Hydra:
             x_avatar = avatar['x']
             y_avatar = avatar['y']
             region_avatar = [x_avatar, y_avatar, AVATAR_FRAME_WIDTH, AVATAR_FRAME_HEIGHT]
-            for j in range(len(HEADS)):
-                name = HEADS[j]['name']
-                needle = HEADS[j]['needle']
+            for j in range(len(HYDRA_HEADS)):
+                name = HYDRA_HEADS[j]['name']
+                needle = HYDRA_HEADS[j]['needle']
                 avatar_position = find_needle(needle, region=region_avatar, confidence=.55)
                 if avatar_position is not None:
                     hydra_name = name
@@ -476,14 +477,14 @@ class Hydra:
             # damage = self.results[stage]['damage']
             # keys = self.results[stage]['keys']
 
-            if stage in HYDRA_DATA:
+            if stage in HYDRA_LOCATIONS:
                 screens = self._certain_hydra_or_all_hydra_screens()
 
                 if screens[0]:
                     log(self.LOCATION_NAME + ' | ' + 'All Hydra')
                 elif screens[1]:
                     log(self.LOCATION_NAME + ' | ' + 'Certain Hydra')
-                    hydra_enter(HYDRA_DATA[stage])
+                    hydra_enter(HYDRA_LOCATIONS[stage])
 
                 hydra_start()
 

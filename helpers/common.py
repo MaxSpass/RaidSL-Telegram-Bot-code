@@ -23,12 +23,14 @@ special_offer_popup = [300, 370, [22, 124, 156]]
 def get_time_for_log(s=':'):
     return '{}'.format(str(datetime.now().strftime(f"%H{s}%M{s}%S")))
 
+
 def format_string_for_log(input_string):
     # Remove special characters and convert to lowercase
     clean_string = re.sub(r'[^a-zA-Z0-9-\-\s]', '', input_string).lower()
     # Replace spaces with underscores
     formatted_string = clean_string.replace(' ', '_')
     return formatted_string
+
 
 def log_save(message):
     if not IS_DEV:
@@ -225,13 +227,17 @@ def await_click(pixels, msg=None, timeout=5, mistake=0, wait_limit=None):
     return res
 
 
-def is_index_page():
+def is_index_page(logger=True):
     flag = False
+    message = None
     if find_needle_burger() is not None:
         flag = True
-        log('Index Page detected')
+        message = 'Index Page detected'
     else:
-        log('Index Page is not detected')
+        message = 'Index Page is not detected'
+
+    if logger and message:
+        log(message)
     return flag
 
 
@@ -282,7 +288,7 @@ def dungeons_click_stage_select():
 def dungeons_start_battle():
     log('Function: dungeons_start_battle')
     # @TODO Duplication
-    STAGE_ENTER = [850, 200, [93, 25, 27]]
+    STAGE_ENTER = [890, 200, [93, 25, 27]]
     if pixels_wait([STAGE_ENTER], msg="await 'Stage enter'", mistake=10, wait_limit=2)[0]:
         # click on 'Start'
         dungeons_start()
@@ -295,7 +301,7 @@ def dungeons_start_battle():
 def dungeons_is_able():
     log('Function: dungeons_is_able')
     # @TODO Duplication
-    STAGE_ENTER = [850, 200, [93, 25, 27]]
+    STAGE_ENTER = [890, 200, [93, 25, 27]]
     return pixel_check_new(STAGE_ENTER, mistake=10)
 
 
@@ -478,6 +484,18 @@ def find_needle_arena_reward(region=None):
         region = axis_to_region(177, 424, 880, 450)
 
     return find_needle('arena_reward.jpg', region=region, confidence=.6)
+
+
+def find_guardian_ring():
+    return find_needle('guardian_ring_2.jpg', confidence=.4)
+
+
+def find_doom_tower_golden_keys():
+    return find_needle('bank_keys_golden.jpg', confidence=.65)
+
+
+def find_doom_tower_silver_keys():
+    return find_needle('bank_keys_silver.jpg', confidence=.65)
 
 
 def battles_click():
@@ -756,7 +774,7 @@ def read_available_energy(region=None):
     return read_text(configs=configs, region=region, parser=parse_energy_bank, scale=4)
 
 
-def read_keys_bank(region=None):
+def read_keys_bank(region=None, scale=10):
     log('Computing keys bank...')
 
     if not region:
@@ -776,7 +794,31 @@ def read_keys_bank(region=None):
         '--psm 12 --oem 3',
     ]
 
-    return read_text(configs=configs, region=region, parser=parse_energy_bank, scale=10, debug=False)
+    return read_text(configs=configs, region=region, parser=parse_energy_bank, scale=scale, debug=False)
+
+
+def read_doom_tower_keys(key_type='golden'):
+    position = None
+    x1 = 0
+    x2 = 0
+
+    if key_type == 'golden':
+        position = find_doom_tower_golden_keys()
+        x1 = 618
+    elif key_type == 'silver':
+        position = find_doom_tower_silver_keys()
+        x1 = 730
+
+    if position:
+        x1 = position[0] - 70
+        x2 = position[0] - 12
+
+    region = axis_to_region(x1, 43, x2, 55)
+
+    # screenshot = pyautogui.screenshot(region=region)
+    # show_pyautogui_image(screenshot)
+
+    return read_keys_bank(region=region, scale=4)
 
 
 def dominant_color_hue(region, rank=1):
@@ -796,6 +838,7 @@ def dominant_color_hue(region, rank=1):
     dominant_color_hue = int(dominant_color_bin * 180 / 256)
 
     return dominant_color_hue
+
 
 def dominant_color_rgb(region, rank=1):
     screenshot = pyautogui.screenshot(region=region)
