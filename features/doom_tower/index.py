@@ -75,10 +75,13 @@ class DoomTower:
     def enter(self):
         close_popup_recursive()
         click_on_progress_info()
+
         click(600, 420)
-        sleep(2)
-        dungeon_select_difficulty('hard')
-        sleep(5)
+        sleep(1.5)
+
+        # mistake=200 for ignoring different backgrounds
+        dungeon_select_difficulty('hard', mistake=200)
+        sleep(3)
 
     def attack(self, x, y):
         log(f"{self.LOCATION_NAME} | Attacking")

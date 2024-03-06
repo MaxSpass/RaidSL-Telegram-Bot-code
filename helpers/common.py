@@ -305,7 +305,8 @@ def dungeons_is_able():
     return pixel_check_new(STAGE_ENTER, mistake=10)
 
 
-def dungeon_select_difficulty(difficulty):
+def dungeon_select_difficulty(difficulty, mistake=5):
+    # rgb background exists in dungeon related locations only
     DIFFICULTY_SELECT = [144, 490, [13, 35, 45]]
     RGB_DIFFICULTY = [34, 47, 60]
     DIFFICULTY_NORMAL = [144, 394, RGB_DIFFICULTY]
@@ -318,8 +319,8 @@ def dungeon_select_difficulty(difficulty):
     }
 
     if difficulty in DIFFICULTIES:
-        await_click([DIFFICULTY_SELECT], mistake=5)
-        await_click([DIFFICULTIES[difficulty]], mistake=5)
+        await_click([DIFFICULTY_SELECT], mistake=mistake)
+        await_click([DIFFICULTIES[difficulty]], mistake=mistake)
 
 def enable_super_raid(pixel=None):
     log('Function: enable_super_raid')
