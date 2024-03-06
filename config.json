@@ -146,8 +146,8 @@
           {
             "stage": 4,
             "team_preset": 1,
-            "min_damage": 150,
-            "skip": 1,
+            "min_damage": 200,
+            "skip": 0,
             "priority": {
               "head_of_decay": 2,
               "head_of_blight": 1,
@@ -160,7 +160,7 @@
           {
             "stage": 1,
             "team_preset": 3,
-            "min_damage": 180,
+            "min_damage": 200,
             "skip": 0,
             "priority": {
               "head_of_decay": 2,

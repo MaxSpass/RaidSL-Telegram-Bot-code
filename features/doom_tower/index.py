@@ -53,7 +53,7 @@ class DoomTower:
             i, boss = find(DOOM_TOWER_DATA, lambda x: x['id'] == id_boss)
             if boss:
                 needle = boss['needle']
-                position = find_needle(needle, confidence=.6)
+                position = find_needle(needle, confidence=.5)
                 if position:
                     break
         return position
@@ -78,7 +78,7 @@ class DoomTower:
         click(600, 420)
         sleep(2)
         dungeon_select_difficulty('hard')
-        sleep(3)
+        sleep(5)
 
     def attack(self, x, y):
         log(f"{self.LOCATION_NAME} | Attacking")
