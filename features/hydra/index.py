@@ -210,7 +210,8 @@ class Hydra:
         return can_continue
 
     def _certain_hydra_or_all_hydra_screens(self):
-        wait_limit = 3600 * 5
+        # wait_limit = 3600 * 5
+        wait_limit = 60
         return pixels_wait(
             [screen_certain_hydra, screen_all_hydra],
             msg="Certain Hydra/All Hydra",
