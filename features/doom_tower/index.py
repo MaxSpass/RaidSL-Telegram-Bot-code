@@ -76,6 +76,8 @@ class DoomTower:
         close_popup_recursive()
         click_on_progress_info()
         click(600, 420)
+        sleep(2)
+        dungeon_select_difficulty('hard')
         sleep(3)
 
     def attack(self, x, y):

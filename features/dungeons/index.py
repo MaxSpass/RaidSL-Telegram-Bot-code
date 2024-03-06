@@ -42,19 +42,8 @@ class Dungeons:
     RESULT_VICTORY = [450, 40, [15, 121, 182]]
     RESULT_DEFEAT = [450, 40, [178, 23, 38]]
 
-    DIFFICULTY_SELECT = [144, 490, [13, 35, 45]]
-    RGB_DIFFICULTY = [34, 47, 60]
-    DIFFICULTY_NORMAL = [144, 394, RGB_DIFFICULTY]
-    DIFFICULTY_HARD = [144, 450, RGB_DIFFICULTY]
-
-    DUNGEON_DIFFICULTY_NORMAL = 'normal'
-    DUNGEON_DIFFICULTY_HARD = 'hard'
     DUNGEON_BANK_MIN_LIMIT = 8
-    DUNGEON_DIFFICULTY_DEFAULT = DUNGEON_DIFFICULTY_HARD
-    DIFFICULTIES = {
-        DUNGEON_DIFFICULTY_NORMAL: DIFFICULTY_NORMAL,
-        DUNGEON_DIFFICULTY_HARD: DIFFICULTY_HARD,
-    }
+    DUNGEON_DIFFICULTY_DEFAULT = 'hard'
 
     def __init__(self, props=None):
         self.dungeons = []
@@ -163,11 +152,6 @@ class Dungeons:
         else:
             self.results[_id]['defeat'] += 1
 
-    def _select_difficulty(self, difficulty):
-        if difficulty in self.DIFFICULTIES:
-            await_click([self.DIFFICULTY_SELECT], mistake=5)
-            await_click([self.DIFFICULTIES[difficulty]], mistake=5)
-
     def _exit_location(self):
         # click on the "Stage selection"
         dungeons_click_stage_select()
@@ -209,7 +193,7 @@ class Dungeons:
         swipe('bottom', 500, 450, 400, speed=.5)
 
         if 'difficulty' in self.current:
-            self._select_difficulty(self.current['difficulty'])
+            dungeon_select_difficulty(self.current['difficulty'])
 
         # @TODO Works with the last stage/floor only
         # click last floor @TODO Temp commented
