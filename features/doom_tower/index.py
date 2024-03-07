@@ -16,7 +16,8 @@ DOOM_TOWER_LOCATIONS = {}
 
 class DoomTower:
     LOCATION_NAME = 'Doom Tower'
-    RESULT_DEFEAT = [450, 40, [178, 23, 38]]
+    # RESULT_DEFEAT = [450, 40, [178, 23, 38]]
+    RESULT_DEFEAT = [450, 40, [151, 21, 33]]
     # @TODO Duplication
     STAGE_ENTER = [890, 200, [93, 25, 27]]
 
@@ -95,8 +96,10 @@ class DoomTower:
                 while self.keys_silver >= cost:
                     dungeons_start_battle()
                     waiting_battle_end_regular(f"{self.LOCATION_NAME} | Waiting battle end", x=28, y=88)
-                    res = not pixel_check_new(self.RESULT_DEFEAT, mistake=20)
+                    res = not pixel_check_new(self.RESULT_DEFEAT, mistake=30)
+                    print('res', str(res))
                     if res:
+                        print('minus')
                         self.keys_silver -= cost
                         self.results['bosses'] += cost
 
