@@ -194,7 +194,7 @@ class FactionWars():
                         x_stage = stage[0]
                         y_stage = stage[1]
                         click(x_stage, y_stage)
-                        sleep(.5)
+                        sleep(1.5)
 
                         if dungeons_is_able():
                             # enable "Super Raid Mode"
