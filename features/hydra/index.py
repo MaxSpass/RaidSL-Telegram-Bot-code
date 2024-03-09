@@ -131,11 +131,11 @@ class Hydra:
         log('Damage Dealt: ' + str(int_damage) + 'M')
         if int_damage >= min_damage:
             log(self.LOCATION_NAME + ' | Dealt Damage is enough')
-            await_click([button_keep_result], timeout=1)
+            await_click([button_keep_result], msg="await 'button_keep_result'", timeout=1, mistake=20)
             self._save_result(int_damage)
         else:
             log(self.LOCATION_NAME + ' | Dealt Damage is NOT enough')
-            await_click([button_free_regroup], timeout=1)
+            await_click([button_free_regroup], msg="await 'button_free_regroup'", timeout=1, mistake=20)
 
     def _is_battle_finished(self):
         return pixel_check_new(battle_end)

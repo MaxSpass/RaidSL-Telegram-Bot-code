@@ -97,9 +97,7 @@ class DoomTower:
                     dungeons_start_battle()
                     waiting_battle_end_regular(f"{self.LOCATION_NAME} | Waiting battle end", x=28, y=88)
                     res = not pixel_check_new(self.RESULT_DEFEAT, mistake=30)
-                    print('res', str(res))
                     if res:
-                        print('minus')
                         self.keys_silver -= cost
                         self.results['bosses'] += cost
 
