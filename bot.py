@@ -5,7 +5,7 @@ from helpers.common import image_path
 from PIL import Image
 from io import BytesIO
 from helpers.common import log
-
+from datetime import datetime
 
 class TelegramBOT:
     def __init__(self, props=None):
@@ -56,9 +56,11 @@ class TelegramBOT:
         callback = handler['callback']
 
         def final_callback(upd, ctx):
+            start_time = datetime.now()
             res = callback(upd, ctx)
             status = "Done" if bool(res) or res is None else "Error"
-            message = f'{status} - {command}'
+            duration_str = f"Duration: {str(datetime.now() - start_time).split('.')[0]}"
+            message = f'{status}: {command} | {duration_str}'
 
             if res and type(res) is str:
                 message += f'\n{res}'

@@ -178,7 +178,7 @@ class App:
         # primitive validation
         currentYear = datetime.now().year
         currentMonth = datetime.now().month
-        return currentYear == 2024 and (currentMonth <= 3)
+        return currentYear == 2024 and (currentMonth <= 4)
 
     def load_config(self, config):
         self.config = self._prepare_config(config)

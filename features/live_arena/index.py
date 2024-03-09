@@ -457,4 +457,5 @@ class ArenaLive:
                 self.battles_counter += 1
                 self.attack()
 
+            self.obtain()
             self.finish()
