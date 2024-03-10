@@ -92,7 +92,7 @@ class DoomTower:
             enable_super_raid()
             cost = read_run_cost()
             log(f"Cost: {str(cost)}")
-            if cost:
+            if cost and self.keys_silver:
                 while self.keys_silver >= cost:
                     dungeons_start_battle()
                     waiting_battle_end_regular(f"{self.LOCATION_NAME} | Waiting battle end", x=28, y=88)

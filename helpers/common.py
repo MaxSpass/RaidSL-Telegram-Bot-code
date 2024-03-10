@@ -827,7 +827,7 @@ def read_doom_tower_keys(key_type='golden'):
         x1 = 730
 
     if position:
-        x1 = position[0] - 70
+        x1 = position[0] - 68
         x2 = position[0] - 12
 
     region = axis_to_region(x1, 43, x2, 55)
