@@ -133,6 +133,12 @@
       "props": {"locations": [{"id": 3}], "refill": 0}
     },
     {
+      "task": "dungeon",
+      "title": "Golem",
+      "enable": 1,
+      "props": {"locations": [{"id": 2}], "refill": 0}
+    },
+    {
       "name": "Rewards",
       "task": "rewards",
       "enable": 1
@@ -242,8 +248,7 @@
         "arena_classic",
         "iron_twins",
         "dungeon_sand_devil",
-        "doom_tower",
-        "report"
+        "doom_tower"
       ]
     }
   ],
