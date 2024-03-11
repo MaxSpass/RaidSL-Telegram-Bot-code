@@ -1,11 +1,16 @@
 import os
 import pyautogui
 from telegram.ext import Updater, CommandHandler, CallbackContext
+from telegram.error import NetworkError
 from helpers.common import image_path
 from PIL import Image
 from io import BytesIO
-from helpers.common import log
+from helpers.common import log, sleep
 from datetime import datetime
+
+MAX_RETRIES = 3
+DELAY = 5
+EMULATE_NETWORK_ERROR = False
 
 class TelegramBOT:
     def __init__(self, props=None):
@@ -56,16 +61,37 @@ class TelegramBOT:
         callback = handler['callback']
 
         def final_callback(upd, ctx):
-            start_time = datetime.now()
-            res = callback(upd, ctx)
-            status = "Done" if bool(res) or res is None else "Error"
-            duration_str = f"Duration: {str(datetime.now() - start_time).split('.')[0]}"
-            message = f'{status}: {command} | {duration_str}'
+            global EMULATE_NETWORK_ERROR
 
-            if res and type(res) is str:
-                message += f'\n{res}'
+            retries = 0
+            while retries < MAX_RETRIES:
+                try:
 
-            upd.message.reply_text(message)
+                    if EMULATE_NETWORK_ERROR:
+                        EMULATE_NETWORK_ERROR = False
+                        raise NetworkError("Emulated network error")
+
+                    start_time = datetime.now()
+                    res = callback(upd, ctx)
+                    status = "Done" if bool(res) or res is None else "Error"
+                    duration_str = f"Duration: {str(datetime.now() - start_time).split('.')[0]}"
+                    message = f'{status}: {command} | {duration_str}'
+
+                    if res and type(res) is str:
+                        message += f'\n{res}'
+
+                    upd.message.reply_text(message)
+
+                    print("Message sent successfully!")
+                    return  # Exit the function if message is sent successfully
+                except NetworkError as e:
+                    print(f"Network error occurred: {e}")
+                    retries += 1
+                    print(f"Retrying ({retries}/{MAX_RETRIES})...")
+                    sleep(DELAY)  # Wait for a few seconds before retrying
+
+            print("Max retries reached. Failed to send message.")
+
 
         self.dp.add_handler(CommandHandler(command, final_callback))
 
