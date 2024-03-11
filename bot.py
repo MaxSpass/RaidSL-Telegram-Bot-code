@@ -82,15 +82,15 @@ class TelegramBOT:
 
                     upd.message.reply_text(message)
 
-                    print("Message sent successfully!")
+                    log("Message sent successfully!")
                     return  # Exit the function if message is sent successfully
                 except NetworkError as e:
-                    print(f"Network error occurred: {e}")
+                    log(f"Network error occurred: {e}")
                     retries += 1
-                    print(f"Retrying ({retries}/{MAX_RETRIES})...")
+                    log(f"Retrying ({retries}/{MAX_RETRIES})...")
                     sleep(DELAY)  # Wait for a few seconds before retrying
 
-            print("Max retries reached. Failed to send message.")
+            log("Max retries reached. Failed to send message.")
 
 
         self.dp.add_handler(CommandHandler(command, final_callback))
