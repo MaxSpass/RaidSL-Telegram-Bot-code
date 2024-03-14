@@ -36,14 +36,22 @@ INSTANCES_MAP = {
     'doom_tower': DoomTower,
 }
 
-
-def terminate_process_by_name(title):
+def find_process_by_name(name):
     for proc in psutil.process_iter(['pid', 'name']):
-        if proc.info['name'] == title:
-            log(f"Terminating process {proc.info['name']} (PID: {proc.info['pid']})")
-            proc.terminate()
-            return True
-    log(f"No process found with the title: {title}")
+        if proc.info['name'] == name:
+            return proc
+
+    log(f"No process found with the title: {name}")
+    return False
+
+def terminate_process_by_name(name):
+    proc = find_process_by_name(name)
+    if proc:
+        log(f"Terminating process {proc.info['name']} (PID: {proc.info['pid']})")
+        proc.terminate()
+        return True
+
+    log(f"No process found with the title: {name}")
     return False
 
 
@@ -81,9 +89,9 @@ def prepare_window():
             sleep(3)
             close_popup_recursive()
         else:
-            log('No Burger needle found')
+            log("No Burger needle found")
     else:
-        log('No RAID window found')
+        log("No RAID window found")
 
     if not is_prepared:
         raise Exception("Game windows is NOT prepared")
@@ -116,12 +124,12 @@ class App:
             'tasks': [],
             'presets': [],
             'after_each': [],
-            '_game_path': ''
+            'game_path': ''
         }
 
         # Temp properties
-        if '_game_path' in config_json:
-            _config['_game_path'] = os.path.normpath(str(config_json['_game_path']))
+        if 'game_path' in config_json and bool(config_json['game_path']):
+            _config['game_path'] = os.path.normpath(str(config_json['game_path']))
 
         if 'start_immediate' in config_json:
             _config['start_immediate'] = bool(config_json['start_immediate'])
@@ -197,6 +205,9 @@ class App:
             _config['after_each'] = config_json['after_each']
 
         return _config
+
+    def get_game_path(self):
+        return self.config['game_path']
 
     def validation(self):
         # primitive validation
@@ -298,13 +309,20 @@ class App:
         signal.signal(signal.SIGTERM, self.kill)
         # prepare_window()
 
-    def restart(self):
-        if bool(self.config['_game_path']):
+        game_path = self.get_game_path()
 
-            terminate_process_by_name(GAME_PROCESS_NAME)
-            sleep(2)
+        if find_process_by_name(GAME_PROCESS_NAME):
+            self.prepare()
+        elif game_path:
+            self.launch()
+        else:
+            raise "No 'game_path' provided field in the config"
 
-            subprocess.run(f"{self.config['_game_path']} -gameid=101 -tray-start")
+
+    def launch(self):
+        game_path = self.get_game_path()
+        if game_path:
+            subprocess.run(f"{game_path} -gameid=101 -tray-start")
 
             while not is_index_page(logger=False):
                 log('Waiting the game window')
@@ -313,7 +331,17 @@ class App:
             self.prepare()
             log('Game window is ready')
         else:
-            return "No '_game_path' provided field in the config"
+            return "No 'game_path' provided field in the config"
+
+    def restart(self):
+        game_path = self.get_game_path()
+        if game_path:
+            terminate_process_by_name(GAME_PROCESS_NAME)
+            sleep(2)
+
+            self.launch()
+        else:
+            return "No 'game_path' provided field in the config"
 
 
     def prepare(self):

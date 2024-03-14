@@ -1,7 +1,7 @@
 {
-  "_game_path": "C:/Users/user/AppData/Local/PlariumPlay/PlariumPlay.exe",
+  "start_immediate": 1,
+  "game_path": "C:/Users/user/AppData/Local/PlariumPlay/PlariumPlay.exe",
   "telegram_token": "6722044970:AAGZ5EtkQPVFpSzHqhKeAiCf3sXD-PRX6_w",
-  "start_immediate": 0,
   "tasks": [
     {
       "task": "arena_live",
@@ -140,6 +140,12 @@
       "props": {"locations": [{"id": 2}], "refill": 0}
     },
     {
+      "task": "dungeon",
+      "title": "Fire Knight",
+      "enable": 1,
+      "props": {"locations": [{"id": 5}], "difficulty": "normal", "refill": 0}
+    },
+    {
       "name": "Rewards",
       "task": "rewards",
       "enable": 1
@@ -151,24 +157,10 @@
         "runs_limit": 3,
         "runs": [
           {
-            "stage": 4,
-            "team_preset": 1,
-            "min_damage": 200,
-            "skip": 0,
-            "priority": {
-              "head_of_decay": 2,
-              "head_of_blight": 1,
-              "head_of_mischief": 0,
-              "head_of_suffering": 0,
-              "head_of_torment": 0,
-              "head_of_wrath": 0
-            }
-          },
-          {
-            "stage": 1,
+            "stage": 2,
             "team_preset": 3,
-            "min_damage": 200,
-            "skip": 0,
+            "min_damage": 60,
+            "skip": 1,
             "priority": {
               "head_of_decay": 2,
               "head_of_blight": 1,
@@ -183,6 +175,20 @@
             "team_preset": 4,
             "min_damage": 35,
             "skip": 0,
+            "priority": {
+              "head_of_decay": 2,
+              "head_of_blight": 1,
+              "head_of_mischief": 0,
+              "head_of_suffering": 0,
+              "head_of_torment": 0,
+              "head_of_wrath": 0
+            }
+          },
+          {
+            "stage": 4,
+            "team_preset": 1,
+            "min_damage": 200,
+            "skip": 1,
             "priority": {
               "head_of_decay": 2,
               "head_of_blight": 1,

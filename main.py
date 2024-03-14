@@ -44,7 +44,6 @@ def in_progress():
     # cv2.waitKey(0)
     # cv2.destroyAllWindows()
 
-
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     text = pytesseract.image_to_string(gray)
     boxes = pytesseract.image_to_boxes(gray)
@@ -89,7 +88,6 @@ def in_progress():
 
     print("Text extracted from concatenated boxes:", full_text)
 
-
     # Draw rectangles around the text regions
     # for box in boxes.splitlines():
     #     box = box.split()
@@ -106,80 +104,46 @@ def main():
     # in_progress()
     # return
 
-    # keys = read_doom_tower_keys('golden')
-    # print('keys', keys)
-    # keys = read_doom_tower_keys('silver')
-    # print('keys', keys)
-    # return
-
-    # doom_tower = DoomTower({
-    #     'bosses': [1]
-    # })
-    # doom_tower.enter()
-    # return
-
-    # @TODO In progress
-    # p = find_guardian_ring()
-    # if p:
-    #     click(p[0], p[1])
-    # return
-
-    # size = 28
-    # offset = size / 2
-    # region = [46 - offset, 257 - offset, size, size]
-    # screenshot = pyautogui.screenshot(region=region)
-    # show_pyautogui_image(screenshot)
-
-    # y_axis = [136, 257, 378]
-    #
-    # for i in range(len(y_axis)):
-    #     y = y_axis[i]
-    #     test_region = [46 - offset, y - offset, size, size]
-    #
-    #     dominant_color_1 = dominant_color_hue(region=test_region, rank=1)
-    #     dominant_color_2 = dominant_color_hue(region=test_region, rank=2)
-    #     dominant_color_3 = dominant_color_hue(region=test_region, rank=3)
-    #
-    #     print('1 dominant:', dominant_color_1)
-    #     print('2 dominant:', dominant_color_2)
-    #     print('3 dominant:', dominant_color_3)
-    #     print('=========================')
-
-    # test_hero_preset = HeroPreset()
-    # print(test_hero_preset.choose(1))
-    # print(test_hero_preset.choose(2))
-    # print(test_hero_preset.choose(3))
-    # print(test_hero_preset.choose(4))
-    # return
-
     if IS_DEV or app.validation():
-        app.start()
-        app.prepare()
-
-        # app.entries['arena_live']['instance'].enter()
-        # app.entries['arena_live']['instance'].obtain()
-
-        if app.config['start_immediate']:
-            app.run()
-
+        game_path = app.get_game_path()
         has_telegram_token = 'telegram_token' in app.config
         telegram_bot_thread = None
 
         try:
+            # app.entries['arena_live']['instance'].enter()
+            # app.entries['arena_live']['instance'].obtain()
+
+            if app.config['start_immediate']:
+                app.start()
+
             if has_telegram_token:
                 telegram_bot = TelegramBOT({
                     'token': app.config['telegram_token']
                 })
 
+                # all callbacks should return truthy values in case of success
+                if game_path:
+                    telegram_bot.add({
+                        'command': 'restart',
+                        'description': 'Re-Start the Game',
+                        'handler': {
+                            'callback': lambda upd, ctx: app.restart(),
+                        },
+                    })
+                    telegram_bot.add({
+                        'command': 'launch',
+                        'description': 'Re-Launch the Game',
+                        'handler': {
+                            'callback': lambda upd, ctx: app.launch(),
+                        },
+                    })
                 telegram_bot.add({
-                    'command': 'restart',
-                    'description': 'Restart the game process',
+                    'command': 'relogin',
+                    'description': 'Re-log in',
                     'handler': {
-                        'callback': lambda upd, ctx: app.restart(),
+                        'callback': lambda upd, ctx: app.relogin(),
                     },
                 })
-
-                # all callbacks should return truthy values in case of success
                 telegram_bot.add({
                     'command': 'report',
                     'description': 'Report',
@@ -187,18 +151,12 @@ def main():
                         'callback': lambda upd, ctx: app.report(),
                     },
                 })
+                # @TODO Returns nothing and raises an error when no Game window found
                 telegram_bot.add({
                     'command': 'prepare',
                     'description': 'Prepare the window',
                     'handler': {
                         'callback': lambda upd, ctx: app.prepare(),
-                    },
-                })
-                telegram_bot.add({
-                    'command': 'relogin',
-                    'description': 'Re-log in',
-                    'handler': {
-                        'callback': lambda upd, ctx: app.relogin(),
                     },
                 })
                 telegram_bot.add({
@@ -208,7 +166,7 @@ def main():
                         'callback': lambda upd, ctx: ctx.bot.send_photo(
                             chat_id=upd.message.chat_id,
                             photo=app.screen()
-                        ),
+                        ) if bool(app.window) else upd.message.reply_text("No Game window found"),
                     },
                 })
 
