@@ -1,4 +1,5 @@
 {
+  "_game_path": "C:/Users/user/AppData/Local/PlariumPlay/PlariumPlay.exe",
   "telegram_token": "6722044970:AAGZ5EtkQPVFpSzHqhKeAiCf3sXD-PRX6_w",
   "start_immediate": 0,
   "tasks": [
@@ -249,6 +250,30 @@
         "iron_twins",
         "dungeon_sand_devil",
         "doom_tower"
+      ]
+    },
+    {
+      "name": "night_without_dungeon",
+      "commands": [
+        "arena_live",
+        "arena_classic",
+        "arena_tag",
+        "rewards",
+        "faction_wars",
+        "rewards",
+        "arena_tag",
+        "rewards",
+        "arena_classic",
+        "iron_twins",
+        "doom_tower"
+      ]
+    },
+    {
+      "name": "test",
+      "commands": [
+        "rewards",
+        "report",
+        "screen"
       ]
     }
   ],

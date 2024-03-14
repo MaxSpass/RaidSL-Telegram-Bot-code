@@ -13,6 +13,13 @@ import atexit
 import signal
 import sys
 import pytesseract
+import subprocess
+import psutil
+import os
+
+GAME_WINDOW = 'Raid: Shadow Legends'
+GAME_PROCESS_NAME = 'Raid.exe'
+# GAME_PATH = r"C:\Users\user\AppData\Local\PlariumPlay\PlariumPlay.exe"
 
 CONFIG_PATH = "config.json"
 WINDOW_SIZE = [920, 540]
@@ -29,9 +36,19 @@ INSTANCES_MAP = {
     'doom_tower': DoomTower,
 }
 
+
+def terminate_process_by_name(title):
+    for proc in psutil.process_iter(['pid', 'name']):
+        if proc.info['name'] == title:
+            log(f"Terminating process {proc.info['name']} (PID: {proc.info['pid']})")
+            proc.terminate()
+            return True
+    log(f"No process found with the title: {title}")
+    return False
+
+
 def prepare_window():
     BURGER_POSITION = [15, 282]
-    GAME_WINDOW = 'Raid: Shadow Legends'
     is_prepared = False
     wins = pyautogui.getWindowsWithTitle(GAME_WINDOW)
     win = None
@@ -98,8 +115,13 @@ class App:
             'start_immediate': True,
             'tasks': [],
             'presets': [],
-            'after_each': []
+            'after_each': [],
+            '_game_path': ''
         }
+
+        # Temp properties
+        if '_game_path' in config_json:
+            _config['_game_path'] = os.path.normpath(str(config_json['_game_path']))
 
         if 'start_immediate' in config_json:
             _config['start_immediate'] = bool(config_json['start_immediate'])
@@ -154,6 +176,9 @@ class App:
             # handling presets
             presets_length = len(config_json['presets'])
             if presets_length:
+                # @TODO Refactor
+                # _config['presets'] = config_json['presets']
+
                 presets_filtered = []
                 for i in range(presets_length):
                     preset_name = config_json['presets'][i]['name']
@@ -165,8 +190,7 @@ class App:
                             lambda x: any(dct['command'] == x for dct in _config['tasks']), preset_tasks
                         ))
                     })
-
-                    _config['presets'] = presets_filtered
+                _config['presets'] = presets_filtered
 
         # After each commands
         if 'after_each' in config_json:
@@ -273,6 +297,24 @@ class App:
         signal.signal(signal.SIGINT, self.kill)
         signal.signal(signal.SIGTERM, self.kill)
         # prepare_window()
+
+    def restart(self):
+        if bool(self.config['_game_path']):
+
+            terminate_process_by_name(GAME_PROCESS_NAME)
+            sleep(2)
+
+            subprocess.run(f"{self.config['_game_path']} -gameid=101 -tray-start")
+
+            while not is_index_page(logger=False):
+                log('Waiting the game window')
+                sleep(5)
+
+            self.prepare()
+            log('Game window is ready')
+        else:
+            return "No '_game_path' provided field in the config"
+
 
     def prepare(self):
         self.window = prepare_window()

@@ -5,6 +5,9 @@ from bot import TelegramBOT
 from classes.app import *
 from constants.index import IS_DEV
 
+# import asyncio
+# from telegram.ext import CommandHandler
+
 # import pyautogui
 # import os.path
 # import pyautogui
@@ -168,6 +171,14 @@ def main():
                     'token': app.config['telegram_token']
                 })
 
+                telegram_bot.add({
+                    'command': 'restart',
+                    'description': 'Restart the game process',
+                    'handler': {
+                        'callback': lambda upd, ctx: app.restart(),
+                    },
+                })
+
                 # all callbacks should return truthy values in case of success
                 telegram_bot.add({
                     'command': 'report',
@@ -181,13 +192,6 @@ def main():
                     'description': 'Prepare the window',
                     'handler': {
                         'callback': lambda upd, ctx: app.prepare(),
-                    },
-                })
-                telegram_bot.add({
-                    'command': 'run',
-                    'description': 'Runs all tasks again',
-                    'handler': {
-                        'callback': lambda upd, ctx: app.run(),
                     },
                 })
                 telegram_bot.add({
