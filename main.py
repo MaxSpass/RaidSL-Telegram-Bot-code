@@ -1,9 +1,11 @@
+import os.path
 import threading
 import traceback
 import pyautogui
 from bot import TelegramBOT
 from classes.app import *
 from constants.index import IS_DEV
+from cv2 import cvtColor, COLOR_BGR2GRAY
 
 # import asyncio
 # from telegram.ext import CommandHandler
@@ -44,7 +46,7 @@ def in_progress():
     # cv2.waitKey(0)
     # cv2.destroyAllWindows()
 
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    gray = cvtColor(image, COLOR_BGR2GRAY)
     text = pytesseract.image_to_string(gray)
     boxes = pytesseract.image_to_boxes(gray)
 
@@ -169,6 +171,50 @@ def main():
                         ) if bool(app.window) else upd.message.reply_text("No Game window found"),
                     },
                 })
+
+                # @TODO In progress
+                # async def test1(*args, msg='1'):
+                #     counter = 0
+                #     while counter < 5:
+                #         print(msg)
+                #         counter += 1
+                #         sleep(1)
+                #
+                # async def test2(*args, msg='2'):
+                #     counter = 0
+                #     while counter < 5:
+                #         print(msg)
+                #         counter += 1
+                #         sleep(1)
+
+                # async def async_command_1(upd, ctx):
+                #     # Your asynchronous code here
+                #     await asyncio.sleep(4)
+                #     await upd.message.reply_text("Async command executed! 1")
+                #
+                # async def async_command_2(upd, ctx):
+                #     # Your asynchronous code here
+                #     await asyncio.sleep(2)
+                #     await upd.message.reply_text("Async command executed! 2")
+
+                # telegram_bot.add({
+                #     'command': 'test_1',
+                #     'description': 'Test 1',
+                #     'handler': {
+                #         'callback': handler_function_1,
+                #     },
+                # })
+                #
+                # telegram_bot.add({
+                #     'command': 'test_2',
+                #     'description': 'Test 2',
+                #     'handler': {
+                #         'callback': handler_function_2,
+                #     },
+                # })
+
+                # telegram_bot.dp.add_handler(CommandHandler('test_1', async_command_1))
+                # telegram_bot.dp.add_handler(CommandHandler('test_2', async_command_2))
 
                 # register main commands according to 'tasks'
                 regular_command = []

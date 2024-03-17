@@ -135,7 +135,7 @@
     },
     {
       "task": "dungeon",
-      "title": "Golem",
+      "title": "Ice Golem",
       "enable": 1,
       "props": {"locations": [{"id": 2}], "refill": 0}
     },
@@ -143,7 +143,7 @@
       "task": "dungeon",
       "title": "Fire Knight",
       "enable": 1,
-      "props": {"locations": [{"id": 5}], "difficulty": "normal", "refill": 0}
+      "props": {"locations": [{"id": 5}], "refill": 0}
     },
     {
       "name": "Rewards",
@@ -154,13 +154,13 @@
       "task": "hydra",
       "enable": 1,
       "props": {
-        "runs_limit": 3,
+        "runs_limit": 5,
         "runs": [
           {
             "stage": 2,
             "team_preset": 3,
             "min_damage": 60,
-            "skip": 1,
+            "skip": 0,
             "priority": {
               "head_of_decay": 2,
               "head_of_blight": 1,
@@ -173,7 +173,7 @@
           {
             "stage": 3,
             "team_preset": 4,
-            "min_damage": 35,
+            "min_damage": 60,
             "skip": 0,
             "priority": {
               "head_of_decay": 2,
@@ -187,8 +187,8 @@
           {
             "stage": 4,
             "team_preset": 1,
-            "min_damage": 200,
-            "skip": 1,
+            "min_damage": 250,
+            "skip": 0,
             "priority": {
               "head_of_decay": 2,
               "head_of_blight": 1,
@@ -242,7 +242,7 @@
       ]
     },
     {
-      "name": "night",
+      "name": "night with dungeon",
       "commands": [
         "arena_live",
         "arena_classic",
@@ -259,7 +259,7 @@
       ]
     },
     {
-      "name": "night_without_dungeon",
+      "name": "night",
       "commands": [
         "arena_live",
         "arena_classic",
@@ -272,14 +272,6 @@
         "arena_classic",
         "iron_twins",
         "doom_tower"
-      ]
-    },
-    {
-      "name": "test",
-      "commands": [
-        "rewards",
-        "report",
-        "screen"
       ]
     }
   ],

@@ -1,8 +1,7 @@
-from helpers.screen import *
 from helpers.common import *
 from pathlib import Path
 import pytesseract
-import cv2
+from cv2 import imread, cvtColor, threshold, THRESH_BINARY, THRESH_OTSU, COLOR_BGR2GRAY
 import pyautogui
 import uuid
 import os
@@ -34,9 +33,9 @@ def check_results():
     for i in range(len(files)):
         img_name = files[i]
         img_path = os.path.join(path, img_name)
-        img = cv2.imread(img_path)
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        threshold_img = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
+        img = imread(img_path)
+        gray = cvtColor(img, COLOR_BGR2GRAY)
+        threshold_img = threshold(gray, 0, 255, THRESH_BINARY + THRESH_OTSU)[1]
         text = pytesseract.image_to_string(threshold_img)
         results.append(text)
 
@@ -51,9 +50,9 @@ def capture_demon_lord_result():
 def read_text_in_region(region):
     screenshot = pyautogui.screenshot(region=region)
     screenshot.save(r"E:\Main\BACKEND\core\text.png")
-    img = cv2.imread(r"E:\Main\BACKEND\core\text.png")
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    threshold_img = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
+    img = imread(r"E:\Main\BACKEND\core\text.png")
+    gray = cvtColor(img, COLOR_BGR2GRAY)
+    threshold_img = threshold(gray, 0, 255, THRESH_BINARY + THRESH_OTSU)[1]
     text = pytesseract.image_to_string(threshold_img)
     return text
 

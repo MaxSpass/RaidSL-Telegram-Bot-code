@@ -5,11 +5,11 @@ import random
 import os
 import glob
 import np
-import cv2
 import json
 import re
 from datetime import datetime
 from constants.index import IS_DEV
+from cv2 import imshow, waitKey, imread, cvtColor, calcHist, COLOR_BGR2GRAY, COLOR_BGR2HSV
 from helpers.time_mgr import *
 import pytesseract
 from PIL import Image
@@ -409,15 +409,15 @@ def clear_folder(path):
 def show_pyautogui_image(pyautogui_screenshot):
     open_cv_image = np.array(pyautogui_screenshot)
     open_cv_image = open_cv_image[:, :, ::-1].copy()
-    cv2.imshow('Matches', open_cv_image)
-    cv2.waitKey()
+    imshow('Matches', open_cv_image)
+    waitKey()
 
 
 def show_image(path=None):
     if path is not None:
-        image = cv2.imread(path)
-        cv2.imshow('Matches', image)
-        cv2.waitKey()
+        image = imread(path)
+        imshow('Matches', image)
+        waitKey()
 
 
 # run only in case when you are aware of the action
@@ -688,12 +688,12 @@ def read_text(configs, region, timeout=0.1, parser=None, update_screenshot=False
         # image = screenshot_to_image(screenshot)
 
         # greyscale
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        image = cvtColor(image, COLOR_BGR2GRAY)
 
         # @TODO Debug
         if debug and i == 0:
-            cv2.imshow('Matches', image)
-            cv2.waitKey()
+            imshow('Matches', image)
+            waitKey()
 
         text = pytesseract.image_to_string(image, config=config)
         res.append(text.strip())
@@ -830,7 +830,7 @@ def read_doom_tower_keys(key_type='golden'):
         x1 = position[0] - 68
         x2 = position[0] - 12
 
-    region = axis_to_region(x1, 43, x2, 55)
+    region = axis_to_region(x1, 38, x2, 56)
 
     # screenshot = pyautogui.screenshot(region=region)
     # show_pyautogui_image(screenshot)
@@ -843,10 +843,10 @@ def dominant_color_hue(region, rank=1):
     image = screenshot_to_image(screenshot)
 
     # Convert the image to the HSV color space
-    hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    hsv_image = cvtColor(image, COLOR_BGR2HSV)
 
     # Calculate the histogram of the image in the Hue channel
-    histogram = cv2.calcHist([hsv_image], [0], None, [180], [0, 180])
+    histogram = calcHist([hsv_image], [0], None, [180], [0, 180])
 
     # Find the rank-th dominant color bin
     dominant_color_bin = np.argsort(histogram.flatten())[-rank]
