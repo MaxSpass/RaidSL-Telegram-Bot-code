@@ -325,16 +325,14 @@ def dungeon_select_difficulty(difficulty, mistake=5):
 def enable_super_raid(pixel=None):
     log('Function: enable_super_raid')
     # @TODO Duplication
-    STAGE_ENTER_RGB = [93, 25, 27]
+    STAGE_ENTER = [890, 200, [93, 25, 27]]
     SUPER_RAID_PIXEL = [655, 336, [108, 237, 255]]
 
     if not pixel:
         pixel = SUPER_RAID_PIXEL
 
-    x_enter = pixel[0]
-    y_enter = pixel[1]
-    if not pixel_check_new([x_enter, y_enter, STAGE_ENTER_RGB], mistake=10):
-        while not pixel_check_new(pixel, mistake=10):
+    if pixels_wait([STAGE_ENTER], msg="Waiting for entering the stage", mistake=10)[0]:
+        if not pixel_check_new(pixel, mistake=10):
             x = pixel[0]
             y = pixel[1]
             click(x, y)

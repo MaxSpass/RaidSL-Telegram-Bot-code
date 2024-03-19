@@ -256,7 +256,7 @@ class App:
 
     def relogin(self):
         # limit in seconds
-        limit = 120
+        limit = 60
         timeout = 3
         counter = 0
 
@@ -269,11 +269,10 @@ class App:
             counter += timeout
             burger = find_needle_burger()
 
-        if burger:
-            return True
-        else:
-            error = "Can't relogin"
-            log(error)
+        if not burger:
+            self.restart()
+
+        return True
 
     def screen(self):
         # hidden window

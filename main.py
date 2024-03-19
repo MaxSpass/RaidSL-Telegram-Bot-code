@@ -1,15 +1,12 @@
-import os.path
 import threading
 import traceback
-import pyautogui
+from cv2 import cvtColor, COLOR_BGR2GRAY
 from bot import TelegramBOT
 from classes.app import *
 from constants.index import IS_DEV
-from cv2 import cvtColor, COLOR_BGR2GRAY
 
 # import asyncio
 # from telegram.ext import CommandHandler
-
 # import pyautogui
 # import os.path
 # import pyautogui
@@ -106,6 +103,9 @@ def main():
     # in_progress()
     # return
 
+    # enable_super_raid()
+    # return
+
     if IS_DEV or app.validation():
         game_path = app.get_game_path()
         has_telegram_token = 'telegram_token' in app.config
@@ -151,14 +151,6 @@ def main():
                     'description': 'Report',
                     'handler': {
                         'callback': lambda upd, ctx: app.report(),
-                    },
-                })
-                # @TODO Returns nothing and raises an error when no Game window found
-                telegram_bot.add({
-                    'command': 'prepare',
-                    'description': 'Prepare the window',
-                    'handler': {
-                        'callback': lambda upd, ctx: app.prepare(),
                     },
                 })
                 telegram_bot.add({
