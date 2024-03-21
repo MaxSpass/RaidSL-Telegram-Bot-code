@@ -4,6 +4,10 @@
   "telegram_token": "6722044970:AAGZ5EtkQPVFpSzHqhKeAiCf3sXD-PRX6_w",
   "tasks": [
     {
+      "task": "rewards",
+      "enable": 1
+    },
+    {
       "task": "arena_live",
       "enable": 1,
       "props": {
@@ -117,53 +121,6 @@
       }
     },
     {
-      "task": "dungeon",
-      "title": "Minotaur",
-      "enable": 1,
-      "props": {"locations": [{"id": 1}], "refill": 0}
-    },
-    {
-      "task": "dungeon",
-      "title": "Ice Golem",
-      "enable": 1,
-      "props": {"locations": [{"id": 2}], "refill": 0}
-    },
-    {
-      "task": "dungeon",
-      "title": "Spider",
-      "enable": 1,
-      "props": {"locations": [{"id": 3}], "refill": 0}
-    },
-    {
-      "task": "dungeon",
-      "title": "Dragon",
-      "enable": 1,
-      "props": {"locations": [{"id": 4}], "refill": 0}
-    },
-    {
-      "task": "dungeon",
-      "title": "Fire Knight Normal",
-      "enable": 1,
-      "props": {"locations": [{"id": 5, "difficulty": "normal"}], "refill": 0}
-    },
-    {
-      "task": "dungeon",
-      "title": "Sand Devil",
-      "enable": 1,
-      "props": {"locations": [{"id": 6}], "refill": 0}
-    },
-    {
-      "task": "dungeon",
-      "title": "Phantom",
-      "enable": 1,
-      "props": {"locations": [{"id": 7}], "refill": 0}
-    },
-    {
-      "name": "Rewards",
-      "task": "rewards",
-      "enable": 1
-    },
-    {
       "task": "hydra",
       "enable": 1,
       "props": {
@@ -215,6 +172,48 @@
       }
     },
     {
+      "task": "dungeon",
+      "title": "Minotaur",
+      "enable": 1,
+      "props": {"locations": [{"id": 1}], "refill": 0}
+    },
+    {
+      "task": "dungeon",
+      "title": "Ice Golem",
+      "enable": 1,
+      "props": {"locations": [{"id": 2}], "refill": 0}
+    },
+    {
+      "task": "dungeon",
+      "title": "Spider",
+      "enable": 1,
+      "props": {"locations": [{"id": 3}], "refill": 0}
+    },
+    {
+      "task": "dungeon",
+      "title": "Dragon",
+      "enable": 1,
+      "props": {"locations": [{"id": 4}], "refill": 0}
+    },
+    {
+      "task": "dungeon",
+      "title": "Fire Knight Normal",
+      "enable": 1,
+      "props": {"locations": [{"id": 5, "difficulty": "normal"}], "refill": 0}
+    },
+    {
+      "task": "dungeon",
+      "title": "Sand Devil",
+      "enable": 1,
+      "props": {"locations": [{"id": 6}], "refill": 0}
+    },
+    {
+      "task": "dungeon",
+      "title": "Phantom",
+      "enable": 1,
+      "props": {"locations": [{"id": 7}], "refill": 0}
+    },
+    {
       "task": "demon_lord",
       "enable": 1,
       "props": {
@@ -255,7 +254,23 @@
       ]
     },
     {
-      "name": "night with dungeon",
+      "name": "night",
+      "commands": [
+        "arena_live",
+        "arena_classic",
+        "arena_tag",
+        "rewards",
+        "faction_wars",
+        "rewards",
+        "arena_tag",
+        "rewards",
+        "arena_classic",
+        "iron_twins",
+        "doom_tower"
+      ]
+    },
+    {
+      "name": "night with sand devil",
       "commands": [
         "arena_live",
         "arena_classic",
@@ -272,7 +287,7 @@
       ]
     },
     {
-      "name": "night",
+      "name": "night with minotaur",
       "commands": [
         "arena_live",
         "arena_classic",
@@ -284,6 +299,7 @@
         "rewards",
         "arena_classic",
         "iron_twins",
+        "dungeon_minotaur",
         "doom_tower"
       ]
     }

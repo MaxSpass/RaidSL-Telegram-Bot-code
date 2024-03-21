@@ -120,10 +120,11 @@ def random_easying():
     ])
 
 
-def debug_save_screenshot(prefix_name=None):
+def debug_save_screenshot(region=None, prefix_name=None):
+    if not region:
+        region = [0, 0, 906, 533]
     DEBUG_FOLDER = 'debug'
     # @TODO Region is hardcoded
-    region = [0, 0, 906, 533]
     time = get_time_for_log(s='-')
     file_name = format_string_for_log(f"{time}-{str(prefix_name).lower()}" if prefix_name else time)
     folder_ensure(DEBUG_FOLDER)
