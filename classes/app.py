@@ -54,11 +54,55 @@ def terminate_process_by_name(name):
     log(f"No process found with the title: {name}")
     return False
 
+def get_game_windows():
+    return pyautogui.getWindowsWithTitle(GAME_WINDOW)
+
+def resize_window():
+    win = None
+    wins = get_game_windows()
+    if len(wins):
+        win = wins[0]
+        win.activate()
+        time.sleep(.5)
+        win.resizeTo(WINDOW_SIZE[0], WINDOW_SIZE[1])
+        win.moveTo(0, 0)
+        time.sleep(.5)
+    else:
+        log("No RAID window found")
+    return win
+
+def calibrate_window():
+    BURGER_POSITION = [15, 282]
+    is_prepared = False
+    x = 0
+    y = 0
+    wins = get_game_windows()
+    if len(wins):
+        win = wins[0]
+        # going back to the index page
+        close_popup_recursive()
+
+        burger = find_needle_burger()
+        if burger is not None:
+            if burger[0] != BURGER_POSITION[0] or burger[1] != BURGER_POSITION[1]:
+                x_burger = burger[0] - BURGER_POSITION[0]
+                y_burger = burger[1] - BURGER_POSITION[1]
+                x -= x_burger
+                y -= y_burger
+                win.move(int(x), int(y))
+            is_prepared = True
+
+            # waiting and closing sudden popups
+            sleep(3)
+            close_popup_recursive()
+    if not is_prepared:
+        raise Exception("Game windows is NOT prepared")
+
 
 def prepare_window():
     BURGER_POSITION = [15, 282]
     is_prepared = False
-    wins = pyautogui.getWindowsWithTitle(GAME_WINDOW)
+    wins = get_game_windows()
     win = None
     if len(wins):
         win = wins[0]
@@ -322,12 +366,14 @@ class App:
         game_path = self.get_game_path()
         if game_path:
             subprocess.run(f"{game_path} -gameid=101 -tray-start")
+            sleep(3)
+            self.window = resize_window()
 
             while not is_index_page(logger=False):
                 log('Waiting the game window')
                 sleep(5)
 
-            self.prepare()
+            calibrate_window()
             log('Game window is ready')
         else:
             return "No 'game_path' provided field in the config"
@@ -344,7 +390,8 @@ class App:
 
 
     def prepare(self):
-        self.window = prepare_window()
+        self.window = resize_window()
+        calibrate_window()
 
     def get_entry(self, command_name):
         return self.entries[command_name]
