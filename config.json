@@ -224,7 +224,7 @@
       "task": "doom_tower",
       "enable": 1,
       "props": {
-        "bosses": [1]
+        "bosses": [1, 6]
       }
     }
   ],

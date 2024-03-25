@@ -9,6 +9,7 @@ DEMON_LORD_REWARD_COORDINATES = {
     5: (580, 300),
     6: (580, 380),
 }
+DEMON_LORD_DAMAGE_REGION = axis_to_region(184, 150, 687, 202)
 
 # @TODO Refactor
 class DemonLord:
@@ -104,6 +105,10 @@ class DemonLord:
             # click on start
             click(860, 480)
             if pixel_wait('End of the battle with Demon Lord: ' + str(stage) + ' level', 20, 112, [255, 255, 255], 3):
+                # @TODO Test
+                debug_save_screenshot(region=DEMON_LORD_DAMAGE_REGION)
+                sleep(.5)
+
                 # return to the demon lord menu
                 click(420, 490)
                 close_popup()

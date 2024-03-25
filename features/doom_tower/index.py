@@ -6,11 +6,14 @@ DOOM_TOWER_DATA = [
     {'id': '2', 'name': 'Celestian Griffin', 'needle': 'doom_tower/boss_celestian_griffin.jpg'},
     {'id': '3', 'name': 'Dreadhorn', 'needle': 'doom_tower/boss_dreadhorn.jpg'},
     {'id': '4', 'name': 'Scarab King', 'needle': 'doom_tower/boss_scarab_king.jpg'},
+    {'id': '5', 'name': 'Magma Dragon', 'needle': 'doom_tower/boss_magma_dragon.jpg'},
+    {'id': '6', 'name': 'Nether Spider', 'needle': 'doom_tower/boss_nether_spider.jpg'},
+    {'id': '7', 'name': 'Frost Spider', 'needle': 'doom_tower/boss_frost_spider.jpg'},
 ]
 
 # @TODO
 DOOM_TOWER_LOCATIONS = {}
-
+DOOM_TOWER_BOSS_ROOMS_REGION = [640, 70, 190, 460]
 # hero_preset = HeroPreset()
 
 
@@ -54,7 +57,7 @@ class DoomTower:
             i, boss = find(DOOM_TOWER_DATA, lambda x: x['id'] == id_boss)
             if boss:
                 needle = boss['needle']
-                position = find_needle(needle, confidence=.5)
+                position = find_needle(needle, confidence=.5, region=DOOM_TOWER_BOSS_ROOMS_REGION)
                 if position:
                     break
         return position
@@ -82,7 +85,12 @@ class DoomTower:
 
         # mistake=200 for ignoring different backgrounds
         dungeon_select_difficulty('hard', mistake=200)
-        sleep(3)
+        sleep(5)
+
+        # go higher floor
+        for i in range(15):
+            swipe('top', 450, 80, 450, speed=.1, sleep_after_end=.2, instant_move=True)
+        sleep(1)
 
     def attack(self, x, y):
         log(f"{self.LOCATION_NAME} | Attacking")
@@ -105,11 +113,22 @@ class DoomTower:
         self.enter()
 
         self._read_keys()
+
         # attack bosses
         position = self._find_boss_position()
+        counter = 0
+
+        while counter < 15 and position is None:
+            for j in range(2):
+                swipe('bottom', 450, 390, 250, speed=.5, sleep_after_end=.3, instant_move=True)
+                position = self._find_boss_position()
+
+            counter += 1
+
         if position:
             x = position[0]
             y = position[1]
+            # click(x, y)
             self.attack(x, y)
 
         self.finish()
