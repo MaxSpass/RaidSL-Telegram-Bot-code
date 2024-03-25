@@ -7,9 +7,9 @@ import glob
 import np
 import json
 import re
+import cv2
 from datetime import datetime
 from constants.index import IS_DEV
-from cv2 import imshow, waitKey, imread, cvtColor, calcHist, COLOR_BGR2GRAY, COLOR_BGR2HSV
 from helpers.time_mgr import *
 import pytesseract
 from PIL import Image
@@ -153,6 +153,12 @@ def pixel_check_new(pixel, mistake=10):
                rgb[2] - mistake < p[2] < rgb[2] + mistake
 
 
+def rgb_check(rgb_1, rgb_2, mistake=0):
+    if all(abs(rgb_1[i] - rgb_2[i]) <= mistake for i in range(3)):
+        return True
+    return False
+
+
 def pixels_check(msg, pixels, mistake=0):
     length = len(pixels)
     log('Checking some of ' + str(length) + ' pixels: ' + msg)
@@ -228,6 +234,16 @@ def await_click(pixels, msg=None, timeout=5, mistake=0, wait_limit=None):
     return res
 
 
+def await_needle(image_name, region=None, confidence=None, scale=None, timeout=.5, wait_limit=30):
+    counter = 0
+    needle_image = find_needle(image_name, region=region, confidence=confidence, scale=scale)
+    while needle_image is None and counter < wait_limit:
+        needle_image = find_needle(image_name, region=region, confidence=confidence, scale=scale)
+        sleep(timeout)
+        counter += timeout
+    return needle_image
+
+
 def is_index_page(logger=True):
     flag = False
     message = None
@@ -240,6 +256,37 @@ def is_index_page(logger=True):
     if logger and message:
         log(message)
     return flag
+
+
+def get_closer_axis(arr):
+    # Initialize the smallest_point with the first point in the array
+    smallest_point = arr[0]
+
+    # Iterate through the rest of the points to find the smallest 'x' and 'y' values
+    for point in arr[1:]:
+        if point.x < smallest_point.x:
+            smallest_point = point
+        elif point.x == smallest_point.x and point.y < smallest_point.y:
+            smallest_point = point
+
+    return smallest_point
+
+
+def sort_by_closer_axis(arr):
+    # Define a custom sorting key function
+    def custom_sort(item):
+        # Sort first by 'y', then by 'x'
+        return item['y'], item['x']
+
+    # Sort the data using the custom sorting key
+    sorted_data = sorted(arr, key=custom_sort)
+
+    return sorted_data
+
+
+def move_out_cursor():
+    # @TODO Refactor
+    pyautogui.moveTo(1000, 1000)
 
 
 def waiting_battle_end_regular(msg, timeout=5, x=20, y=46):
@@ -323,6 +370,7 @@ def dungeon_select_difficulty(difficulty, mistake=5):
         await_click([DIFFICULTY_SELECT], mistake=mistake)
         await_click([DIFFICULTIES[difficulty]], mistake=mistake)
 
+
 def enable_super_raid(pixel=None):
     log('Function: enable_super_raid')
     # @TODO Duplication
@@ -348,11 +396,14 @@ def calculate_win_rate(w, l):
 
 
 # @TODO Should be fixed ASAP
-def swipe(direction, x1, y1, distance, sleep_after_end=1.5, speed=2):
-    # @TODO It does not work perfect
-    sleep(1)
-    click(x1, y1)
-    sleep(0.5)
+def swipe(direction, x1, y1, distance, speed=2, sleep_after_end=1.5, instant_move=False):
+    # @TODO The function does not work perfect
+    if instant_move:
+        pyautogui.moveTo(x1, y1)
+    else:
+        sleep(1)
+        click(x1, y1)
+        sleep(0.5)
 
     pyautogui.mouseDown()
 
@@ -408,15 +459,17 @@ def clear_folder(path):
 def show_pyautogui_image(pyautogui_screenshot):
     open_cv_image = np.array(pyautogui_screenshot)
     open_cv_image = open_cv_image[:, :, ::-1].copy()
-    imshow('Matches', open_cv_image)
-    waitKey()
+    cv2.imshow('Matches', open_cv_image)
+    cv2.waitKey()
 
 
-def show_image(path=None):
-    if path is not None:
-        image = imread(path)
-        imshow('Matches', image)
-        waitKey()
+def show_image(path=None, image=None):
+    if path:
+        image = cv2.imread(path)
+
+    cv2.imshow('Matches', image)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
 
 # run only in case when you are aware of the action
@@ -445,13 +498,30 @@ def image_path(image):
     return os.path.join(os.getcwd(), 'image', image)
 
 
-def find_needle(image_name, region=None, confidence=None):
+def find_needle(image_name, region=None, confidence=None, scale=None):
     if region is None:
         region = [0, 0, 900, 530]
     if confidence is None:
         confidence = .8
 
     path_image = os.path.join(os.getcwd(), 'images/needles/' + image_name)
+
+    if scale:
+        physical_image = cv2.imread(path_image)
+        height, width = physical_image.shape
+        # Scale the physical image to match the screen size
+        # Calculate the new dimensions
+        new_width = width * scale
+        new_height = height * scale
+
+        # Resize the image with Lanczos interpolation
+        # scaled_image = image.resize((new_width, new_height), Image.LANCZOS)
+        scaled_image = cv2.resize(physical_image, (new_width, new_height))
+
+        path_image = scaled_image
+
+        # show_pyautogui_image(path_image)
+
     # path_image = image_path(os.path.join('needles', image_name))
     return capture_by_source(path_image, region,
                              confidence=confidence)
@@ -656,23 +726,72 @@ def parse_energy_bank(variants):
     return res
 
 
-def scale_up(screenshot, factor=1):
-    image = Image.frombytes("RGB", screenshot.size, screenshot.tobytes())
+def parse_levels(data):
+    levels = []
 
-    # Calculate the new dimensions
-    new_width = image.width * factor
-    new_height = image.height * factor
+    for item in data:
+        # Extract numeric values from the item
+        numbers = ''.join(filter(lambda x: x.isdigit() or x == '/', item))
 
-    # Resize the image with Lanczos interpolation
-    scaled_image = image.resize((new_width, new_height), Image.LANCZOS)
+        # Check if there are any numeric values extracted
+        if numbers:
+            levels.append(numbers)
 
-    return np.array(scaled_image)
+    return levels
 
 
-def read_text(configs, region, timeout=0.1, parser=None, update_screenshot=False, scale=2, debug=False):
+def scale_up(screenshot=None, image=None, factor=1):
+    if screenshot is not None:
+        image = Image.frombytes("RGB", screenshot.size, screenshot.tobytes())
+
+        # Calculate the new dimensions
+        new_width = image.width * factor
+        new_height = image.height * factor
+
+        # Resize the image with Lanczos interpolation
+        scaled_image = image.resize((new_width, new_height), Image.LANCZOS)
+
+        return np.array(scaled_image)
+
+    if image is not None:
+        # Get the dimensions of the original image
+        height, width, _ = image.shape
+
+        # Calculate the new dimensions based on the scaling factor
+        new_width = int(width * factor)
+        new_height = int(height * factor)
+
+        # Resize the image to the new dimensions
+        scaled_image = cv2.resize(image, (new_width, new_height))
+
+        return scaled_image
+
+
+def crop(image=None, region=None):
+    if image is not None and region is not None:
+        return image[region[1]:region[1] + region[3], region[0]:region[0] + region[2]]
+
+
+def read_text(region, configs=None, timeout=0.1, parser=None, update_screenshot=False, scale=2, debug=False):
     # debug = True
     res = []
     screenshot = None
+
+    if configs is None:
+        configs = [
+            '--psm 1 --oem 3',
+            '--psm 3 --oem 3',
+            '--psm 4 --oem 3',
+            '--psm 5 --oem 3',
+            '--psm 6 --oem 3',
+            '--psm 7 --oem 3',
+            '--psm 8 --oem 3',
+            '--psm 9 --oem 3',
+            '--psm 10 --oem 3',
+            '--psm 11 --oem 3',
+            '--psm 12 --oem 3',
+            '--psm 13 --oem 3',
+        ]
 
     if not update_screenshot:
         screenshot = pyautogui.screenshot(region=region)
@@ -683,16 +802,16 @@ def read_text(configs, region, timeout=0.1, parser=None, update_screenshot=False
 
         config = configs[i]
         # proper resize
-        image = scale_up(screenshot, factor=scale)
+        image = scale_up(screenshot=screenshot, factor=scale)
         # image = screenshot_to_image(screenshot)
 
         # greyscale
-        image = cvtColor(image, COLOR_BGR2GRAY)
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
         # @TODO Debug
         if debug and i == 0:
-            imshow('Matches', image)
-            waitKey()
+            cv2.imshow('Matches', image)
+            cv2.waitKey()
 
         text = pytesseract.image_to_string(image, config=config)
         res.append(text.strip())
@@ -842,10 +961,10 @@ def dominant_color_hue(region, rank=1):
     image = screenshot_to_image(screenshot)
 
     # Convert the image to the HSV color space
-    hsv_image = cvtColor(image, COLOR_BGR2HSV)
+    hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
     # Calculate the histogram of the image in the Hue channel
-    histogram = calcHist([hsv_image], [0], None, [180], [0, 180])
+    histogram = cv2.calcHist([hsv_image], [0], None, [180], [0, 180])
 
     # Find the rank-th dominant color bin
     dominant_color_bin = np.argsort(histogram.flatten())[-rank]
@@ -875,4 +994,4 @@ def dominant_color_rgb(region, rank=1):
     # Convert the index to RGB values
     r, g, b = np.unravel_index(dominant_color_index, (256, 256, 256))
 
-    return (r, g, b)
+    return [r, g, b]
