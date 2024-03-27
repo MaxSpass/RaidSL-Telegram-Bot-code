@@ -128,7 +128,6 @@ class DoomTower:
         if position:
             x = position[0]
             y = position[1]
-            # click(x, y)
             self.attack(x, y)
 
         self.finish()
