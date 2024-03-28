@@ -13,6 +13,7 @@ DUNGEON_SAND_DEVIL = "Sand Devil's Necropolis"
 DUNGEON_PHANTOM = "Phantom Shogun's Grove"
 
 DUNGEON_NO_DIFFICULTIES = ['1', '6', '7']
+DUNGEON_NO_SUPER_RAID = ['1']
 
 DUNGEON_DATA = [
     {'id': '1', 'name': DUNGEON_MINOTAUR},
@@ -42,7 +43,8 @@ class Dungeons:
     RESULT_VICTORY = [450, 40, [15, 121, 182]]
     RESULT_DEFEAT = [450, 40, [178, 23, 38]]
 
-    DUNGEON_BANK_MIN_LIMIT = 8
+    # @TODO Rework
+    DUNGEON_BANK_MIN_LIMIT = 14
     DUNGEON_DIFFICULTY_DEFAULT = 'hard'
 
     def __init__(self, props=None):
@@ -113,6 +115,7 @@ class Dungeons:
 
         for i in range(len(self.dungeons)):
             print(self.dungeons[i])
+
     def _apply_props(self, props=None):
         if props is None:
             props = self.props
@@ -167,9 +170,7 @@ class Dungeons:
         log(f"{self.LOCATION_NAME} | {message}")
 
     def enter(self):
-        go_index_page()
-        sleep(1)
-        go_index_page()
+        close_popup_recursive()
 
         location = DUNGEON_LOCATIONS[str(self.current['id'])]
 
@@ -202,8 +203,9 @@ class Dungeons:
         # click(850, 375)
         sleep(.5)
 
-        # enable "Super Raid Mode"
-        enable_super_raid()
+        if self.current['id'] not in DUNGEON_NO_SUPER_RAID:
+            # enable "Super Raid Mode"
+            enable_super_raid()
 
     def attack(self):
         skip = False
@@ -233,7 +235,7 @@ class Dungeons:
             self._save_result(result)
 
     def finish(self):
-        go_index_page()
+        close_popup_recursive()
         log('DONE - ' + self.LOCATION_NAME)
 
     def report(self):

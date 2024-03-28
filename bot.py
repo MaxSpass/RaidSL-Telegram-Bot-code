@@ -9,7 +9,7 @@ from helpers.common import log, sleep
 from datetime import datetime
 
 MAX_RETRIES = 3
-DELAY = 5
+DELAY = 1
 EMULATE_NETWORK_ERROR = False
 
 class TelegramBOT:
