@@ -328,7 +328,7 @@ def dungeons_start():
 
 def dungeons_click_stage_select():
     # click on the "Stage selection"
-    sleep(0.5)
+    sleep(2)
     click(820, 55)
     sleep(2)
 
