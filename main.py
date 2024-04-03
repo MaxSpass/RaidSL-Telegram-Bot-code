@@ -6,7 +6,6 @@ from bot import TelegramBOT
 from classes.app import *
 from constants.index import IS_DEV
 
-# import asyncio
 # from telegram.ext import CommandHandler
 # import pyautogui
 # import os.path
@@ -20,7 +19,7 @@ from constants.index import IS_DEV
 # from features.hero_preset.index import HeroPreset
 # from features.doom_tower.index import *
 # from classes.task_iterator import TaskIterator
-
+# from features.quests.index import *
 # from in_progress import *
 
 pyautogui.FAILSAFE = False
@@ -32,39 +31,69 @@ else:
     # @TODO Should be in the env file
     pytesseract.pytesseract.tesseract_cmd = os.path.normpath(r'C:\Program Files (x86)\Tesseract-OCR\tesseract.exe')
 
-app = App()
+# quests = Quests()
 
 def main():
-    # track_mouse_position()
-    # return
+    app = App()
 
-    # in_progress_determine_quests_text()
-    # in_progress_task_iterator()
-    # in_progress_find_squares()
-    # print(pyautogui.pixel(269, 196))
-    # return
-
-    # dungeon_select_difficulty('normal')
-    # screenshot = pyautogui.screenshot(region=axis_to_region(810, 93, 866, 115))
-    # show_pyautogui_image(screenshot)
+    # def test(*args):
+    #     msg = 'Test'
+    #     counter = 0
+    #     while counter < 3:
+    #         print(f'{msg}: {counter}')
+    #         counter += 1
+    #         sleep(1)
+    # def screen_test():
+    #     screenshot = pyautogui.screenshot(region=[0, 0, 500, 500])
+    #
+    #     # Convert the screenshot to bytes
+    #     image_bytes = BytesIO()
+    #     screenshot.save(image_bytes, format='PNG')
+    #     image_bytes.seek(0)
+    #
+    #     return image_bytes
+    # telegram_bot = TelegramBOT({
+    #     'token': app.config['telegram_token']
+    # })
+    # telegram_bot.start()
+    # telegram_bot.add({
+    #     'command': 'screen',
+    #     'description': 'Capture and send a screenshot',
+    #     'handler': {
+    #         'type': 'async',
+    #         'callback': lambda upd, ctx: ctx.bot.send_photo(
+    #             chat_id=upd.message.chat_id,
+    #             photo=screen_test()
+    #         ),
+    #     },
+    # })
+    # telegram_bot.add({
+    #     'command': 'test',
+    #     'handler': {
+    #         'callback': lambda upd, ctx: app.queue.put(test)
+    #     }
+    # })
+    # telegram_bot.listen()
+    # telegram_bot.join()
     # return
 
     if IS_DEV or app.validation():
         game_path = app.get_game_path()
         has_telegram_token = 'telegram_token' in app.config
-        telegram_bot_thread = None
+        telegram_bot = None
 
         try:
             # app.entries['arena_live']['instance'].enter()
             # app.entries['arena_live']['instance'].obtain()
 
             if app.config['start_immediate']:
-                app.start()
+                app.start_game()
 
             if has_telegram_token:
                 telegram_bot = TelegramBOT({
                     'token': app.config['telegram_token']
                 })
+                telegram_bot.start()
 
                 # all callbacks should return truthy values in case of success
                 if game_path:
@@ -72,84 +101,45 @@ def main():
                         'command': 'restart',
                         'description': 'Re-Start the Game',
                         'handler': {
-                            'callback': lambda upd, ctx: app.restart(),
+                            'callback': lambda upd, ctx: app.queue.put(app.restart),
                         },
                     })
                     telegram_bot.add({
                         'command': 'launch',
                         'description': 'Re-Launch the Game',
                         'handler': {
-                            'callback': lambda upd, ctx: app.launch(),
+                            'callback': lambda upd, ctx: app.queue.put(app.launch),
                         },
                     })
                 telegram_bot.add({
                     'command': 'relogin',
                     'description': 'Re-log in',
                     'handler': {
-                        'callback': lambda upd, ctx: app.relogin(),
+                        'callback': lambda upd, ctx: app.queue.put(app.relogin),
                     },
                 })
+
+                # Async
                 telegram_bot.add({
                     'command': 'report',
                     'description': 'Report',
                     'handler': {
+                        'type': 'async',
                         'callback': lambda upd, ctx: app.report(),
                     },
                 })
+                # Async
                 telegram_bot.add({
                     'command': 'screen',
                     'description': 'Capture and send a screenshot',
                     'handler': {
+                        'type': 'async',
                         'callback': lambda upd, ctx: ctx.bot.send_photo(
                             chat_id=upd.message.chat_id,
                             photo=app.screen()
                         ) if bool(app.window) else upd.message.reply_text("No Game window found"),
                     },
                 })
-
-                # @TODO In progress
-                # async def test1(*args, msg='1'):
-                #     counter = 0
-                #     while counter < 5:
-                #         print(msg)
-                #         counter += 1
-                #         sleep(1)
-                #
-                # async def test2(*args, msg='2'):
-                #     counter = 0
-                #     while counter < 5:
-                #         print(msg)
-                #         counter += 1
-                #         sleep(1)
-
-                # async def async_command_1(upd, ctx):
-                #     # Your asynchronous code here
-                #     await asyncio.sleep(4)
-                #     await upd.message.reply_text("Async command executed! 1")
-                #
-                # async def async_command_2(upd, ctx):
-                #     # Your asynchronous code here
-                #     await asyncio.sleep(2)
-                #     await upd.message.reply_text("Async command executed! 2")
-
-                # telegram_bot.add({
-                #     'command': 'test_1',
-                #     'description': 'Test 1',
-                #     'handler': {
-                #         'callback': handler_function_1,
-                #     },
-                # })
-                #
-                # telegram_bot.add({
-                #     'command': 'test_2',
-                #     'description': 'Test 2',
-                #     'handler': {
-                #         'callback': handler_function_2,
-                #     },
-                # })
-
-                # telegram_bot.dp.add_handler(CommandHandler('test_1', async_command_1))
-                # telegram_bot.dp.add_handler(CommandHandler('test_2', async_command_2))
 
                 # register main commands according to 'tasks'
                 regular_command = []
@@ -158,9 +148,9 @@ def main():
                         'command': task['command'],
                         'description': f"command '{task['title']}'",
                         'handler': {
-                            'callback': lambda upd, ctx: app.get_entry(
+                            'callback': lambda upd, ctx: app.queue.put(app.get_entry(
                                 command_name=task['command']
-                            )['instance'].run(),
+                            )['instance'].run),
                         },
                     }, app.config['tasks']))
 
@@ -171,9 +161,9 @@ def main():
                         'command': make_command_key(f"preset {preset['name']}"),
                         'description': f"commands in a row: {', '.join(preset['commands'])}",
                         'handler': {
-                            'callback': lambda upd, ctx: list(map(lambda x: app.get_entry(
+                            'callback': lambda upd, ctx: app.queue.put(lambda: list(map(lambda x: app.get_entry(
                                 command_name=x
-                            )['instance'].run(), preset['commands'])),
+                            )['instance'].run(), preset['commands']))),
                         },
                     }, app.config['presets']))
 
@@ -183,9 +173,7 @@ def main():
                     print(commands[i])
                     telegram_bot.add(commands[i])
 
-                telegram_bot_thread = threading.Thread(target=telegram_bot.run)
-                telegram_bot_thread.start()
-                telegram_bot.updater.idle()
+                telegram_bot.listen()
 
         except KeyboardInterrupt:
             error = traceback.format_exc()
@@ -196,9 +184,9 @@ def main():
         finally:
             log('All tasks are done')
 
-            if has_telegram_token and telegram_bot_thread:
+            if has_telegram_token and telegram_bot:
                 # Wait for the bot thread to finish
-                telegram_bot_thread.join()
+                telegram_bot.join()
     else:
         log_save('An App is outdated')
 

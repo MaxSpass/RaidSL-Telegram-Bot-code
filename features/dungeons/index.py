@@ -190,18 +190,16 @@ class Dungeons:
             click(x, y)
             sleep(1)
 
-        # swiping bottom
-        swipe('bottom', 500, 450, 400, speed=.5)
-
         if 'difficulty' in self.current:
             dungeon_select_difficulty(self.current['difficulty'])
 
-        # @TODO Works with the last stage/floor only
-        # click last floor @TODO Temp commented
-        click(850, 475)
+        # swiping bottom
+        swipe('bottom', 500, 450, 400, speed=.5)
 
+        # @TODO Works with the last stage/floor only
+        click(850, 475)
         # click(850, 375)
-        sleep(.5)
+        sleep(1)
 
         if self.current['id'] not in DUNGEON_NO_SUPER_RAID:
             # enable "Super Raid Mode"

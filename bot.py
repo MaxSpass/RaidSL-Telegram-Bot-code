@@ -1,5 +1,6 @@
 import os
 import pyautogui
+import threading
 from telegram.ext import Updater, CommandHandler, CallbackContext
 from telegram.error import NetworkError
 from helpers.common import image_path
@@ -12,8 +13,10 @@ MAX_RETRIES = 3
 DELAY = 1
 EMULATE_NETWORK_ERROR = False
 
-class TelegramBOT:
+
+class TelegramBOT(threading.Thread):
     def __init__(self, props=None):
+        threading.Thread.__init__(self)
         self.token = props['token'] if 'token' in props and bool(props['token']) else None
 
         if not self.token:
@@ -59,6 +62,7 @@ class TelegramBOT:
         command = obj['command']
         handler = obj['handler']
         callback = handler['callback']
+        _type = handler['type'] if 'type' in handler else 'sync'
 
         def final_callback(upd, ctx):
             global EMULATE_NETWORK_ERROR
@@ -92,10 +96,12 @@ class TelegramBOT:
 
             log("Max retries reached. Failed to send message.")
 
+        if _type == 'sync':
+            self.dp.add_handler(CommandHandler(command, callback))
+        elif _type == 'async':
+            self.dp.add_handler(CommandHandler(command, final_callback))
 
-        self.dp.add_handler(CommandHandler(command, final_callback))
-
-    def run(self):
+    def listen(self):
         log('An App is waiting for some command')
         # Start the Bot
         self.updater.start_polling()

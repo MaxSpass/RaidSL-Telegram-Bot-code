@@ -16,6 +16,8 @@ import pytesseract
 import subprocess
 import psutil
 import os
+import threading
+import queue
 
 GAME_WINDOW = 'Raid: Shadow Legends'
 GAME_PROCESS_NAME = 'Raid.exe'
@@ -161,6 +163,11 @@ class App:
         self.window = None
         self.entries = {}
         self.read_config()
+
+        # @TODO Improve
+        self.queue = queue.Queue()
+        self.listener = threading.Thread(target=self.listen, args=(self.queue, ))
+        self.listener.start()
 
     def _prepare_config(self, config_json):
         _config = {
@@ -346,7 +353,7 @@ class App:
 
         return image_bytes
 
-    def start(self):
+    def start_game(self):
         # atexit.register(self.report)
         signal.signal(signal.SIGINT, self.kill)
         signal.signal(signal.SIGTERM, self.kill)
@@ -396,40 +403,47 @@ class App:
     def get_entry(self, command_name):
         return self.entries[command_name]
 
-    def run(self):
-        self.prepare()
-        _dungeons = []
+    def listen(self, queue):
+        while True:
+            # Check if there are updates in the queue
+            if not queue.empty():
+                update = queue.get()
+                update()
 
-        log('Executing automatic scenarios...')
-        start_time = datetime.now()
-
-        # Looping: Tasks List
-        for i in range(len(self.config['tasks'])):
-            task = self.config['tasks'][i]
-            task_name = task['task'].lower()
-            log('BOT is starting the TASK: ' + task_name.upper())
-
-            # Run instance
-            instance_task = self.get_entry(task_name)['instance']
-            instance_task.run()
-
-            # Looping: After Each List
-            if 'after_each' in self.config:
-                for j in range(len(self.config['after_each'])):
-                    # After Each Item
-                    aei = self.config['after_each'][j]
-                    aei_name = aei.lower()
-
-                    log('BOT is starting the "after_each" action: ' + aei_name.upper())
-
-                    instance_after_each = self.get_entry(aei_name)['instance']
-                    instance_after_each.run()
-
-        self.report()
-
-        duration = 'Duration: {}'.format(datetime.now() - start_time)
-        log('All scenarios are done!')
-
-        # self.kill()
-
-        return duration
+    # def run(self):
+    #     self.prepare()
+    #     _dungeons = []
+    #
+    #     log('Executing automatic scenarios...')
+    #     start_time = datetime.now()
+    #
+    #     # Looping: Tasks List
+    #     for i in range(len(self.config['tasks'])):
+    #         task = self.config['tasks'][i]
+    #         task_name = task['task'].lower()
+    #         log('BOT is starting the TASK: ' + task_name.upper())
+    #
+    #         # Run instance
+    #         instance_task = self.get_entry(task_name)['instance']
+    #         instance_task.run()
+    #
+    #         # Looping: After Each List
+    #         if 'after_each' in self.config:
+    #             for j in range(len(self.config['after_each'])):
+    #                 # After Each Item
+    #                 aei = self.config['after_each'][j]
+    #                 aei_name = aei.lower()
+    #
+    #                 log('BOT is starting the "after_each" action: ' + aei_name.upper())
+    #
+    #                 instance_after_each = self.get_entry(aei_name)['instance']
+    #                 instance_after_each.run()
+    #
+    #     self.report()
+    #
+    #     duration = 'Duration: {}'.format(datetime.now() - start_time)
+    #     log('All scenarios are done!')
+    #
+    #     # self.kill()
+    #
+    #     return duration
