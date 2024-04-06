@@ -1,7 +1,5 @@
 import cv2
 import pyautogui
-
-from classes.task_iterator import TaskIterator
 from helpers.common import *
 
 
@@ -16,7 +14,7 @@ def test_func(msg, limit=3):
 def in_progress_determine_quests_text():
     # screenshot = pyautogui.screenshot(region=axis_to_region(191, 179, 579, 257))
     screenshot = pyautogui.screenshot(region=axis_to_region(186, 166, 579, 204))
-    screenshot_scaled = scale_up(screenshot, factor=2)
+    screenshot_scaled = scale_up(screenshot=screenshot, factor=2)
     # show_pyautogui_image(screenshot_scaled)
 
     image = screenshot_to_image(screenshot_scaled)
@@ -103,57 +101,6 @@ def in_progress_determine_quests_text():
         #
 
     return
-
-
-def in_progress_task_iterator():
-    pixel_red = [750, 450, [136, 0, 21]]
-    pixel_black = [750, 450, [0, 0, 0]]
-    pixel_grey = [750, 450, [127, 127, 127]]
-
-    tasks = [
-        {
-            "predicate": lambda: pixels_wait([pixel_red], wait_limit=10)
-        },
-        {
-            "predicate": lambda: pixels_wait([pixel_black], wait_limit=10)
-        },
-        {
-            "predicate": lambda: pixels_wait([pixel_black], wait_limit=10)
-        }
-    ]
-
-    def case_first(res):
-        if res[0]:
-            return 1
-            # click(auto_mode[0], auto_mode[1])
-            # battle_result = pixels_wait(
-            #     [victory, defeat],
-            #     msg='Victory or Defeat',
-            #     timeout=2,
-            #     mistake=20,
-            #     wait_limit=1200,
-            #     debug=True
-            # )
-
-    tasks = [
-        {
-            "predicate": lambda res: pixels_wait([[], [], []], msg='My turn or Defeat'),
-            "tasks": [
-                {
-                    "predicate": lambda res: case_first(res),
-                },
-                # {
-                #     "predicate": lambda res: self._save_result(res[0]),
-                # },
-            ]
-        }
-    ]
-
-    task_iterator = TaskIterator({
-        'tasks': tasks
-    })
-
-    print(pyautogui.pixel(750, 450))
 
 
 def in_progress_find_squares():
