@@ -1,4 +1,5 @@
 from helpers.common import *
+from classes.TaskManager import TaskManager
 from features.rewards.index import *
 from features.live_arena.index import *
 from features.arena.index import *
@@ -16,8 +17,6 @@ import pytesseract
 import subprocess
 import psutil
 import os
-import threading
-import queue
 
 GAME_WINDOW = 'Raid: Shadow Legends'
 GAME_PROCESS_NAME = 'Raid.exe'
@@ -156,18 +155,13 @@ def make_command_key(input_string):
 def make_title(input_string):
     return input_string.replace('_', ' ').title()
 
-
 class App:
     def __init__(self):
         self.config = None
         self.window = None
         self.entries = {}
         self.read_config()
-
-        # @TODO Improve
-        self.queue = queue.Queue()
-        self.listener = threading.Thread(target=self.listen, args=(self.queue, ))
-        self.listener.start()
+        self.taskManager = TaskManager()
 
     def _prepare_config(self, config_json):
         _config = {
@@ -218,7 +212,7 @@ class App:
                         if _task in INSTANCES_MAP:
                             # @TODO should take from memory later on
                             self.entries[_command] = {
-                                'instance': INSTANCES_MAP[_task](_props),
+                                'instance': INSTANCES_MAP[_task](props=_props),
                             }
                         else:
                             raise f"No {_task} among all instances"
@@ -283,7 +277,7 @@ class App:
     def exit(self):
         self.report()
 
-    def report(self):
+    def report(self, *args):
         res = None
         instances = list(map(lambda x: x['instance'], self.entries.values()))
         reports = list(map(lambda x: x.report(), instances))
@@ -305,7 +299,7 @@ class App:
         input('Confirm by pressing any key')
         sys.exit(0)
 
-    def relogin(self):
+    def relogin(self, *args):
         # limit in seconds
         limit = 60
         timeout = 3
@@ -325,7 +319,7 @@ class App:
 
         return True
 
-    def screen(self):
+    def screen(self, *args):
         # hidden window
         # <Win32Window left="-32000", top="-32000", width="160", height="28", title="Raid: Shadow Legends">
         WINDOW_TOP_BAR_HEIGHT = 25
@@ -369,7 +363,7 @@ class App:
             raise "No 'game_path' provided field in the config"
 
 
-    def launch(self):
+    def launch(self, *args):
         game_path = self.get_game_path()
         if game_path:
             subprocess.run(f"{game_path} -gameid=101 -tray-start")
@@ -385,7 +379,7 @@ class App:
         else:
             return "No 'game_path' provided field in the config"
 
-    def restart(self):
+    def restart(self, *args):
         game_path = self.get_game_path()
         if game_path:
             terminate_process_by_name(GAME_PROCESS_NAME)
@@ -403,12 +397,13 @@ class App:
     def get_entry(self, command_name):
         return self.entries[command_name]
 
-    def listen(self, queue):
-        while True:
-            # Check if there are updates in the queue
-            if not queue.empty():
-                update = queue.get()
-                update()
+    def task(self, name, cb, task_type="aside"):
+        return lambda upd, ctx: self.taskManager.add(name, lambda: cb(upd, ctx), props={
+            'onDone': upd.message.reply_text,
+            'onError': upd.message.reply_text,
+            'type': task_type,
+        })
+
 
     # def run(self):
     #     self.prepare()
