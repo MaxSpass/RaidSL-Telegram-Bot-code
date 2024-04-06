@@ -92,7 +92,7 @@ class ArenaLive:
         self.battles_counter = 0
 
         if props is not None:
-            self._apply_props(props)
+            self._apply_props(props=props)
 
     def _apply_props(self, props):
         if 'pool' in props:
@@ -422,7 +422,7 @@ class ArenaLive:
         hour = 14
         pause.until(datetime(year, month, day, hour, 1, 0, tzinfo=timezone.utc))
 
-    def run(self, props=None):
+    def run(self, *args, props=None):
         self.terminate = False
         # self.check_availability()
 
@@ -430,7 +430,7 @@ class ArenaLive:
         close_popup_recursive()
 
         if props is not None:
-            self._apply_props(props)
+            self._apply_props(props=props)
 
         is_active = pixel_check_new([822, 472, [41, 162, 33]], mistake=10)
 

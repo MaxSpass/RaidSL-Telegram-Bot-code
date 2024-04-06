@@ -201,7 +201,7 @@ class Rewards:
 
         return s
 
-    def run(self, props=None):
+    def run(self, *args, props=None):
         log(f"{self.NAME} | Running")
         close_popup_recursive()
         self.quests_run()

@@ -14,7 +14,7 @@ class IronTwins:
 
         self.keys = TWIN_KEYS_LIMIT
 
-        self._apply_props(props)
+        self._apply_props(props=props)
 
     def _check_refill(self):
         sleep(1)
@@ -92,10 +92,10 @@ class IronTwins:
 
         return s
 
-    def run(self, props=None):
+    def run(self, *args, props=None):
         self.terminate = False
 
-        self._apply_props(props)
+        self._apply_props(props=props)
 
         if not self.completed:
             self.enter()

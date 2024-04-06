@@ -49,7 +49,7 @@ class ArenaFactory:
         self.results = []
         self.terminate = False
 
-        self._apply_props(props)
+        self._apply_props(props=props)
 
         for i in range(len(self.item_locations)):
             item = self.item_locations[i]
@@ -242,11 +242,11 @@ class ArenaFactory:
         log('DONE - ' + self.name)
         self._show_results(self._get_last_results())
 
-    def run(self, props=None):
+    def run(self, *args, props=None):
         self.terminate = False
 
         if props is not None:
-            self._apply_props(props)
+            self._apply_props(props=props)
 
         self.enter()
 

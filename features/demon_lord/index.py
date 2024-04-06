@@ -135,7 +135,7 @@ class DemonLord:
 
         return s
 
-    def run(self, props=None):
+    def run(self, *args, props=None):
         self.terminate = False
 
         self.enter()

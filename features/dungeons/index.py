@@ -254,13 +254,13 @@ class Dungeons:
 
         return res
 
-    def run(self, props=None):
+    def run(self, *args, props=None):
         self.terminate = False
 
         if props is not None:
-            self._apply_props(props)
+            self._apply_props(props=props)
         else:
-            self._apply_props(self.props)
+            self._apply_props(props=self.props)
             # self.bank = self._get_available_energy()
 
         self._distribute_energy()

@@ -78,7 +78,7 @@ class FactionWars():
             np.array(self.crypts)[8:]
         ]
 
-        self._apply_props(props)
+        self._apply_props(props=props)
 
     def _apply_props(self, props=None):
         if props is not None:
@@ -159,8 +159,8 @@ class FactionWars():
 
         return s
 
-    def run(self, props=None):
-        self._apply_props(props)
+    def run(self, *args, props=None):
+        self._apply_props(props=props)
 
         close_popup_recursive()
 

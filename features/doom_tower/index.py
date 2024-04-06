@@ -31,7 +31,7 @@ class DoomTower:
         self.current = None
         self.results = {'bosses': 0}
 
-        self.apply_props(props)
+        self.apply_props(props=props)
 
     def apply_props(self, props=None):
         if props:
@@ -109,7 +109,7 @@ class DoomTower:
                         self.keys_silver -= cost
                         self.results['bosses'] += cost
 
-    def run(self):
+    def run(self, *args):
         self.enter()
 
         self._read_keys()

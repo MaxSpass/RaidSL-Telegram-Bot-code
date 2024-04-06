@@ -99,7 +99,7 @@ class Hydra:
         self.current = None
         self.focused_head = None
 
-        self.apply_props(props)
+        self.apply_props(props=props)
 
     def _get_priority(self, head_name):
         priority = self.current['priority']
@@ -198,6 +198,7 @@ class Hydra:
         return name.replace('_', ' ').title()
 
     def _while_stage_available(self):
+        # @TODO Does not work correct
         stage = self.current['stage']
         can_continue = self.current['runs_counter'] < self.runs_limit \
                        and self.results[stage]['damage'] < self.current['min_damage']
@@ -489,9 +490,9 @@ class Hydra:
 
                 hydra_start()
 
-    def run(self, props=None):
+    def run(self, *args, props=None):
         if props is not None:
-            self.apply_props(props)
+            self.apply_props(props=props)
 
         self.enter()
         self.attack()
