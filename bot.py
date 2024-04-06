@@ -3,11 +3,7 @@ import pyautogui
 import threading
 from telegram.ext import Updater, CommandHandler, CallbackContext
 from telegram.error import NetworkError
-from helpers.common import image_path
-from PIL import Image
-from io import BytesIO
 from helpers.common import log, sleep
-from datetime import datetime
 
 MAX_RETRIES = 3
 DELAY = 1
@@ -61,8 +57,6 @@ class TelegramBOT(threading.Thread):
         self.commands.append(obj)
         command = obj['command']
         handler = obj['handler']
-        callback = handler['callback']
-        _type = handler['type'] if 'type' in handler else 'sync'
 
         def final_callback(upd, ctx):
             global EMULATE_NETWORK_ERROR
@@ -75,18 +69,9 @@ class TelegramBOT(threading.Thread):
                         EMULATE_NETWORK_ERROR = False
                         raise NetworkError("Emulated network error")
 
-                    start_time = datetime.now()
-                    res = callback(upd, ctx)
-                    status = "Done" if bool(res) or res is None else "Error"
-                    duration_str = f"Duration: {str(datetime.now() - start_time).split('.')[0]}"
-                    message = f'{status}: {command} | {duration_str}'
+                    handler(upd, ctx)
 
-                    if res and type(res) is str:
-                        message += f'\n{res}'
-
-                    upd.message.reply_text(message)
-
-                    log("Message sent successfully!")
+                    # log("Message sent successfully!")
                     return  # Exit the function if message is sent successfully
                 except NetworkError as e:
                     log(f"Network error occurred: {e}")
@@ -96,10 +81,7 @@ class TelegramBOT(threading.Thread):
 
             log("Max retries reached. Failed to send message.")
 
-        if _type == 'sync':
-            self.dp.add_handler(CommandHandler(command, callback))
-        elif _type == 'async':
-            self.dp.add_handler(CommandHandler(command, final_callback))
+        self.dp.add_handler(CommandHandler(command, final_callback))
 
     def listen(self):
         log('An App is waiting for some command')
