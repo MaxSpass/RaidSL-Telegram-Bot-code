@@ -113,7 +113,7 @@ def main():
                         'description': f"commands in a row: {', '.join(preset['commands'])}",
                         'handler': app.task(
                             name=make_command_key(f"preset {preset['name']}"),
-                            cb=lambda: list(map(lambda x: app.get_entry(
+                            cb=lambda *args: list(map(lambda x: app.get_entry(
                                 command_name=x
                             )['instance'].run(), preset['commands']))
                         ),
