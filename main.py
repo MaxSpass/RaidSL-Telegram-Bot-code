@@ -28,9 +28,21 @@ else:
     # @TODO Should be in the env file
     pytesseract.pytesseract.tesseract_cmd = os.path.normpath(r'C:\Program Files (x86)\Tesseract-OCR\tesseract.exe')
 
-# quests = Quests()
-
 def main():
+    # print(str(np.array([1,2,3], dtype=object)))
+    # return
+
+    # for i in range(2):
+    #     swipe('bottom', 450, 490, 340, speed=3)
+    # return
+
+    # print(pyautogui.pixel(264, 435))
+    # return
+
+    # quests = Quests()
+    # quests.handle_quest('1')
+    # return
+
     app = App()
 
     if IS_DEV or app.validation():

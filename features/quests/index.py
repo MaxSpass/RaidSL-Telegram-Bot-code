@@ -22,6 +22,8 @@ QUESTS_POSITIONS = {
 }
 
 # @TODO Common
+
+# Quest 1 Start
 SIDEBAR_SLOT_WIDTH = 66
 SIDEBAR_SLOT_HEIGHT = 84
 SIDEBAR_SLOT_GUTTER = 8
@@ -56,6 +58,21 @@ BEER_SCALE_FACTOR = .55
 BEER_CONFIDENCE = .7
 MAX_LEVEL_LIMIT = 10
 LEVELS = 3
+# Quest 1 End
+
+# Quest 2 Start
+ARTIFACT_STORAGE_SLOT_WIDTH = 66
+ARTIFACT_STORAGE_SLOT_HEIGHT = 66
+ARTIFACT_STORAGE_OFFSET = {'x': 258, 'y': 164}
+ARTIFACT_STORAGE_SLOTS_MATRIX = [
+    # (0, 0), (0, 2), (0, 2), (3, 0), (4, 0), (5, 0),
+    (0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0),
+    (0, 1), (1, 1), (2, 1), (3, 1), (4, 1), (5, 1),
+    (0, 2), (1, 2), (2, 2), (3, 2), (4, 2), (5, 2),
+    (0, 3), (1, 3), (2, 3), (3, 3), (4, 3), (5, 3),
+    (0, 4), (1, 4), (2, 4), (3, 4), (4, 4), (5, 4),
+]
+# Quest 2 End
 
 hero_filter = HeroFilter({
     'needle_image': 'filter_small.png',
@@ -87,15 +104,6 @@ class Quests:
     def handle_quest(self, quest_id):
         global LEVELS
         global MAX_LEVEL_LIMIT
-        # for affinity, region in TAVERN_AFFINITY_REGIONS.items():
-        #     amount_str = read_text(region=region, scale=4, parser=parse_energy_cost)
-        #     print(type(amount_str))
-        #     print(f"{affinity}: {amount_str}")
-
-        # swipe('bottom', 112, 442, 343, speed=3)
-        # return
-
-        close_popup_recursive()
 
         if str(quest_id) == '1':
             levels = LEVELS
@@ -114,6 +122,7 @@ class Quests:
 
                     for i in range(len(SIDEBAR_SLOTS_MATRIX)):
                         if levels <= 0:
+                            self.results.append(quest_id)
                             break
                         else:
                             self._log(f'Levels needs to be up: {str(levels)}')
@@ -144,7 +153,6 @@ class Quests:
                         color_dominant_active = dominant_color_rgb(region=region_slot)
                         running = rgb_check(color_dominant_active, SIDEBAR_SLOT_ACTIVE_RGB, mistake=10)
                         # show_pyautogui_image(pyautogui.screenshot(region=region_slot))
-                        print('color_dominant_active', color_dominant_active)
                         if running:
                             self._log('Hero is active')
 
@@ -279,7 +287,6 @@ class Quests:
                                 self._log('Hero is NOT ready for lvl-up')
 
                             running = False
-                            self._log(f'Swipe has been increased: {swipes}')
 
                         else:
                             self._log('Hero is NOT active, breaking the loop')
@@ -287,23 +294,168 @@ class Quests:
 
                     if levels > 0:
                         swipes += 1
+                        self._log(f'Swipe has been increased: {swipes}')
 
                 if levels > 0:
                     self._log(f'Cannot increase {levels} levels')
 
-        close_popup_recursive()
+        elif str(quest_id) == '2':
+            upgrade_attempts = 4
 
+            # Await click on a 'Champions' icon
+            await_click([[690, 500, [28, 49, 61]]], msg='Champions icon', mistake=10)
+
+            if await_needle('close.png', region=[820, 24, 80, 80]):
+                # Click on a boots artifact
+                click(856, 226)
+
+                # Await click on a small 'Filter' button
+                await_click([[555, 88, [19, 48, 67]]], msg='Filter button', mistake=10)
+
+                # Wait expanded 'Artifacts sidebar'
+                if pixels_wait(
+                    [[215, 78, [0, 15, 33]]],
+                    msg='Artifacts sidebar',
+                    mistake=10,
+                    timeout=1,
+                    wait_limit=60
+                )[0]:
+
+                    # Swipe 'Artifacts sidebar' 60px down
+                    swipe('bottom', 110, 490, 60, speed=.5, instant_move=True)
+
+                    # Checked -> 'Hide Set Filters'
+                    click(190, 498)
+                    sleep(2)
+
+                    running = True
+                    swipes = 0
+
+                    while running:
+
+                        for i in range(swipes):
+                            swipe('bottom', 450, 490, 340, speed=3)
+
+                        # All artifact
+                        for i in range(len(ARTIFACT_STORAGE_SLOTS_MATRIX)):
+                            if upgrade_attempts <= 0:
+                                self._log('Upgrade attempts reached')
+                                self.results.append(quest_id)
+                                running = False
+                                break
+                            else:
+                                x_steps, y_steps = ARTIFACT_STORAGE_SLOTS_MATRIX[i]
+                                x_initial = x_steps * ARTIFACT_STORAGE_SLOT_WIDTH + ARTIFACT_STORAGE_OFFSET['x']
+                                y_initial = y_steps * ARTIFACT_STORAGE_SLOT_HEIGHT + ARTIFACT_STORAGE_OFFSET['y']
+
+                                x = int(x_initial + ARTIFACT_STORAGE_SLOT_WIDTH / 2)
+                                y = int(y_initial + ARTIFACT_STORAGE_SLOT_HEIGHT / 2)
+                                pixel_empty_artifact = [x, y, [15, 44, 68]]
+
+                                # if an empty slot
+                                if pixel_check_new(pixel_empty_artifact):
+                                    running = False
+                                    self._log('Found an empty slot - breaks the loop')
+                                    break
+                                else:
+
+                                    click(x, y)
+                                    # sleep(1)
+
+                                    if pixels_wait(
+                                            [[240, 325, [16, 78, 110]]],
+                                            msg='Artifact info popover',
+                                            mistake=10,
+                                            timeout=1
+                                    )[0]:
+                                        # Await click
+                                        await_click(
+                                            [[108, 500, [20, 123, 156]]],
+                                            msg='Upgrade button in popover', timeout=1, mistake=10
+                                        )
+
+                                        # Check pixel on the top of the frame. Full-screen artifact screen
+                                        if pixels_wait(
+                                            [[444, 77, [5, 32, 47]]],
+                                            msg='Top frame in full-screen',
+                                            timeout=1,
+                                            wait_limit=2
+                                        ):
+                                            # if the main 'Upgrade' button is active
+                                            if pixel_check_new([430, 466, [187, 130, 5]], mistake=10):
+                                                self._log('Able to upgrade')
+
+                                                # Disable 'Instant Upgrade'
+                                                if pixel_check_new([264, 435, [108, 237, 255]], mistake=10):
+                                                    click(264, 435)
+                                                    sleep(.3)
+
+                                                while upgrade_attempts > 0 and pixels_wait(
+                                                    [[430, 466, [187, 130, 5]]],
+                                                    msg="Upgrade button in full-screen",
+                                                    mistake=10,
+                                                    timeout=1,
+                                                    wait_limit=5,
+                                                )[0]:
+                                                    # click(430, 466)
+                                                    # Click on 'Upgrade' button
+                                                    await_click(
+                                                        [[430, 466, [187, 130, 5]]],
+                                                        msg='Upgrade button',
+                                                        mistake=10, timeout=1, wait_limit=3
+                                                    )
+                                                    upgrade_attempts -= 1
+                                                    self._log(f'Upgrade attempts left: {upgrade_attempts}')
+
+                                                # Delay is needed for properly closing the popup
+                                                sleep(5)
+                                            else:
+                                                self._log('Unable to upgrade')
+
+                                        close_popup()
+                                        # Waiting popover right after pop-up closed
+                                        pixels_wait(
+                                            [[240, 325, [16, 78, 110]]],
+                                            msg='Artifact info popover',
+                                            mistake=10,
+                                            timeout=1
+                                        )
+
+                                    else:
+                                        self._log("Have not found 'Artifact info popover'")
+
+                        if upgrade_attempts > 0:
+                            swipes += 1
+
+
+                else:
+                    self._log("Have not found 'Artifacts sidebar'")
 
     def enter(self):
         close_popup_recursive()
-        return 1
 
     def report(self):
-        return 1
+        res = None
+
+        if len(self.results):
+            res = f'{self.LOCATION_NAME} | Quests are done: {str(np.array(self.results, dtype=object))}'
+
+        return res
 
     def finish(self):
         close_popup_recursive()
-        return 1
+        self._log('Done')
 
-    def run(self):
-        return 1
+    def run(self, *args, props=None):
+        HARDCODE_QUEST_IDS = ['1', '2']
+
+        self.enter()
+
+        for quest_id in HARDCODE_QUEST_IDS:
+            close_popup_recursive()
+            self.handle_quest(quest_id)
+            close_popup_recursive()
+
+        self.finish()
+
+

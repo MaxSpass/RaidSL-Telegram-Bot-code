@@ -226,6 +226,10 @@
       "props": {
         "bosses": [1, 6]
       }
+    },
+    {
+      "task": "quests",
+      "enable": 1
     }
   ],
   "presets": [
@@ -242,7 +246,8 @@
         "arena_classic",
         "iron_twins",
         "dungeon_sand_devil",
-        "doom_tower"
+        "doom_tower",
+        "quests"
       ]
     },
     {
@@ -266,7 +271,8 @@
         "rewards",
         "arena_classic",
         "iron_twins",
-        "doom_tower"
+        "doom_tower",
+        "quests"
       ]
     },
     {
@@ -283,7 +289,8 @@
         "arena_classic",
         "iron_twins",
         "dungeon_sand_devil",
-        "doom_tower"
+        "doom_tower",
+        "quests"
       ]
     },
     {
@@ -300,7 +307,8 @@
         "arena_classic",
         "iron_twins",
         "dungeon_minotaur",
-        "doom_tower"
+        "doom_tower",
+        "quests"
       ]
     }
   ],

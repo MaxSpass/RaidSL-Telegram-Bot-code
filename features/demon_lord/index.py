@@ -67,10 +67,10 @@ class DemonLord:
             if pixel_check_new([870, 457, [246, 2, 0]], mistake=10):
                 # click on the "Claim reward button"
                 click(870, 457)
+                sleep(5)
 
                 # click on the "Obtain reward button" twice
                 for i in range(2):
-                    sleep(5)
                     click(460, 444)
                     sleep(5)
 
