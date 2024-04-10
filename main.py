@@ -36,7 +36,7 @@ def main():
     #     swipe('bottom', 450, 490, 340, speed=3)
     # return
 
-    # print(pyautogui.pixel(264, 435))
+    # print(pyautogui.pixel(220, 90))
     # return
 
     # quests = Quests()
@@ -120,16 +120,21 @@ def main():
                 # register addition commands according to 'presets'
                 presets_commands = []
                 if len(app.config['presets']):
-                    presets_commands = list(map(lambda preset: {
-                        'command': make_command_key(f"preset {preset['name']}"),
-                        'description': f"commands in a row: {', '.join(preset['commands'])}",
-                        'handler': app.task(
-                            name=make_command_key(f"preset {preset['name']}"),
-                            cb=lambda *args: list(map(lambda x: app.get_entry(
-                                command_name=x
-                            )['instance'].run(), preset['commands']))
-                        ),
-                    }, app.config['presets']))
+                    # @TODO Attempt to solve duration issue
+                    # https://trello.com/c/9GOK0bav/50-duration-issue
+                    def handle_preset(preset):
+                        return {
+                            'command': make_command_key(f"preset {preset['name']}"),
+                            'description': f"commands in a row: {', '.join(preset['commands'])}",
+                            'handler': app.task(
+                                name=make_command_key(f"preset {preset['name']}"),
+                                cb=lambda *args: list(map(lambda x: app.get_entry(
+                                    command_name=x
+                                )['instance'].run(), preset['commands']))
+                            ),
+                        }
+
+                    presets_commands = list(map(handle_preset, app.config['presets']))
 
                 commands = regular_command + presets_commands
 

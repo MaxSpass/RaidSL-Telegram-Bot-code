@@ -38,7 +38,7 @@ QUESTS_TABS = [
 class Rewards:
     NAME = 'Rewards'
     def __init__(self, props=None):
-        self.cache = {
+        self.results = {
             'regular_quests': {
                 'name': 'Regular Quests',
                 'total': 0,
@@ -51,8 +51,8 @@ class Rewards:
 
     def finish(self, quest_type):
         go_index_page()
-        name = self.cache[quest_type]['name']
-        total = self.cache[quest_type]['total']
+        name = self.results[quest_type]['name']
+        total = self.results[quest_type]['total']
         log('DONE - ' + name + ' rewards')
         log('Total ' + name + ' rewards obtained: ' + str(total))
 
@@ -75,7 +75,7 @@ class Rewards:
 
             button_position = get_button_claim()
             while button_position is not None:
-                self.cache['regular_quests']['total'] += 1
+                self.results['regular_quests']['total'] += 1
                 x2 = button_position[0]
                 y2 = button_position[1]
                 pyautogui.moveTo(x2, y2, .5, random_easying())
@@ -101,7 +101,7 @@ class Rewards:
                     x2 = advanced_pixel['x']
                     y2 = advanced_pixel['y']
                     if pixel_check_old(x2, y2, advanced_rgb, 10):
-                        self.cache['regular_quests']['total'] += 1
+                        self.results['regular_quests']['total'] += 1
                         # click on a reward
                         click(x2, y2 + 10)
                         sleep(1.5)
@@ -109,7 +109,7 @@ class Rewards:
     def play_time_obtain(self):
         position = get_red_dot()
         while position is not None:
-            self.cache['play_time']['total'] += 1
+            self.results['play_time']['total'] += 1
             x = position[0]
             y = position[1]
             click(x, y)
@@ -192,8 +192,8 @@ class Rewards:
 
     def report(self):
         s = None
-        t1 = self.cache['regular_quests']['total']
-        t2 = self.cache['play_time']['total']
+        t1 = self.results['regular_quests']['total']
+        t2 = self.results['play_time']['total']
         total = t1 + t2
 
         if total > 0:

@@ -129,7 +129,7 @@
           {
             "stage": 2,
             "team_preset": 3,
-            "min_damage": 80,
+            "min_damage": 70,
             "skip": 0,
             "priority": {
               "head_of_decay": 2,
@@ -245,9 +245,10 @@
         "rewards",
         "arena_classic",
         "iron_twins",
+        "quests",
+        "rewards",
         "dungeon_sand_devil",
-        "doom_tower",
-        "quests"
+        "doom_tower"
       ]
     },
     {
@@ -271,8 +272,9 @@
         "rewards",
         "arena_classic",
         "iron_twins",
-        "doom_tower",
-        "quests"
+        "quests",
+        "rewards",
+        "doom_tower"
       ]
     },
     {
@@ -288,9 +290,10 @@
         "rewards",
         "arena_classic",
         "iron_twins",
+        "quests",
+        "rewards",
         "dungeon_sand_devil",
-        "doom_tower",
-        "quests"
+        "doom_tower"
       ]
     },
     {
@@ -306,9 +309,10 @@
         "rewards",
         "arena_classic",
         "iron_twins",
+        "quests",
+        "rewards",
         "dungeon_minotaur",
-        "doom_tower",
-        "quests"
+        "doom_tower"
       ]
     }
   ],
