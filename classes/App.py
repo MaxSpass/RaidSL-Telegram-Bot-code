@@ -36,7 +36,7 @@ INSTANCES_MAP = {
     'iron_twins': IronTwins,
     'rewards': Rewards,
     'doom_tower': DoomTower,
-    'quests': Quests,
+    'daily_quests': Quests,
 }
 
 def find_process_by_name(name):

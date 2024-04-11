@@ -51,8 +51,8 @@ def main():
         telegram_bot = None
 
         try:
-            # app.entries['arena_live']['instance'].enter()
-            # app.entries['arena_live']['instance'].obtain()
+            quests = app.entries['daily_quests']['instance']
+            arena_classic = app.entries['arena_classic']['instance']
 
             if app.config['start_immediate']:
                 app.start_game()
@@ -117,13 +117,52 @@ def main():
                         ),
                     }, app.config['tasks']))
 
+                # TEST | Quests related commands
+                quests_daily = [
+                    {
+                        'command': 'daily_quest_1',
+                        'description': "Increase Champion's Level in Tavern 3 times",
+                        'handler': app.task(name='daily_quest_1', cb=lambda *args: quests.daily_quest_1()),
+                    },
+                    {
+                        'command': 'daily_quest_2',
+                        'description': "Make 4 Artifact/Accessory upgrade attempts",
+                        'handler': app.task(name='daily_quest_2', cb=lambda *args: quests.daily_quest_2()),
+                    },
+                    {
+                        'command': 'daily_quest_3',
+                        'description': "Summon 3 Champions",
+                        'handler': app.task(name='daily_quest_3', cb=lambda *args: quests.daily_quest_3()),
+                    },
+
+                    # Taken from another class
+                    {
+                        'command': 'daily_quest_5',
+                        'description': "Fight in Classic Arena 5 times",
+                        'handler': app.task(name='daily_quest_5', cb=lambda *args: arena_classic.run()),
+                    },
+
+                    {
+                        'command': 'daily_quest_6',
+                        'description': "Purchase an item at the Market",
+                        'handler': app.task(name='daily_quest_6', cb=lambda *args: quests.daily_quest_6()),
+                    },
+                    {
+                        'command': 'daily_quest_7',
+                        'description': "Beat a Campaign Boss 3 times",
+                        'handler': app.task(name='daily_quest_7', cb=lambda *args: quests.daily_quest_7()),
+                    },
+                    {
+                        'command': 'daily_quest_8',
+                        'description': "Win Campaign Battles 7 times",
+                        'handler': app.task(name='daily_quest_8', cb=lambda *args: quests.daily_quest_8()),
+                    }
+                ]
+
                 # register addition commands according to 'presets'
                 presets_commands = []
                 if len(app.config['presets']):
-                    # @TODO Attempt to solve duration issue
-                    # https://trello.com/c/9GOK0bav/50-duration-issue
-                    def handle_preset(preset):
-                        return {
+                    presets_commands = list(map(lambda preset: {
                             'command': make_command_key(f"preset {preset['name']}"),
                             'description': f"commands in a row: {', '.join(preset['commands'])}",
                             'handler': app.task(
@@ -132,11 +171,9 @@ def main():
                                     command_name=x
                                 )['instance'].run(), preset['commands']))
                             ),
-                        }
+                        }, app.config['presets']))
 
-                    presets_commands = list(map(handle_preset, app.config['presets']))
-
-                commands = regular_command + presets_commands
+                commands = regular_command + quests_daily + presets_commands
 
                 for i in range(len(commands)):
                     print(commands[i])

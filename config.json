@@ -228,7 +228,7 @@
       }
     },
     {
-      "task": "quests",
+      "task": "daily_quests",
       "enable": 1
     }
   ],
@@ -245,7 +245,7 @@
         "rewards",
         "arena_classic",
         "iron_twins",
-        "quests",
+        "daily_quests",
         "rewards",
         "dungeon_sand_devil",
         "doom_tower"
@@ -272,7 +272,7 @@
         "rewards",
         "arena_classic",
         "iron_twins",
-        "quests",
+        "daily_quests",
         "rewards",
         "doom_tower"
       ]
@@ -290,7 +290,7 @@
         "rewards",
         "arena_classic",
         "iron_twins",
-        "quests",
+        "daily_quests",
         "rewards",
         "dungeon_sand_devil",
         "doom_tower"
@@ -309,7 +309,7 @@
         "rewards",
         "arena_classic",
         "iron_twins",
-        "quests",
+        "daily_quests",
         "rewards",
         "dungeon_minotaur",
         "doom_tower"

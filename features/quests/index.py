@@ -147,7 +147,7 @@ class Quests:
                 click(120, 290)
                 sleep(.5)
 
-                msg_stage = f'Stage: {str(stage)}'
+                msg_stage = f"Stage '{str(stage)}'"
                 if await_click(
                         [[x, y, [187, 130, 5]]],
                         msg=msg_stage,
@@ -160,7 +160,7 @@ class Quests:
                     if dungeons_is_able():
                         for k in range(times):
                             dungeons_start_battle()
-                            waiting_battle_end_regular(f'{msg_stage} battle end', x=28, y=88)
+                            waiting_battle_end_regular(f'{msg_stage} | Battle end', x=28, y=88)
                             counter += 1
 
                         # click in the "Stage Selection"
@@ -178,12 +178,14 @@ class Quests:
 
         return 1
 
-    def do_quest_1(self, quest_id):
+    def daily_quest_1(self, quest_id='1'):
         global LEVELS
         global MAX_LEVEL_LIMIT
 
         levels = LEVELS
         max_levels_limit = MAX_LEVEL_LIMIT
+
+        close_popup_recursive()
 
         await_click([CHAMPIONS], mistake=20)
         columns_mode = await_needle('heroes_sidebar_columns_mode.png', confidence=.7, region=REGION_TOP_LEFT)
@@ -374,8 +376,12 @@ class Quests:
             if levels > 0:
                 self._log(f'Cannot increase {levels} levels')
 
-    def do_quest_2(self, quest_id):
+        close_popup_recursive()
+
+    def daily_quest_2(self, quest_id='2'):
         upgrade_attempts = 4
+
+        close_popup_recursive()
 
         # Await click on a 'Champions' icon
         await_click([[690, 500, [28, 49, 61]]], msg='Champions icon', mistake=10)
@@ -505,8 +511,12 @@ class Quests:
             else:
                 self._log("Have not found 'Artifacts sidebar'")
 
-    def do_quest_3(self, quest_id):
+        close_popup_recursive()
+
+    def daily_quest_3(self, quest_id='3'):
         NUMBER_TO_SUMMON = 3
+
+        close_popup_recursive()
 
         # Click on the Portal
         click(275, 195)
@@ -534,6 +544,7 @@ class Quests:
                 )[0]:
                     counter += 1
                     self._log(f'Summoned {counter} heroes from Mystery shards')
+                    sleep(1)
                 else:
                     print("Can't reach 'Summon button'")
 
@@ -543,9 +554,17 @@ class Quests:
         else:
             self._log('Have not found the Mystery Shard')
 
-    def do_quest_6(self, quest_id):
+        # Wait until there is no screen lock
+        sleep(5)
+
+        close_popup_recursive()
+
+    def daily_quest_6(self, quest_id='6'):
         global MARKET_SHARDS_REGION
         counter = 0
+
+        close_popup_recursive()
+
         # Click on the Market
         click(315, 360)
         sleep(3)
@@ -558,7 +577,7 @@ class Quests:
 
         frame_index = 0
         shards = _find_shards()
-        while len(shards):
+        while len(shards) or frame_index == 0:
             for k in range(len(shards)):
                 print('Found shard in the frame')
                 position = shards[k]
@@ -587,40 +606,40 @@ class Quests:
         if counter > 0:
             self.results.append(quest_id)
 
-    def do_quest_7(self, quest_id):
-        # Brimstone Path Stage: 7, Times: 3
-        # @TODO Temp decision | Default: times=3
-        self._attack_campaign(quest_id, stage=7, times=7)
+        close_popup_recursive()
 
-    def do_quest_8(self, quest_id):
+    def daily_quest_7(self, quest_id='7', stage=7, times=3):
+        close_popup_recursive()
+        # Brimstone Path Stage: 7, Times: 3
+        self._attack_campaign(quest_id, stage=stage, times=times)
+        close_popup_recursive()
+
+    def daily_quest_8(self, quest_id='8', stage=6, times=7):
         # Brimstone Path Stage: 6, Times: 7
-        self._attack_campaign(quest_id, stage=6, times=7)
+        self._attack_campaign(quest_id, stage=stage, times=times)
 
     def handle_quest(self, quest_id):
         _qid = str(quest_id)
 
-        close_popup_recursive()
-
         if _qid == '1':
             # Increase Champion's Level in Tavern 3 times
-            self.do_quest_1(_qid)
+            self.daily_quest_1(_qid)
         elif _qid == '2':
             # Make 4 Artifact/Accessory upgrade attempts
-            self.do_quest_2(_qid)
+            self.daily_quest_2(_qid)
         elif _qid == '3':
             # Summon 3 Champions
-            self.do_quest_3(_qid)
+            self.daily_quest_3(_qid)
         elif _qid == '6':
             # Purchase an item at the Market
-            self.do_quest_6(_qid)
+            self.daily_quest_6(_qid)
         elif _qid == '7':
             # Beat a Campaign Boss 3 times
-            self.do_quest_7(_qid)
+            # @TODO Temp decision | Default: times=3
+            self.daily_quest_7(_qid, times=7)
         elif _qid == '8':
-            # Fight a Campaign floor 7 times (not accurate title)
-            self.do_quest_8(_qid)
-
-        close_popup_recursive()
+            # Win Campaign Battles 7 times
+            self.daily_quest_8(_qid)
 
     def enter(self):
         close_popup_recursive()
@@ -629,7 +648,7 @@ class Quests:
         res = None
 
         if len(self.results):
-            res = f'{self.LOCATION_NAME} | Quests are done: {str(np.array(self.results, dtype=object))}'
+            res = f'{self.LOCATION_NAME} | Completed Daily quest IDs: {str(np.array(self.results, dtype=object))}'
 
         return res
 

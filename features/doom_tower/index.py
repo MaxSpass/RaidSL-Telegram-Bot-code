@@ -103,7 +103,7 @@ class DoomTower:
             if cost and self.keys_silver:
                 while self.keys_silver >= cost:
                     dungeons_start_battle()
-                    waiting_battle_end_regular(f"{self.LOCATION_NAME} | Waiting battle end", x=28, y=88)
+                    waiting_battle_end_regular(f"{self.LOCATION_NAME} | Battle end", x=28, y=88)
                     res = not pixel_check_new(self.RESULT_DEFEAT, mistake=30)
                     if res:
                         self.keys_silver -= cost

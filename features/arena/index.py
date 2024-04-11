@@ -212,7 +212,7 @@ class ArenaFactory:
 
                 click_on_start()
 
-                waiting_battle_end_regular(self.name + ' battle end')
+                waiting_battle_end_regular(self.name + ' | Battle end')
                 res = not pixel_check_new(defeat, 20)
                 results_local.append(res)
                 if res:
