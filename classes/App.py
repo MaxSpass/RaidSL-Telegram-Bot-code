@@ -10,7 +10,6 @@ from features.dungeons.index import *
 from features.hydra.index import *
 from features.doom_tower.index import *
 from features.quests.index import *
-from io import BytesIO
 import atexit
 import signal
 import sys
@@ -18,9 +17,15 @@ import pytesseract
 import subprocess
 import psutil
 import os
+import cv2
+import numpy as np
+from PIL import Image, ImageDraw
+from io import BytesIO
 
 GAME_WINDOW = 'Raid: Shadow Legends'
 GAME_PROCESS_NAME = 'Raid.exe'
+WINDOW_TOP_BAR_HEIGHT = 25
+BORDER_WIDTH = 7
 # GAME_PATH = r"C:\Users\user\AppData\Local\PlariumPlay\PlariumPlay.exe"
 
 CONFIG_PATH = "config.json"
@@ -322,10 +327,10 @@ class App:
         return True
 
     def screen(self, *args):
+        global WINDOW_TOP_BAR_HEIGHT
+        global BORDER_WIDTH
         # hidden window
         # <Win32Window left="-32000", top="-32000", width="160", height="28", title="Raid: Shadow Legends">
-        WINDOW_TOP_BAR_HEIGHT = 25
-        BORDER_WIDTH = 7
 
         x = self.window.left
         y = self.window.top
@@ -349,6 +354,83 @@ class App:
 
         return image_bytes
 
+    def click(self, upd, ctx):
+        response = []
+
+        def _get_grid_screenshot():
+            gap_size = 100
+            font_scale = .5
+            font_color = (150, 255, 0)
+            grid_color = (150, 255, 0)
+
+            image_bytes = self.screen()
+            # Convert the image to a numpy array
+            img_np = np.array(Image.open(image_bytes))
+
+            # Get the image dimensions
+            height, width, _ = img_np.shape
+
+            # Draw vertical lines
+            for x in range(0, width, gap_size):
+                cv2.line(img_np, (x, 0), (x, height), grid_color, 1)
+
+            # Draw horizontal lines
+            for y in range(0, height, gap_size):
+                cv2.line(img_np, (0, y), (width, y), grid_color, 1)
+
+            # Draw pixel coordinates
+            font = cv2.FONT_HERSHEY_SIMPLEX
+            for y in range(0, height, gap_size):
+                for x in range(0, width, gap_size):
+                    x_final = int(x + gap_size / 2)
+                    y_final = int(y + gap_size / 2)
+                    text = f"({x_final},{y_final})"
+                    text_size = cv2.getTextSize(text, font, font_scale, 1)[0]
+                    text_x = x + (gap_size - text_size[0]) // 2
+                    text_y = y + (gap_size + text_size[1]) // 2
+                    cv2.putText(img_np, text, (text_x, text_y), font, font_scale, font_color, 1, cv2.LINE_AA)
+
+            # Convert the numpy array back to an image
+            img_with_grid = Image.fromarray(img_np)
+
+            # Convert the image to bytes using BytesIO
+            buffered_image = BytesIO()
+            img_with_grid.save(buffered_image, format="JPEG")  # Change format if necessary
+            buffered_image.seek(0)
+
+            return buffered_image
+
+        def _send_grid_screenshot():
+            if bool(self.window):
+                grid_screen = _get_grid_screenshot()
+                ctx.bot.send_photo(
+                    chat_id=upd.message.chat_id,
+                    photo=grid_screen
+                )
+            else:
+                response.append("No Game window found")
+
+        if len(ctx.args) < 2:
+            _send_grid_screenshot()
+            response.append('Provide coordinates: x y')
+
+        else:
+            x = ctx.args[0]
+            y = ctx.args[1]
+
+            if is_number(x) and is_number(y):
+                click(
+                    int(x) + BORDER_WIDTH,
+                    int(y) + WINDOW_TOP_BAR_HEIGHT + BORDER_WIDTH
+                )
+                sleep(.5)
+                _send_grid_screenshot()
+            else:
+                response.append('X and Y must be numbers')
+
+        if len(response):
+            return upd.message.reply_text('\n'.join(response))
+
     def start_game(self):
         # atexit.register(self.report)
         signal.signal(signal.SIGINT, self.kill)
@@ -363,7 +445,6 @@ class App:
             self.launch()
         else:
             raise "No 'game_path' provided field in the config"
-
 
     def launch(self, *args):
         game_path = self.get_game_path()
@@ -391,7 +472,6 @@ class App:
         else:
             return "No 'game_path' provided field in the config"
 
-
     def prepare(self):
         self.window = resize_window()
         calibrate_window()
@@ -405,7 +485,6 @@ class App:
             'onError': upd.message.reply_text,
             'type': task_type,
         })
-
 
     # def run(self):
     #     self.prepare()

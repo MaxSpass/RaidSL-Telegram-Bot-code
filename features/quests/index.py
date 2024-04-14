@@ -554,7 +554,7 @@ class Quests:
         else:
             self._log('Have not found the Mystery Shard')
 
-        # Wait until there is no screen lock
+        # Wait until the animation ends
         sleep(10)
 
         close_popup_recursive()

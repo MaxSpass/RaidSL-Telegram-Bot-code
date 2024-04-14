@@ -63,7 +63,7 @@ def main():
                 })
                 telegram_bot.start()
 
-                # all callbacks should return truthy values in case of success
+                # 'game_path' dependant commands
                 if game_path:
                     telegram_bot.add({
                         'command': 'restart',
@@ -75,11 +75,11 @@ def main():
                         'description': 'Re-Launch the Game',
                         'handler': app.task(name='launch', cb=app.launch),
                     })
-                telegram_bot.add({
-                    'command': 'relogin',
-                    'description': 'Re-log in',
-                    'handler': app.task(name='relogin', cb=app.relogin),
-                })
+                    telegram_bot.add({
+                        'command': 'relogin',
+                        'description': 'Re-log in',
+                        'handler': app.task(name='relogin', cb=app.relogin),
+                    })
 
                 # Sync
                 telegram_bot.add({
@@ -101,6 +101,16 @@ def main():
                             chat_id=upd.message.chat_id,
                             photo=app.screen()
                         ) if bool(app.window) else upd.message.reply_text("No Game window found"),
+                        task_type='sync'
+                    ),
+                })
+                # Sync
+                telegram_bot.add({
+                    'command': 'click',
+                    'description': 'Click by provided coordinates: x, y',
+                    'handler': app.task(
+                        name='click',
+                        cb=app.click,
                         task_type='sync'
                     ),
                 })

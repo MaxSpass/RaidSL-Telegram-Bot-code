@@ -995,3 +995,11 @@ def dominant_color_rgb(region, rank=1):
     r, g, b = np.unravel_index(dominant_color_index, (256, 256, 256))
 
     return [r, g, b]
+
+
+def is_number(s):
+    try:
+        int(s)
+        return True
+    except ValueError:
+        return False
