@@ -78,6 +78,28 @@ ARTIFACT_STORAGE_SLOTS_MATRIX = [
 MARKET_SHARDS_REGION = [35, 80, 650, 450]
 # Quest 6 End
 
+# Quest Check Start
+QUEST_DAILY_DATA = {
+    '1': {'text': "Increase Champion's Level in Tavern 3 times"},
+    '2': {'text': "Make 4 Artifact/Accessory upgrade attempts"},
+    '3': {'text': "Summon 3 Champions"},
+    '4': {'text': "Use 50 Energy"},
+    '5': {'text': "Fight in Classic Arena 5 times"},
+    '6': {'text': "Purchase an item at the Market"},
+    '7': {'text': "Beat a Campaign Boss 3 times"},
+    '8': {'text': "Win Campaign Battles 7 times"},
+}
+QUEST_DAILY_POSITIONS = [
+    {"x": 0, "y": 0, "position": 0, "swipes": 0},
+    {"x": 0, "y": 0, "position": 0, "swipes": 1},
+    {"x": 0, "y": 0, "position": 0, "swipes": 2},
+    {"x": 0, "y": 0, "position": 0, "swipes": 3},
+    {"x": 0, "y": 0, "position": 1, "swipes": 3},
+    {"x": 0, "y": 0, "position": 2, "swipes": 3},
+    {"x": 0, "y": 0, "position": 3, "swipes": 3},
+]
+# Quest Check End
+
 hero_filter = HeroFilter({
     'needle_image': 'filter_small.png',
     'needle_region': REGION_TOP_LEFT,
@@ -97,6 +119,23 @@ class Quests:
 
     def _log(self, msg):
         print(f'{self.LOCATION_NAME} | {msg}')
+
+    def _get_daily_quest_id_by_text(self, text):
+        ACCEPT_WEIGHT_MIN = 50
+
+        for _id, value in QUEST_DAILY_DATA.items():
+            quest_text = value['text']
+            words = quest_text.split(' ')
+            word_weight = int(100 / len(words))
+            weight_counter = 0
+
+            for i in range(len(words)):
+                word = words[i]
+                if word in text:
+                    weight_counter += word_weight
+
+            if weight_counter >= ACCEPT_WEIGHT_MIN:
+                return _id
 
     def _get_level_tavern_screen(self):
         return read_text(
@@ -304,10 +343,10 @@ class Quests:
                                         if lvl_desired == lvl_max:
                                             break
 
-                                        beer = sorted_beers[l]
-                                        self._log(f"Beer: {beer}")
+                                        brew = sorted_beers[l]
+                                        self._log(f"Brew: {brew}")
 
-                                        beer_region = TAVERN_AFFINITY_REGIONS[beer['name']]
+                                        beer_region = TAVERN_AFFINITY_REGIONS[brew['name']]
 
                                         # @TODO Parser 'parse_energy_cost' is not intended to be used here
                                         beer_total_float = read_text(
@@ -316,19 +355,19 @@ class Quests:
                                             parser=parse_energy_cost
                                         )
                                         if type(beer_total_float) is float:
-                                            self._log(f"Beer {beer['name']}: {str(beer_total_float)}")
+                                            self._log(f"Brew {brew['name']}: {str(beer_total_float)}")
                                             beer_total = int(beer_total_float)
 
-                                            # @TODO Total beer amount calculation
+                                            # @TODO Total brew amount calculation
 
-                                            x_beer = beer['x']
-                                            y_beer = beer['y']
+                                            x_beer = brew['x']
+                                            y_beer = brew['y']
                                             click(x_beer, y_beer)
                                             sleep(5)
                                             beer_total -= 1
                                             lvl_desired = int(self._get_level_tavern_screen())
 
-                                            # @TODO Up the lvl | Calculating beer amount is required
+                                            # @TODO Up the lvl | Calculating brew amount is required
 
                                             while beer_total > 0 \
                                                     and levels > 0 \
@@ -615,8 +654,10 @@ class Quests:
         close_popup_recursive()
 
     def daily_quest_8(self, quest_id='8', stage=6, times=7):
+        close_popup_recursive()
         # Brimstone Path Stage: 6, Times: 7
         self._attack_campaign(quest_id, stage=stage, times=times)
+        close_popup_recursive()
 
     def handle_quest(self, quest_id):
         _qid = str(quest_id)
@@ -635,14 +676,50 @@ class Quests:
             self.daily_quest_6(_qid)
         elif _qid == '7':
             # Beat a Campaign Boss 3 times
-            # @TODO Temp decision | Default: times=3
-            self.daily_quest_7(_qid, times=7)
+            self.daily_quest_7(_qid)
         elif _qid == '8':
             # Win Campaign Battles 7 times
             self.daily_quest_8(_qid)
 
+    def get_not_completed_ids(self):
+        quests_texts = []
+        last_swipes = 0
+        for i in range(len(QUEST_DAILY_POSITIONS)):
+            el = QUEST_DAILY_POSITIONS[i]
+            swipes = el['swipes'] - last_swipes
+            position = el['position']
+
+            last_swipes = el['swipes']
+            y = 210 + position * 90
+
+            for j in range(swipes):
+                swipe('bottom', 510, 434, 95, speed=2)
+
+            # print(pyautogui.pixel(860, y))
+            # screenshot = pyautogui.screenshot(region=region)
+            # show_pyautogui_image(screenshot)
+
+            # is_not_claimed = pixel_check_new([860, y, [187, 130, 5]], mistake=20)
+            is_in_progress = pixel_check_new([860, y, [20, 133, 156]], mistake=20)
+            is_completed = pixel_check_new([860, y, [20, 58, 75]], mistake=20)
+
+            if is_in_progress:
+                region = [198, 182 + position * 90, 284, 42]
+                text = read_text(region=region, scale=4)
+                print(text)
+                quests_texts.append(text)
+            elif is_completed:
+                break
+
+        return list(map(lambda s: self._get_daily_quest_id_by_text(s), quests_texts))
+
     def enter(self):
         close_popup_recursive()
+        if await_click(pixels=[[258, 494, [222, 185, 103]]], msg="Quests", mistake=10)[0]:
+            sleep(1.5)
+            # click on the 'Daily' quests tab
+            click(160, 110)
+            sleep(1.5)
 
     def report(self):
         res = None
@@ -657,11 +734,14 @@ class Quests:
         self._log('Done')
 
     def run(self, *args, props=None):
-        HARDCODE_QUEST_IDS = ['1', '2', '3', '6', '7']
-
         self.enter()
 
-        for quest_id in HARDCODE_QUEST_IDS:
-            self.handle_quest(quest_id)
+        quests_ids = self.get_not_completed_ids()
+
+        if len(quests_ids):
+            for quest_id in quests_ids:
+                self.handle_quest(quest_id)
+        else:
+            self._log("All daily quests are already done")
 
         self.finish()

@@ -3,6 +3,7 @@ import pyautogui
 from bot import TelegramBOT
 from classes.App import *
 from constants.index import IS_DEV
+from features.quests.index import QUEST_DAILY_DATA
 
 # from telegram.ext import CommandHandler
 # import pyautogui
@@ -16,7 +17,6 @@ from constants.index import IS_DEV
 # from features.faction_wars.index import *
 # from features.hero_preset.index import HeroPreset
 # from features.doom_tower.index import *
-# from features.quests.index import *
 # from in_progress import *
 
 pyautogui.FAILSAFE = False
@@ -36,14 +36,15 @@ def main():
     #     swipe('bottom', 450, 490, 340, speed=3)
     # return
 
-    # print(pyautogui.pixel(220, 90))
+    # print(pyautogui.pixel(258, 494))
     # return
 
     # quests = Quests()
-    # quests.handle_quest('1')
+    # quests.get_not_completed_ids()
     # return
 
     app = App()
+    # return
 
     if IS_DEV or app.validation():
         game_path = app.get_game_path()
@@ -51,8 +52,14 @@ def main():
         telegram_bot = None
 
         try:
-            quests = app.entries['daily_quests']['instance']
-            arena_classic = app.entries['arena_classic']['instance']
+            quests = app.entries['daily_quests']['instance'] \
+                if 'daily_quests' in app.entries else None
+
+            dungeon_sand_devil = app.entries['dungeon_sand_devil']['instance'] \
+                if 'dungeon_sand_devil' in app.entries else None
+
+            arena_classic = app.entries['arena_classic']['instance'] \
+                if 'arena_classic' in app.entries else None
 
             if app.config['start_immediate']:
                 app.start_game()
@@ -127,61 +134,77 @@ def main():
                         ),
                     }, app.config['tasks']))
 
-                # TEST | Quests related commands
+                # Quests related commands
                 quests_daily = [
                     {
                         'command': 'daily_quest_1',
-                        'description': "Increase Champion's Level in Tavern 3 times",
+                        'description': QUEST_DAILY_DATA['1']['text'],
                         'handler': app.task(name='daily_quest_1', cb=lambda *args: quests.daily_quest_1()),
                     },
                     {
                         'command': 'daily_quest_2',
-                        'description': "Make 4 Artifact/Accessory upgrade attempts",
+                        'description': QUEST_DAILY_DATA['2']['text'],
                         'handler': app.task(name='daily_quest_2', cb=lambda *args: quests.daily_quest_2()),
                     },
                     {
                         'command': 'daily_quest_3',
-                        'description': "Summon 3 Champions",
+                        'description': QUEST_DAILY_DATA['3']['text'],
                         'handler': app.task(name='daily_quest_3', cb=lambda *args: quests.daily_quest_3()),
                     },
-
-                    # Taken from another class
+                    {
+                        'command': 'daily_quest_4',
+                        'description': QUEST_DAILY_DATA['4']['text'],
+                        'handler': app.task(
+                            name='daily_quest_4',
+                            cb=lambda upd, ctx: {
+                                dungeon_sand_devil.run(props={"locations": [{"id": 6}], "bank": 40})
+                                if dungeon_sand_devil
+                                else upd.message.reply_text(
+                                    "No task 'dungeon_sand_devil' defined, using standard 'daily_quest_8' instead"
+                                ) and quests.daily_quest_8()
+                            })
+                    },
                     {
                         'command': 'daily_quest_5',
-                        'description': "Fight in Classic Arena 5 times",
-                        'handler': app.task(name='daily_quest_5', cb=lambda *args: arena_classic.run()),
+                        'description': QUEST_DAILY_DATA['5']['text'],
+                        'handler': app.task(name='daily_quest_5', cb=lambda upd, ctx: {
+                            arena_classic.run()
+                            if arena_classic
+                            else upd.message.reply_text(
+                                "No task 'arena_classic' defined"
+                            )
+                        }),
                     },
-
                     {
                         'command': 'daily_quest_6',
-                        'description': "Purchase an item at the Market",
+                        'description': QUEST_DAILY_DATA['6']['text'],
                         'handler': app.task(name='daily_quest_6', cb=lambda *args: quests.daily_quest_6()),
                     },
                     {
                         'command': 'daily_quest_7',
-                        'description': "Beat a Campaign Boss 3 times",
+                        'description': QUEST_DAILY_DATA['7']['text'],
                         'handler': app.task(name='daily_quest_7', cb=lambda *args: quests.daily_quest_7()),
                     },
                     {
                         'command': 'daily_quest_8',
-                        'description': "Win Campaign Battles 7 times",
+                        'description': QUEST_DAILY_DATA['8']['text'],
                         'handler': app.task(name='daily_quest_8', cb=lambda *args: quests.daily_quest_8()),
                     }
-                ]
+                ] if quests else []
 
                 # register addition commands according to 'presets'
                 presets_commands = []
                 if len(app.config['presets']):
                     presets_commands = list(map(lambda preset: {
-                            'command': make_command_key(f"preset {preset['name']}"),
-                            'description': f"commands in a row: {', '.join(preset['commands'])}",
-                            'handler': app.task(
-                                name=make_command_key(f"preset {preset['name']}"),
-                                cb=lambda *args: list(map(lambda x: app.get_entry(
-                                    command_name=x
-                                )['instance'].run(), preset['commands']))
-                            ),
-                        }, app.config['presets']))
+                        'command': make_command_key(f"preset {preset['name']}"),
+                        'description': f"commands in a row: {', '.join(preset['commands'])}",
+                        'handler': app.task(
+                            name=make_command_key(f"preset {preset['name']}"),
+                            cb=lambda *args: list(map(lambda x: app.get_entry(
+                                command_name=x
+                            )['instance'].run(), preset['commands']))
+                        ),
+                    }, app.config['presets']))
 
                 commands = regular_command + quests_daily + presets_commands
 
