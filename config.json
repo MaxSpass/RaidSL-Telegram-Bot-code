@@ -14,19 +14,34 @@
         "refill": 1,
         "pool": [
           {
+            "name": "Armanz",
+            "role": "s",
+            "priority": 2
+          },
+          {
             "name": "Sun Wukong",
             "role": "a",
-            "priority": 1
+            "priority": 2
           },
           {
             "name": "Duchess Lilitu",
             "role": "s",
-            "priority": 1
+            "priority": 2
           },
           {
             "name": "Arbiter",
             "role": "s",
-            "priority": 1
+            "priority": 2
+          },
+          {
+            "name": "Tormin",
+            "role": "s",
+            "priority": 2
+          },
+          {
+            "name": "Leorius the Proud",
+            "role": "a",
+            "priority": 2
           },
           {
             "name": "Cupidus",
@@ -39,15 +54,12 @@
             "priority": 1
           },
           {
-            "name": "Leorius the Proud",
-            "role": "a"
+            "name": "Mortu-Macaab",
+            "role": "a",
+            "priority": 1
           },
           {
             "name": "Rotos",
-            "role": "a"
-          },
-          {
-            "name": "Mortu-Macaab",
             "role": "a"
           },
           {
