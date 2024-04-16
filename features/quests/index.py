@@ -1,7 +1,8 @@
 import pyautogui
 
-from helpers.common import *
+from classes.Feature import Feature
 from features.hero_filter.index import *
+from helpers.common import *
 
 CHAMPIONS = [690, 500, [28, 49, 61]]
 REGION_TOP_LEFT = axis_to_region(0, 35, 210, 115)
@@ -65,7 +66,6 @@ ARTIFACT_STORAGE_SLOT_WIDTH = 66
 ARTIFACT_STORAGE_SLOT_HEIGHT = 66
 ARTIFACT_STORAGE_OFFSET = {'x': 258, 'y': 164}
 ARTIFACT_STORAGE_SLOTS_MATRIX = [
-    # (0, 0), (0, 2), (0, 2), (3, 0), (4, 0), (5, 0),
     (0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0),
     (0, 1), (1, 1), (2, 1), (3, 1), (4, 1), (5, 1),
     (0, 2), (1, 2), (2, 2), (3, 2), (4, 2), (5, 2),
@@ -78,7 +78,7 @@ ARTIFACT_STORAGE_SLOTS_MATRIX = [
 MARKET_SHARDS_REGION = [35, 80, 650, 450]
 # Quest 6 End
 
-# Quest Check Start
+# Quest General Start
 QUEST_DAILY_DATA = {
     '1': {'text': "Increase Champion's Level in Tavern 3 times"},
     '2': {'text': "Make 4 Artifact/Accessory upgrade attempts"},
@@ -90,15 +90,15 @@ QUEST_DAILY_DATA = {
     '8': {'text': "Win Campaign Battles 7 times"},
 }
 QUEST_DAILY_POSITIONS = [
-    {"x": 0, "y": 0, "position": 0, "swipes": 0},
-    {"x": 0, "y": 0, "position": 0, "swipes": 1},
-    {"x": 0, "y": 0, "position": 0, "swipes": 2},
-    {"x": 0, "y": 0, "position": 0, "swipes": 3},
-    {"x": 0, "y": 0, "position": 1, "swipes": 3},
-    {"x": 0, "y": 0, "position": 2, "swipes": 3},
-    {"x": 0, "y": 0, "position": 3, "swipes": 3},
+    {"position": 0, "swipes": 0},
+    {"position": 0, "swipes": 1},
+    {"position": 0, "swipes": 2},
+    {"position": 0, "swipes": 3},
+    {"position": 1, "swipes": 3},
+    {"position": 2, "swipes": 3},
+    {"position": 3, "swipes": 3},
 ]
-# Quest Check End
+# Quest General End
 
 hero_filter = HeroFilter({
     'needle_image': 'filter_small.png',
@@ -111,14 +111,36 @@ hero_filter = HeroFilter({
 })
 
 
-class Quests:
-    LOCATION_NAME = 'Quests'
-
-    def __init__(self, props=None):
+class Quests(Feature):
+    def __init__(self, app, props=None):
+        Feature.__init__(self, feature_name='Quests', app=app)
         self.results = []
+        self.event_dispatcher.subscribe('enter', self._enter)
+        self.event_dispatcher.subscribe('finish', self._finish)
+        self.event_dispatcher.subscribe('run', self._run)
 
-    def _log(self, msg):
-        print(f'{self.LOCATION_NAME} | {msg}')
+    def _enter(self):
+        if await_click(pixels=[[258, 494, [222, 185, 103]]], msg="Quests", mistake=10)[0]:
+            sleep(1.5)
+            # click on the 'Daily' quests tab
+            click(160, 110)
+            sleep(1.5)
+
+    def _finish(self):
+        rewards = self.app.entries['rewards']['instance'] \
+            if 'rewards' in self.app.entries else None
+
+        if rewards:
+            rewards.run()
+
+    def _run(self, props=None):
+        quests_ids = self.get_not_completed_ids()
+
+        if len(quests_ids):
+            for quest_id in quests_ids:
+                self.handle_quest(quest_id)
+        else:
+            self.log("All daily quests are already done")
 
     def _get_daily_quest_id_by_text(self, text):
         ACCEPT_WEIGHT_MIN = 50
@@ -242,7 +264,7 @@ class Quests:
                         self.results.append(quest_id)
                         break
                     else:
-                        self._log(f'Levels needs to be up: {str(levels)}')
+                        self.log(f'Levels needs to be up: {str(levels)}')
 
                     if should_filter:
                         hero_filter.open()
@@ -271,11 +293,11 @@ class Quests:
                     running = rgb_check(color_dominant_active, SIDEBAR_SLOT_ACTIVE_RGB, mistake=10)
                     # show_pyautogui_image(pyautogui.screenshot(region=region_slot))
                     if running:
-                        self._log('Hero is active')
+                        self.log('Hero is active')
 
                         color_dominant_lvl_bar_end = dominant_color_rgb(region=XP_BAR_REGION_END)
                         if rgb_check(color_dominant_lvl_bar_end, XP_BAR_DOMINANT_RGB_NOT_FULL):
-                            self._log('Hero is ready for lvl-up')
+                            self.log('Hero is ready for lvl-up')
 
                             # @TODO Checking lvl before up
                             lvl_current_info = read_text(
@@ -286,11 +308,11 @@ class Quests:
                                 lvl_current_info_split = lvl_current_info.split('/')
                                 lvl_initial = int(lvl_current_info_split[0])
                                 lvl_max = int(lvl_current_info_split[1])
-                                self._log(f"Initial lvl: {lvl_initial} | Max lvl: {lvl_max}")
+                                self.log(f"Initial lvl: {lvl_initial} | Max lvl: {lvl_max}")
 
                                 # @TODO Take from props (does not work)
                                 if lvl_initial >= max_levels_limit:
-                                    self._log(f"Skip | Exceeds the permissible level: {max_levels_limit}")
+                                    self.log(f"Skip | Exceeds the permissible level: {max_levels_limit}")
                                     should_filter = False
                                     continue
 
@@ -344,7 +366,7 @@ class Quests:
                                             break
 
                                         brew = sorted_beers[l]
-                                        self._log(f"Brew: {brew}")
+                                        self.log(f"Brew: {brew}")
 
                                         beer_region = TAVERN_AFFINITY_REGIONS[brew['name']]
 
@@ -355,7 +377,7 @@ class Quests:
                                             parser=parse_energy_cost
                                         )
                                         if type(beer_total_float) is float:
-                                            self._log(f"Brew {brew['name']}: {str(beer_total_float)}")
+                                            self.log(f"Brew {brew['name']}: {str(beer_total_float)}")
                                             beer_total = int(beer_total_float)
 
                                             # @TODO Total brew amount calculation
@@ -373,7 +395,7 @@ class Quests:
                                                     and levels > 0 \
                                                     and lvl_desired < lvl_max \
                                                     and not (lvl_desired - lvl_initial) >= levels:
-                                                self._log(f"Initial Lvl: {lvl_initial} "
+                                                self.log(f"Initial Lvl: {lvl_initial} "
                                                           f"| Desired Lvl: {str(lvl_desired)}")
 
                                                 position_button_plus_beer = find_needle(
@@ -390,7 +412,7 @@ class Quests:
 
                                             await_click([QUESTS_BUTTON_UPGRADE], mistake=10)
                                             sleep(3)
-                                            self._log(f"Increased levels by {LEVELS}")
+                                            self.log(f"Increased levels by {LEVELS}")
                                             levels -= lvl_desired - lvl_initial
                                             if levels <= 0:
                                                 break
@@ -400,20 +422,20 @@ class Quests:
                             sleep(1)
 
                         else:
-                            self._log('Hero is NOT ready for lvl-up')
+                            self.log('Hero is NOT ready for lvl-up')
 
                         running = False
 
                     else:
-                        self._log('Hero is NOT active, breaking the loop')
+                        self.log('Hero is NOT active, breaking the loop')
                         break
 
                 if levels > 0:
                     swipes += 1
-                    self._log(f'Swipe has been increased: {swipes}')
+                    self.log(f'Swipe has been increased: {swipes}')
 
             if levels > 0:
-                self._log(f'Cannot increase {levels} levels')
+                self.log(f'Cannot increase {levels} levels')
 
         close_popup_recursive()
 
@@ -459,7 +481,7 @@ class Quests:
                     # All artifact
                     for i in range(len(ARTIFACT_STORAGE_SLOTS_MATRIX)):
                         if upgrade_attempts <= 0:
-                            self._log('Upgrade attempts reached')
+                            self.log('Upgrade attempts reached')
                             self.results.append(quest_id)
                             running = False
                             break
@@ -475,7 +497,7 @@ class Quests:
                             # if an empty slot
                             if pixel_check_new(pixel_empty_artifact):
                                 running = False
-                                self._log('Found an empty slot - breaks the loop')
+                                self.log('Found an empty slot - breaks the loop')
                                 break
                             else:
 
@@ -503,7 +525,7 @@ class Quests:
                                     ):
                                         # if the main 'Upgrade' button is active
                                         if pixel_check_new([430, 466, [187, 130, 5]], mistake=10):
-                                            self._log('Able to upgrade')
+                                            self.log('Able to upgrade')
 
                                             # Disable 'Instant Upgrade'
                                             if pixel_check_new([264, 435, [108, 237, 255]], mistake=10):
@@ -524,12 +546,12 @@ class Quests:
                                                     mistake=10, timeout=1, wait_limit=3
                                                 )
                                                 upgrade_attempts -= 1
-                                                self._log(f'Upgrade attempts left: {upgrade_attempts}')
+                                                self.log(f'Upgrade attempts left: {upgrade_attempts}')
 
                                             # Delay is needed for properly closing the popup
                                             sleep(5)
                                         else:
-                                            self._log('Unable to upgrade')
+                                            self.log('Unable to upgrade')
 
                                     close_popup()
                                     # Waiting popover right after pop-up closed
@@ -541,14 +563,14 @@ class Quests:
                                     )
 
                                 else:
-                                    self._log("Have not found 'Artifact info popover'")
+                                    self.log("Have not found 'Artifact info popover'")
 
                     if upgrade_attempts > 0:
                         swipes += 1
 
 
             else:
-                self._log("Have not found 'Artifacts sidebar'")
+                self.log("Have not found 'Artifacts sidebar'")
 
         close_popup_recursive()
 
@@ -582,7 +604,7 @@ class Quests:
                         wait_limit=30
                 )[0]:
                     counter += 1
-                    self._log(f'Summoned {counter} heroes from Mystery shards')
+                    self.log(f'Summoned {counter} heroes from Mystery shards')
                     sleep(1)
                 else:
                     print("Can't reach 'Summon button'")
@@ -591,12 +613,37 @@ class Quests:
                 self.results.append(quest_id)
 
         else:
-            self._log('Have not found the Mystery Shard')
+            self.log('Have not found the Mystery Shard')
 
         # Wait until the animation ends
         sleep(10)
 
         close_popup_recursive()
+
+    def daily_quest_4(self, quest_id='4'):
+        no_task_text = "No task 'dungeon_sand_devil' defined, using 'daily_quest_8' instead"
+
+        dungeon_sand_devil = self.app.entries['dungeon_sand_devil']['instance'] \
+            if 'dungeon_sand_devil' in self.app.entries else None
+
+        if dungeon_sand_devil:
+            dungeon_sand_devil.run(props={"locations": [{"id": 6}], "bank": 40})
+        else:
+            self.update.message.reply_text(no_task_text)
+            self.daily_quest_8()
+
+        self.results.append(quest_id)
+
+    def daily_quest_5(self, quest_id='5'):
+        no_task_text = "No task 'arena_classic' defined"
+        arena_classic = self.app.entries['arena_classic']['instance'] \
+            if 'arena_classic' in self.app.entries else None
+
+        if arena_classic:
+            arena_classic.run()
+            self.results.append(quest_id)
+        else:
+            self.update.message.reply_text(no_task_text)
 
     def daily_quest_6(self, quest_id='6'):
         global MARKET_SHARDS_REGION
@@ -664,22 +711,28 @@ class Quests:
 
         if _qid == '1':
             # Increase Champion's Level in Tavern 3 times
-            self.daily_quest_1(_qid)
+            self.daily_quest_1()
         elif _qid == '2':
             # Make 4 Artifact/Accessory upgrade attempts
-            self.daily_quest_2(_qid)
+            self.daily_quest_2()
         elif _qid == '3':
             # Summon 3 Champions
-            self.daily_quest_3(_qid)
+            self.daily_quest_3()
+        elif _qid == '4':
+            # Use 50 Energy
+            self.daily_quest_4()
+        elif _qid == '5':
+            # Fight in Classic Arena 5 times
+            self.daily_quest_5()
         elif _qid == '6':
             # Purchase an item at the Market
-            self.daily_quest_6(_qid)
+            self.daily_quest_6()
         elif _qid == '7':
             # Beat a Campaign Boss 3 times
-            self.daily_quest_7(_qid)
+            self.daily_quest_7()
         elif _qid == '8':
             # Win Campaign Battles 7 times
-            self.daily_quest_8(_qid)
+            self.daily_quest_8()
 
     def get_not_completed_ids(self):
         quests_texts = []
@@ -713,35 +766,10 @@ class Quests:
 
         return list(map(lambda s: self._get_daily_quest_id_by_text(s), quests_texts))
 
-    def enter(self):
-        close_popup_recursive()
-        if await_click(pixels=[[258, 494, [222, 185, 103]]], msg="Quests", mistake=10)[0]:
-            sleep(1.5)
-            # click on the 'Daily' quests tab
-            click(160, 110)
-            sleep(1.5)
-
     def report(self):
         res = None
 
         if len(self.results):
-            res = f'{self.LOCATION_NAME} | Completed Daily quest IDs: {str(np.array(self.results, dtype=object))}'
+            res = f'{self.FEATURE_NAME} | Completed Daily quest IDs: {str(np.array(self.results, dtype=object))}'
 
         return res
-
-    def finish(self):
-        close_popup_recursive()
-        self._log('Done')
-
-    def run(self, *args, props=None):
-        self.enter()
-
-        quests_ids = self.get_not_completed_ids()
-
-        if len(quests_ids):
-            for quest_id in quests_ids:
-                self.handle_quest(quest_id)
-        else:
-            self._log("All daily quests are already done")
-
-        self.finish()

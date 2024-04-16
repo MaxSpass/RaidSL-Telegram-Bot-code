@@ -52,15 +52,6 @@ def main():
         telegram_bot = None
 
         try:
-            quests = app.entries['daily_quests']['instance'] \
-                if 'daily_quests' in app.entries else None
-
-            dungeon_sand_devil = app.entries['dungeon_sand_devil']['instance'] \
-                if 'dungeon_sand_devil' in app.entries else None
-
-            arena_classic = app.entries['arena_classic']['instance'] \
-                if 'arena_classic' in app.entries else None
-
             if app.config['start_immediate']:
                 app.start_game()
 
@@ -134,64 +125,6 @@ def main():
                         ),
                     }, app.config['tasks']))
 
-                # Quests related commands
-                quests_daily = [
-                    {
-                        'command': 'daily_quest_1',
-                        'description': QUEST_DAILY_DATA['1']['text'],
-                        'handler': app.task(name='daily_quest_1', cb=lambda *args: quests.daily_quest_1()),
-                    },
-                    {
-                        'command': 'daily_quest_2',
-                        'description': QUEST_DAILY_DATA['2']['text'],
-                        'handler': app.task(name='daily_quest_2', cb=lambda *args: quests.daily_quest_2()),
-                    },
-                    {
-                        'command': 'daily_quest_3',
-                        'description': QUEST_DAILY_DATA['3']['text'],
-                        'handler': app.task(name='daily_quest_3', cb=lambda *args: quests.daily_quest_3()),
-                    },
-                    {
-                        'command': 'daily_quest_4',
-                        'description': QUEST_DAILY_DATA['4']['text'],
-                        'handler': app.task(
-                            name='daily_quest_4',
-                            cb=lambda upd, ctx: {
-                                dungeon_sand_devil.run(props={"locations": [{"id": 6}], "bank": 40})
-                                if dungeon_sand_devil
-                                else upd.message.reply_text(
-                                    "No task 'dungeon_sand_devil' defined, using standard 'daily_quest_8' instead"
-                                ) and quests.daily_quest_8()
-                            })
-                    },
-                    {
-                        'command': 'daily_quest_5',
-                        'description': QUEST_DAILY_DATA['5']['text'],
-                        'handler': app.task(name='daily_quest_5', cb=lambda upd, ctx: {
-                            arena_classic.run()
-                            if arena_classic
-                            else upd.message.reply_text(
-                                "No task 'arena_classic' defined"
-                            )
-                        }),
-                    },
-                    {
-                        'command': 'daily_quest_6',
-                        'description': QUEST_DAILY_DATA['6']['text'],
-                        'handler': app.task(name='daily_quest_6', cb=lambda *args: quests.daily_quest_6()),
-                    },
-                    {
-                        'command': 'daily_quest_7',
-                        'description': QUEST_DAILY_DATA['7']['text'],
-                        'handler': app.task(name='daily_quest_7', cb=lambda *args: quests.daily_quest_7()),
-                    },
-                    {
-                        'command': 'daily_quest_8',
-                        'description': QUEST_DAILY_DATA['8']['text'],
-                        'handler': app.task(name='daily_quest_8', cb=lambda *args: quests.daily_quest_8()),
-                    }
-                ] if quests else []
-
                 # register addition commands according to 'presets'
                 presets_commands = []
                 if len(app.config['presets']):
@@ -206,7 +139,7 @@ def main():
                         ),
                     }, app.config['presets']))
 
-                commands = regular_command + quests_daily + presets_commands
+                commands = regular_command + presets_commands
 
                 for i in range(len(commands)):
                     print(commands[i])

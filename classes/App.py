@@ -218,9 +218,16 @@ class App:
                     if _command not in self.entries:
                         if _task in INSTANCES_MAP:
                             # @TODO should take from memory later on
-                            self.entries[_command] = {
-                                'instance': INSTANCES_MAP[_task](props=_props),
-                            }
+
+                            # @TODO Temp
+                            if _task == 'daily_quests':
+                                self.entries[_command] = {
+                                    'instance': INSTANCES_MAP[_task](app=self, props=_props),
+                                }
+                            else:
+                                self.entries[_command] = {
+                                    'instance': INSTANCES_MAP[_task](props=_props),
+                                }
                         else:
                             raise f"No {_task} among all instances"
                     else:
