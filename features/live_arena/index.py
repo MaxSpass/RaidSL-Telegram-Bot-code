@@ -256,7 +256,6 @@ class ArenaLive:
                 msg="Start screen 1",
                 timeout=0.1,
                 mistake=5,
-                wait_limit=65,
                 debug=True
             )
 
@@ -289,7 +288,6 @@ class ArenaLive:
                 msg='Stage 1 | Picking characters',
                 timeout=2,
                 mistake=5,
-                wait_limit=65,
                 debug=True
         )[0]:
             sleep(.5)
@@ -299,7 +297,6 @@ class ArenaLive:
                         msg='Picking characters',
                         timeout=2,
                         mistake=10,
-                        wait_limit=65,
                         debug=True
                 )[0]:
                     sleep(.2)
@@ -319,7 +316,6 @@ class ArenaLive:
                 msg='Stage 2 | Ban hero',
                 timeout=2,
                 mistake=5,
-                wait_limit=65,
                 debug=True
         )[0]:
             sleep(.5)
@@ -336,7 +332,6 @@ class ArenaLive:
                 msg='Stage 3 | Choosing leader',
                 timeout=2,
                 mistake=5,
-                wait_limit=65,
                 debug=True
         )[0]:
             sleep(.5)
@@ -345,7 +340,6 @@ class ArenaLive:
                     msg='Choosing leader',
                     timeout=2,
                     mistake=10,
-                    wait_limit=65,
                     debug=True
             )[0]:
                 leaders_indicis = find_leaders_indicis()
@@ -364,7 +358,6 @@ class ArenaLive:
             msg='My turn or Defeat',
             timeout=2,
             mistake=20,
-            wait_limit=120,
             debug=True
         )
 
@@ -376,7 +369,6 @@ class ArenaLive:
                 msg='Victory or Defeat',
                 timeout=2,
                 mistake=20,
-                wait_limit=1200,
                 debug=True
             )
             self._save_result(battle_result[0])

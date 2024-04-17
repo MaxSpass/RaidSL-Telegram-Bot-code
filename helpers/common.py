@@ -909,8 +909,8 @@ def read_available_energy(region=None):
     return read_text(configs=configs, region=region, parser=parse_energy_bank, scale=4)
 
 
-def read_keys_bank(region=None, scale=10):
-    log('Computing keys bank...')
+def read_keys_bank(region=None, scale=10, key=None):
+    log(f"Computing{' ' + key if bool(key) else ''} keys bank...")
 
     if not region:
         # @TODO Test
@@ -953,7 +953,7 @@ def read_doom_tower_keys(key_type='golden'):
     # screenshot = pyautogui.screenshot(region=region)
     # show_pyautogui_image(screenshot)
 
-    return read_keys_bank(region=region, scale=4)
+    return read_keys_bank(region=region, scale=4, key=key_type)
 
 
 def dominant_color_hue(region, rank=1):
