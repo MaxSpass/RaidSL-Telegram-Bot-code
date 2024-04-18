@@ -86,8 +86,8 @@ class DoomTower(Feature):
     def _read_keys(self):
         self.keys_golden = read_doom_tower_keys('golden')
         self.keys_silver = read_doom_tower_keys('silver')
-        log(f"Golden keys: {str(self.keys_golden)}")
-        log(f"Silver keys: {str(self.keys_silver)}")
+        self.log(f"Golden keys: {str(self.keys_golden)}")
+        self.log(f"Silver keys: {str(self.keys_silver)}")
 
     def _find_boss_position(self):
         position = None
@@ -110,13 +110,13 @@ class DoomTower(Feature):
         return res
 
     def attack(self, x, y):
-        log(f"{self.FEATURE_NAME} | Attacking")
+        self.log("Attacking")
         click(x, y)
         sleep(2)
         if pixel_check_new(self.STAGE_ENTER, mistake=10):
             enable_super_raid()
             cost = read_run_cost()
-            log(f"Cost: {str(cost)}")
+            self.log(f"Cost: {str(cost)}")
             if cost and self.keys_silver:
                 while self.keys_silver >= cost:
                     dungeons_start_battle()
