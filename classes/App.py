@@ -44,6 +44,11 @@ INSTANCES_MAP = {
     'daily_quests': Quests,
 }
 
+INSTANCES_WITH_FEATURE = [
+    'daily_quests',
+    'doom_tower',
+]
+
 def find_process_by_name(name):
     for proc in psutil.process_iter(['pid', 'name']):
         if proc.info['name'] == name:
@@ -220,7 +225,7 @@ class App:
                             # @TODO should take from memory later on
 
                             # @TODO Temp
-                            if _task == 'daily_quests':
+                            if _task in INSTANCES_WITH_FEATURE:
                                 self.entries[_command] = {
                                     'instance': INSTANCES_MAP[_task](app=self, props=_props),
                                 }
