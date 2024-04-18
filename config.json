@@ -44,6 +44,11 @@
             "priority": 2
           },
           {
+            "name": "Mortu-Macaab",
+            "role": "a",
+            "priority": 1
+          },
+          {
             "name": "Cupidus",
             "role": "a",
             "priority": 1
@@ -51,11 +56,6 @@
           {
             "name": "Venus",
             "role": "s",
-            "priority": 1
-          },
-          {
-            "name": "Mortu-Macaab",
-            "role": "a",
             "priority": 1
           },
           {
@@ -79,10 +79,6 @@
             "role": "s"
           },
           {
-            "name": "Lady Mikage",
-            "role": "s"
-          },
-          {
             "name": "Lydia the Deathsiren",
             "role": "s"
           },
@@ -93,6 +89,7 @@
         ],
         "leaders": [
           "Arbiter",
+          "Armanz",
           "Sun Wukong",
           "Mortu-Macaab",
           "Duchess Lilitu",
@@ -236,7 +233,7 @@
       "task": "doom_tower",
       "enable": 1,
       "props": {
-        "bosses": [1, 6]
+        "bosses": [1, 4]
       }
     },
     {

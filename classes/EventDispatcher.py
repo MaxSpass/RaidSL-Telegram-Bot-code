@@ -7,10 +7,10 @@ class EventDispatcher:
             self.subscribers[event_type] = []
         self.subscribers[event_type].append(callback)
 
-    def publish(self, event_type, *args, **kwargs):
+    def publish(self, event_type, *args):
         if event_type in self.subscribers:
             for callback in self.subscribers[event_type]:
-                callback(*args, **kwargs)
+                callback(*args)
 
     def unsubscribe(self, event_type, callback):
         if event_type in self.subscribers:

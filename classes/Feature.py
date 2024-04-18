@@ -20,9 +20,9 @@ class Feature:
         self.event_dispatcher.publish('enter')
 
     def finish(self):
-        close_popup_recursive()
         self.event_dispatcher.publish('finish')
-        self.log('Done')
+        close_popup_recursive()
+        self.log(f"Done: {self.FEATURE_NAME}")
 
     def run(self, upd, ctx, *args):
         self.terminate = False

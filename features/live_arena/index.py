@@ -74,7 +74,6 @@ rewards_pixels = [
 ]
 
 
-# @TODO Issues: keyboard locale, enemy's leaving the battle
 # Requires: checking amount of keys
 class ArenaLive:
     x_config = 600
@@ -96,7 +95,8 @@ class ArenaLive:
 
     def _apply_props(self, props):
         if 'pool' in props:
-            self.pool = sorted(props['pool'], key=lambda x: (-x.get('priority', 0), x.get('priority', 0)))
+            pool_copy = copy.deepcopy(props['pool'])
+            self.pool = sorted(pool_copy, key=lambda x: (-x.get('priority', 0), x.get('priority', 0)))
             if 'leaders' in props:
                 self.leaders = props['leaders']
             # self.pool = props['pool']
@@ -377,6 +377,7 @@ class ArenaLive:
         elif my_turn_or_defeat_or_victory[2]:
             self._save_result(True)
 
+        sleep(1)
         click(return_start_panel[0], return_start_panel[1])
         sleep(3)
 
