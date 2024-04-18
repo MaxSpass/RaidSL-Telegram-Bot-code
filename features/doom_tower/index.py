@@ -53,7 +53,7 @@ class DoomTower(Feature):
     def _finish(self):
         dungeons_click_stage_select()
 
-    def _run(self, *args, props=None):
+    def _run(self, props=None):
         self._read_keys()
 
         # attack bosses
