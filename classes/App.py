@@ -85,6 +85,7 @@ def resize_window():
     return win
 
 def calibrate_window():
+    log('Preparing the window')
     BURGER_POSITION = [15, 282]
     is_prepared = False
     x = 0

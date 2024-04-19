@@ -45,11 +45,6 @@ class DoomTower(Feature):
         dungeon_select_difficulty('hard', mistake=200)
         sleep(5)
 
-        # go higher floor
-        for i in range(15):
-            swipe('top', 450, 80, 450, speed=.1, sleep_after_end=.2, instant_move=True)
-        sleep(1)
-
     def _finish(self):
         dungeons_click_stage_select()
 
@@ -60,7 +55,14 @@ class DoomTower(Feature):
         position = self._find_boss_position()
         counter = 0
 
-        while counter < 15 and position is None:
+        if position is None:
+            # go higher floor
+            for i in range(15):
+                swipe('top', 450, 80, 450, speed=.1, sleep_after_end=.2, instant_move=True)
+
+            sleep(1)
+
+        while position is None and counter < 15:
             for j in range(2):
                 swipe('bottom', 450, 390, 250, speed=.5, sleep_after_end=.3, instant_move=True)
                 position = self._find_boss_position()
