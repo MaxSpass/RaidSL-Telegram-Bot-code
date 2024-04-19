@@ -135,7 +135,7 @@ def main():
                             name=make_command_key(f"preset {preset['name']}"),
                             cb=lambda *args: list(map(lambda x: app.get_entry(
                                 command_name=x
-                            )['instance'].run(), preset['commands']))
+                            )['instance'].run(*args), preset['commands']))
                         ),
                     }, app.config['presets']))
 

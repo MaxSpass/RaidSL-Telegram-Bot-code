@@ -40,7 +40,7 @@ class TaskManager:
             self.event_dispatcher.subscribe(task.event_id_error, task.onError)
 
         if _type == 'aside':
-            self.queue.put(task)
+            self.queue.put(lambda: self._exec(task))
         elif _type == 'sync':
             self._exec(task)
 
@@ -89,4 +89,4 @@ class TaskManager:
             # Check if there are updates in the queue
             if not queue.empty():
                 task = queue.get()
-                self._exec(task)
+                task()
