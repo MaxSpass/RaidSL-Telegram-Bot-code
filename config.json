@@ -323,6 +323,16 @@
         "dungeon_minotaur",
         "doom_tower"
       ]
+    },
+    {
+      "name": "test",
+      "commands": [
+        "arena_classic",
+        "arena_classic",
+        "arena_classic",
+        "arena_classic",
+        "arena_classic"
+      ]
     }
   ],
   "after_each": ["rewards"]

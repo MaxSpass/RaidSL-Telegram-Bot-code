@@ -50,7 +50,7 @@ class TelegramBOT(threading.Thread):
         command = obj['command']
         handler = obj['handler']
 
-        self.dp.add_handler(CommandHandler(command, handler))
+        self.dp.add_handler(CommandHandler(command, handler, run_async=True))
 
     def listen(self):
         log('An App is waiting for some command')
