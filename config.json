@@ -239,6 +239,27 @@
     {
       "task": "daily_quests",
       "enable": 1
+    },
+    {
+      "task": "test_feature",
+      "title": "5sec",
+      "enable": 1,
+      "props": {
+        "seconds": 5
+      }
+    },
+    {
+      "task": "test_feature",
+      "title": "15min",
+      "enable": 1,
+      "props": {
+        "seconds": 900
+      }
+    },
+    {
+      "task": "test_feature",
+      "title": "60min",
+      "enable": 1
     }
   ],
   "presets": [
@@ -325,13 +346,32 @@
       ]
     },
     {
-      "name": "test",
+      "name": "test 10sec",
       "commands": [
-        "arena_classic",
-        "arena_classic",
-        "arena_classic",
-        "arena_classic",
-        "arena_classic"
+        "test_feature_5sec",
+        "test_feature_5sec"
+      ]
+    },
+    {
+      "name": "test 60min",
+      "commands": [
+        "test_feature_15min",
+        "test_feature_15min",
+        "test_feature_15min",
+        "test_feature_15min"
+      ]
+    },
+    {
+      "name": "test 120min",
+      "commands": [
+        "test_feature_15min",
+        "test_feature_15min",
+        "test_feature_15min",
+        "test_feature_15min",
+        "test_feature_15min",
+        "test_feature_15min",
+        "test_feature_15min",
+        "test_feature_15min"
       ]
     }
   ],

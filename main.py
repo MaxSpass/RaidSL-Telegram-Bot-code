@@ -128,15 +128,31 @@ def main():
                 # register addition commands according to 'presets'
                 presets_commands = []
                 if len(app.config['presets']):
+                    # presets_commands = list(map(lambda preset: {
+                    #     'command': make_command_key(f"preset {preset['name']}"),
+                    #     'description': f"commands in a row: {', '.join(preset['commands'])}",
+                    #     'handler': app.task(
+                    #         name=make_command_key(f"preset {preset['name']}"),
+                    #         cb=lambda *args: list(map(lambda x: app.get_entry(
+                    #             command_name=x
+                    #         )['instance'].run(*args), preset['commands']))
+                    #     ),
+                    # }, app.config['presets']))
+
+                    # @TODO Test
+                    def process_preset_commands(upd, ctx, preset):
+                        for i in range(len(preset['commands'])):
+                            command = preset['commands'][i]
+                            cb = app.get_entry(command_name=command)['instance'].run
+                            app.task(
+                                name=make_command_key(f"preset {preset['name']}"),
+                                cb=cb
+                            )(upd, ctx)
+
                     presets_commands = list(map(lambda preset: {
                         'command': make_command_key(f"preset {preset['name']}"),
                         'description': f"commands in a row: {', '.join(preset['commands'])}",
-                        'handler': app.task(
-                            name=make_command_key(f"preset {preset['name']}"),
-                            cb=lambda *args: list(map(lambda x: app.get_entry(
-                                command_name=x
-                            )['instance'].run(*args), preset['commands']))
-                        ),
+                        'handler': lambda upd, ctx: process_preset_commands(upd, ctx, preset),
                     }, app.config['presets']))
 
                 commands = regular_command + presets_commands
@@ -146,6 +162,7 @@ def main():
                     telegram_bot.add(commands[i])
 
                 telegram_bot.listen()
+                telegram_bot.updater.idle()
 
         except KeyboardInterrupt:
             error = traceback.format_exc()

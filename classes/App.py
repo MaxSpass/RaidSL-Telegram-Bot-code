@@ -10,6 +10,7 @@ from features.dungeons.index import *
 from features.hydra.index import *
 from features.doom_tower.index import *
 from features.quests.index import *
+from features.test.index import *
 import atexit
 import signal
 import sys
@@ -26,7 +27,6 @@ GAME_WINDOW = 'Raid: Shadow Legends'
 GAME_PROCESS_NAME = 'Raid.exe'
 WINDOW_TOP_BAR_HEIGHT = 25
 BORDER_WIDTH = 7
-# GAME_PATH = r"C:\Users\user\AppData\Local\PlariumPlay\PlariumPlay.exe"
 
 CONFIG_PATH = "config.json"
 WINDOW_SIZE = [920, 540]
@@ -42,11 +42,13 @@ INSTANCES_MAP = {
     'rewards': Rewards,
     'doom_tower': DoomTower,
     'daily_quests': Quests,
+    'test_feature': TestFeature,
 }
 
 INSTANCES_WITH_FEATURE = [
     'daily_quests',
     'doom_tower',
+    'test_feature',
 ]
 
 def find_process_by_name(name):
@@ -207,7 +209,7 @@ class App:
                     _title = task['title'] if 'title' in task else make_title(_task)
                     _command = task['command'] \
                         if 'command' in task \
-                        else make_command_key(f"{_task} {task['title']}") \
+                        else f"{_task}_" + make_command_key(f"{task['title']}") \
                         if 'title' in task \
                         else _task
 

@@ -53,8 +53,9 @@ class TelegramBOT(threading.Thread):
         self.dp.add_handler(CommandHandler(command, handler, run_async=True))
 
     def listen(self):
-        log('An App is waiting for some command')
         # Start the Bot
         self.updater.start_polling()
+        log('An App is waiting for some command')
         # Run the bot until you send a signal to stop (e.g., Ctrl+C)
-        # self.updater.idle()
+        self.updater.idle()
+        log('Idle is started')
