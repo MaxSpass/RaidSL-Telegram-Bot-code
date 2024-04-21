@@ -46,6 +46,10 @@ INSTANCES_MAP = {
 }
 
 INSTANCES_WITH_FEATURE = [
+    'arena_classic',
+    'arena_tag',
+    'dungeon',
+    'faction_wars',
     'daily_quests',
     'doom_tower',
     'test_feature',

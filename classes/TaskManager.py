@@ -6,7 +6,7 @@ from datetime import datetime
 from classes.EventDispatcher import EventDispatcher
 from helpers.common import log_save
 from telegram.error import NetworkError
-from helpers.common import log, sleep
+from helpers.common import log
 
 MAX_RETRIES = 3
 DELAY = 1
@@ -28,7 +28,7 @@ class TaskManager:
     def __init__(self):
         self.event_dispatcher = EventDispatcher()
         self.queue = queue.Queue()
-        self.listener = threading.Thread(target=self._listen, args=(self.queue,))
+        self.listener = threading.Thread(target=self.listen, args=(self.queue,))
         self.listener.start()
 
     def add(self, name, cb, props):
@@ -40,55 +40,44 @@ class TaskManager:
             self.event_dispatcher.subscribe(task.event_id_error, task.onError)
 
         if _type == 'aside':
-            self.queue.put(lambda: self._exec(task))
+            self.queue.put(lambda: self.run(task))
         elif _type == 'sync':
-            self._exec(task)
+            self.run(task)
 
-    def _exec(self, task):
+    def run(self, task, retry=True):
         global EMULATE_NETWORK_ERROR
 
-        retries = 0
-        while retries < MAX_RETRIES:
-            try:
-                if EMULATE_NETWORK_ERROR:
-                    EMULATE_NETWORK_ERROR = False
-                    raise NetworkError("Emulated network error")
+        try:
+            if EMULATE_NETWORK_ERROR:
+                EMULATE_NETWORK_ERROR = False
+                raise NetworkError("Emulated network error")
 
-                self.start_time = datetime.now()
-                res = task.callback()
-                status = "Done" if bool(res) or res is None else "Error"
-                duration_str = f"Duration: {str(datetime.now() - self.start_time).split('.')[0]}"
-                message = f'{status}: {task.name} | {duration_str}'
+            res = task.callback()
 
-                if bool(res):
-                    # Prepares readable response
-                    if res and type(res) is str:
-                        message += f'\n{res}'
+            # @TODO Temp (Requires Preset Feature)
+            if bool(res) and type(res) is str:
+                self.event_dispatcher.publish(task.event_id_done, res)
 
-                self.event_dispatcher.publish(task.event_id_done, message)
-                return  # Exit the function if message is sent successfully
+        except NetworkError as e:
+            error = f"NetworkError: {e}"
+            log(error)
+            if retry:
+                self.run(task, retry=False)
 
-            except NetworkError as e:
-                # Workaround for telegram package idle bug
-                log(f"NetworkError: {e}")
-                retries += 1
-                log(f"Retrying ({retries}/{MAX_RETRIES})...")
-                sleep(DELAY)
+            # @TODO Temp, should be removed
+            self.event_dispatcher.publish(task.event_id_error, error)
 
-                # @TODO Test
-                if task.name == 'test_feature':
-                    self.event_dispatcher.publish(task.event_id_error, str(e))
+        except Exception as e:
+            error = traceback.format_exc()
+            log_save(error)
+            self.event_dispatcher.publish(task.event_id_error, str(e))
 
-            except Exception as e:
-                error = traceback.format_exc()
-                log_save(error)
-                self.event_dispatcher.publish(task.event_id_error, str(e))
+        finally:
+            self.event_dispatcher.unsubscribe(task.event_id_done, task.callback)
+            self.event_dispatcher.unsubscribe(task.event_id_error, task.callback)
 
-            finally:
-                self.event_dispatcher.unsubscribe(task.event_id_done, task.callback)
-                self.event_dispatcher.unsubscribe(task.event_id_error, task.callback)
 
-    def _listen(self, queue):
+    def listen(self, queue):
         while True:
             # Check if there are updates in the queue
             if not queue.empty():

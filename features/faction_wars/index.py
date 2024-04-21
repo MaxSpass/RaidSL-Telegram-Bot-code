@@ -1,5 +1,6 @@
 import math
 from helpers.common import *
+from classes.Feature import Feature
 
 FACTION_LIZARDMEN = 'Lizardmen'
 FACTION_SKINWALKER = 'Skinwalker'
@@ -56,8 +57,7 @@ FACTION_DATA = [
 
 # @TODO Must be reworked by following new standard and refactor 'attack' method
 # @TODO Requires: keyboard locale, enemy's leaving the battle
-class FactionWars():
-    LOCATION_NAME = 'Faction Wars'
+class FactionWars(Feature):
     RGB_FREE_CRYPT = [30, 36, 49]
     RGB_FREE_STAGE = [187, 130, 5]
     BATTLE_VICTORY = [452, 42, [30, 186, 239]]
@@ -70,7 +70,9 @@ class FactionWars():
         '17': [860, 134, RGB_FREE_STAGE],
     }
 
-    def __init__(self, props=None):
+    def __init__(self, app, props=None):
+        Feature.__init__(self, feature_name='Faction Wars', app=app)
+
         self.results = {}
         self.crypts = self._prepare_crypts()
         self.slides = [
@@ -78,7 +80,105 @@ class FactionWars():
             np.array(self.crypts)[8:]
         ]
 
+        self.event_dispatcher.subscribe('enter', self._enter)
+        self.event_dispatcher.subscribe('run', self._run)
+
         self._apply_props(props=props)
+
+    def _enter(self):
+        click_on_progress_info()
+
+        # Faction Keys
+        click(600, 260)
+        sleep(1)
+
+    def _run(self, props=None):
+        # close_popup_recursive()
+
+        self._apply_props(props=props)
+        self._swipe_left_border()
+
+        for i in range(len(self.slides)):
+            slide = self.slides[i]
+
+            if i > 0:
+                self._swipe_right_border()
+
+            for j in range(len(slide)):
+                _crypt = slide[j]
+                _name = _crypt['name']
+                _id = _crypt['id']
+                pixel = [_crypt['axis']['x'], _crypt['axis']['y']] + [self.RGB_FREE_CRYPT]
+
+                available = self._is_available(_name, pixel=pixel)
+                if available:
+                    self.log(f"Crypt is available: {_name}")
+
+                    await_click([pixel], mistake=10)
+                    sleep(1)
+
+                    stage_lvl = self._get_stage_by_id(_id)
+                    stage = self.STAGES_POSITION[stage_lvl]
+
+                    if pixel_check_new(stage, mistake=10):
+
+                        x_stage = stage[0]
+                        y_stage = stage[1]
+                        click(x_stage, y_stage)
+                        sleep(1.5)
+
+                        if dungeons_is_able():
+                            # enable "Super Raid Mode"
+                            enable_super_raid()
+
+                            # computing keys bank
+                            keys = read_keys_bank()
+                            self.log(f"keys: {str(keys)}")
+
+                            # computing keys cost
+                            cost = read_run_cost(scale=8)
+                            self.log(f"cost: {str(cost)}")
+
+                            if cost and keys:
+                                if keys >= cost:
+                                    self.log(f'Attacking: {_name}')
+                                    runs = math.floor(keys / cost)
+                                    self.log(f"runs: {str(runs)}")
+                                    expect = runs*cost
+
+                                    self._prepare_run(_name, expect=expect)
+
+                                    while not self._get_result_by_name(_name)["completed"]:
+                                        dungeons_start_battle()
+
+                                        waiting_battle_end_regular(f"{self.FEATURE_NAME} | {_name}", x=28, y=88)
+                                        sleep(1)
+
+                                        # battle has been won
+                                        if pixel_check_new(self.BATTLE_VICTORY, mistake=5):
+                                            self._save_result(name=_name, commitment=cost)
+
+                                    # click in the "Stage Selection"
+                                    dungeons_click_stage_select()
+
+                                    # going to the index page and enter to the factions again
+                                    self.enter()
+                                    self._swipe_left_border()
+                                    if i > 0:
+                                        self._swipe_right_border()
+                                else:
+                                    self.log(f"Stage is not available (name: {_name}, stage: {stage_lvl})")
+                            else:
+                                self.log("Cost or Keys are not calculated well")
+                        else:
+                            # going back one lvl upper
+                            close_popup()
+                            # fake preparation the crypt
+                            self._prepare_run(_name, expect=0)
+                            # save results for keeping it in memory
+                            self._save_result(name=_name, completed=True)
+                            self.log('Crypt is already attacked')
+
 
     def _apply_props(self, props=None):
         if props is not None:
@@ -106,7 +206,7 @@ class FactionWars():
                 "completed": False,
                 "expect": expect
             }
-            log(f"Prepare run: {str(self.results[name])}")
+            self.log(f"Prepare run: {str(self.results[name])}")
 
     def _save_result(self, name, commitment=None, completed=None):
         if name in self.results:
@@ -118,7 +218,7 @@ class FactionWars():
             else:
                 crypt["completed"] = crypt["commitment"] >= crypt["expect"]
 
-            log('Save crypt result: ' + str(crypt))
+            self.log('Save crypt result: ' + str(crypt))
     def _get_result_by_name(self, name):
         return self.results[name]
 
@@ -136,117 +236,12 @@ class FactionWars():
         for k in range(times):
             swipe('right', 850, 200, 690, speed=1)
 
-    def enter(self):
-        # @TODO Test
-        close_popup_recursive()
-        click_on_progress_info()
-
-        # Faction Keys
-        click(600, 260)
-        sleep(1)
-
-    def finish(self):
-        close_popup_recursive()
-        log('DONE - ' + self.LOCATION_NAME)
-
     def report(self):
         s = None
 
         items = self.results.items()
         if len(items):
             progress = ', '.join(list(map(lambda arr: f"{arr[0]}: {str(arr[1]['commitment'])}keys", items)))
-            s = f"{self.LOCATION_NAME} | {progress}"
+            s = f"{self.FEATURE_NAME} | {progress}"
 
         return s
-
-    def run(self, *args, props=None):
-        self._apply_props(props=props)
-
-        close_popup_recursive()
-
-        self.enter()
-        self._swipe_left_border()
-
-        for i in range(len(self.slides)):
-            slide = self.slides[i]
-
-            if i > 0:
-                self._swipe_right_border()
-
-            for j in range(len(slide)):
-                _crypt = slide[j]
-                _name = _crypt['name']
-                _id = _crypt['id']
-                pixel = [_crypt['axis']['x'], _crypt['axis']['y']] + [self.RGB_FREE_CRYPT]
-
-                available = self._is_available(_name, pixel=pixel)
-                if available:
-                    log(f"Crypt is available: {_name}")
-
-                    await_click([pixel], mistake=10)
-                    sleep(1)
-
-                    stage_lvl = self._get_stage_by_id(_id)
-                    stage = self.STAGES_POSITION[stage_lvl]
-
-                    if pixel_check_new(stage, mistake=10):
-
-                        x_stage = stage[0]
-                        y_stage = stage[1]
-                        click(x_stage, y_stage)
-                        sleep(1.5)
-
-                        if dungeons_is_able():
-                            # enable "Super Raid Mode"
-                            enable_super_raid()
-
-                            # computing keys bank
-                            keys = read_keys_bank()
-                            log(f"keys: {str(keys)}")
-
-                            # computing keys cost
-                            cost = read_run_cost(scale=8)
-                            log(f"cost: {str(cost)}")
-
-                            if cost and keys:
-                                if keys >= cost:
-                                    log(f'Attacking: {_name}')
-                                    runs = math.floor(keys / cost)
-                                    log(f"runs: {str(runs)}")
-                                    expect = runs*cost
-
-                                    self._prepare_run(_name, expect=expect)
-
-                                    while not self._get_result_by_name(_name)["completed"]:
-                                        dungeons_start_battle()
-
-                                        waiting_battle_end_regular(f"{self.LOCATION_NAME} | {_name}", x=28, y=88)
-                                        sleep(1)
-
-                                        # battle has been won
-                                        if pixel_check_new(self.BATTLE_VICTORY, mistake=5):
-                                            self._save_result(name=_name, commitment=cost)
-
-                                    # click in the "Stage Selection"
-                                    dungeons_click_stage_select()
-
-                                    # going to the index page and enter to the factions again
-                                    self.enter()
-                                    self._swipe_left_border()
-                                    if i > 0:
-                                        self._swipe_right_border()
-                                else:
-                                    log(f"Stage is not available (name: {_name}, stage: {stage_lvl})")
-                            else:
-                                log("Cost or Keys are not calculated well")
-                        else:
-                            # going back one lvl upper
-                            close_popup()
-                            # fake preparation the crypt
-                            self._prepare_run(_name, expect=0)
-                            # save results for keeping it in memory
-                            self._save_result(name=_name, completed=True)
-                            log('Crypt is already attacked')
-
-        self.finish()
-        log(self.results)

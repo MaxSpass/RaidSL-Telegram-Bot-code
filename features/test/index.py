@@ -15,7 +15,10 @@ class TestFeature(Feature):
 
     def _run(self, props=None):
         counter = 0
-        while counter <= self.seconds:
+        while counter < self.seconds:
             self.log(counter)
             counter += 1
             sleep(1)
+
+    def report(self):
+        return None

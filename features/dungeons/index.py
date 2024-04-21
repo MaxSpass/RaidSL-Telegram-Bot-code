@@ -1,4 +1,5 @@
 from helpers.common import *
+from classes.Feature import Feature
 
 # when fake battle is needed
 FAKE_BATTLE = False
@@ -36,7 +37,7 @@ DUNGEON_LOCATIONS = {
 }
 
 
-class Dungeons:
+class Dungeons(Feature):
     LOCATION_NAME = 'Dungeon'
     REFILL_PAID = [440, 376, [255, 33, 51]]
 
@@ -47,7 +48,9 @@ class Dungeons:
     DUNGEON_BANK_MIN_LIMIT = 14
     DUNGEON_DIFFICULTY_DEFAULT = 'hard'
 
-    def __init__(self, props=None):
+    def __init__(self, app, props=None):
+        Feature.__init__(self, feature_name='Dungeon', app=app)
+
         self.dungeons = []
         self.results = {}
         self.current = None
@@ -61,6 +64,71 @@ class Dungeons:
         self.props = props
         # self._apply_props(props)
         # self._distribute_energy()
+
+        self.event_dispatcher.subscribe('run', self._run)
+
+    def _enter(self):
+        close_popup_recursive()
+
+        location = DUNGEON_LOCATIONS[str(self.current['id'])]
+
+        battles_click()
+        sleep(1)
+
+        # enter all dungeons
+        click(300, 300)
+
+        length = location['swipe']
+        for i in range(length):
+            # moving to the certain dungeon
+            swipe('right', 850, 400, 800, speed=.5)
+            x = location['click']['x']
+            y = location['click']['y']
+            # click on dungeon icon
+            click(x, y)
+            sleep(1)
+
+        if 'difficulty' in self.current:
+            dungeon_select_difficulty(self.current['difficulty'])
+
+        # swiping bottom
+        swipe('bottom', 500, 450, 400, speed=.5)
+
+        # @TODO Works with the last stage/floor only
+        click(850, 475)
+        # click(850, 375)
+        sleep(1)
+
+        if self.current['id'] not in DUNGEON_NO_SUPER_RAID:
+            # enable "Super Raid Mode"
+            enable_super_raid()
+
+    def _run(self, props=None):
+        if props is not None:
+            self._apply_props(props=props)
+        else:
+            self._apply_props(props=self.props)
+            # self.bank = self._get_available_energy()
+
+        self._distribute_energy()
+        self.log(f'Bank: {self.bank}')
+
+        if not self.terminate:
+            for i in range(len(self.dungeons)):
+                self._initialize(self.dungeons[i])
+                self.log(f"Starting {self.current['name']}")
+                self._enter()
+
+                cost = read_run_cost()
+                self.log(f'Energy cost: {cost}')
+
+                while self._able_attacking(cost):
+                    self.log('Start battle')
+                    self.attack()
+                    self.current['energy'] -= cost
+
+                if not FAKE_BATTLE:
+                    self._exit_location()
 
     # @TODO These responsibility must be on the different scope
     def _get_available_energy(self):
@@ -128,7 +196,7 @@ class Dungeons:
 
             if self.bank < self.DUNGEON_BANK_MIN_LIMIT:
                 self.terminate = True
-                self._log(f"Bank is critically low")
+                self.log(f"Bank is critically low")
                 return
 
             if 'refill' in props:
@@ -166,45 +234,6 @@ class Dungeons:
             return
         dungeons_start_battle()
 
-    def _log(self, message):
-        log(f"{self.LOCATION_NAME} | {message}")
-
-    def enter(self):
-        close_popup_recursive()
-
-        location = DUNGEON_LOCATIONS[str(self.current['id'])]
-
-        battles_click()
-        sleep(1)
-
-        # enter all dungeons
-        click(300, 300)
-
-        length = location['swipe']
-        for i in range(length):
-            # moving to the certain dungeon
-            swipe('right', 850, 400, 800, speed=.5)
-            x = location['click']['x']
-            y = location['click']['y']
-            # click on dungeon icon
-            click(x, y)
-            sleep(1)
-
-        if 'difficulty' in self.current:
-            dungeon_select_difficulty(self.current['difficulty'])
-
-        # swiping bottom
-        swipe('bottom', 500, 450, 400, speed=.5)
-
-        # @TODO Works with the last stage/floor only
-        click(850, 475)
-        # click(850, 375)
-        sleep(1)
-
-        if self.current['id'] not in DUNGEON_NO_SUPER_RAID:
-            # enable "Super Raid Mode"
-            enable_super_raid()
-
     def attack(self):
         skip = False
 
@@ -214,13 +243,13 @@ class Dungeons:
         ruby_button = find_needle_refill_ruby()
 
         if ruby_button is not None:
-            self._log('Free coins are NOT available')
+            self.log('Free coins are NOT available')
             if self.refill < 0:
                 await_click([self.REFILL_PAID], mistake=10)
                 self.refill -= 1
                 self._start_battle()
             else:
-                self._log('No more refill')
+                self.log('No more refill')
                 skip = True
 
         if not skip:
@@ -232,10 +261,6 @@ class Dungeons:
             result = not pixel_check_new(self.RESULT_DEFEAT, mistake=10)
             self._save_result(result)
 
-    def finish(self):
-        close_popup_recursive()
-        log('DONE - ' + self.LOCATION_NAME)
-
     def report(self):
         res = None
 
@@ -246,41 +271,10 @@ class Dungeons:
 
             if has_battles:
                 if not res:
-                    res = f'{self.LOCATION_NAME} Report'
+                    res = f'{self.FEATURE_NAME} Report'
 
                 win_rate = calculate_win_rate(value['victory'], value['defeat'])
                 line = f"\n{key} | Battles: {value['victory'] + value['defeat']}, Win rate: {win_rate}"
                 res += f"{line}"
 
         return res
-
-    def run(self, *args, props=None):
-        self.terminate = False
-
-        if props is not None:
-            self._apply_props(props=props)
-        else:
-            self._apply_props(props=self.props)
-            # self.bank = self._get_available_energy()
-
-        self._distribute_energy()
-        self._log(f'Bank: {self.bank}')
-
-        if not self.terminate:
-            for i in range(len(self.dungeons)):
-                self._initialize(self.dungeons[i])
-                self._log(f"Starting {self.current['name']}")
-                self.enter()
-
-                cost = read_run_cost()
-                self._log(f'Energy cost: {cost}')
-
-                while self._able_attacking(cost):
-                    self._log('Start battle')
-                    self.attack()
-                    self.current['energy'] -= cost
-
-                if not FAKE_BATTLE:
-                    self._exit_location()
-
-        self.finish()

@@ -1,5 +1,6 @@
 from helpers.common import *
 from constants.index import *
+from classes.Feature import Feature
 
 button_refresh = [817, 133, [22, 124, 156]]
 refill_free = [455, 380, [187, 130, 5]]
@@ -12,7 +13,7 @@ PAID_REFILL_LIMIT = 0
 OUTPUT_ITEMS_AMOUNT = 10
 
 
-class ArenaFactory:
+class ArenaFactory(Feature):
     name = None
     item_height = None
     button_locations = None
@@ -26,6 +27,7 @@ class ArenaFactory:
 
     def __init__(
             self,
+            app,
             name,
             x_axis_info,
             item_height,
@@ -35,6 +37,8 @@ class ArenaFactory:
             tiers_coordinates,
             props=None
     ):
+        Feature.__init__(self, feature_name=name, app=app)
+
         self.name = name
         self.x_axis_info = x_axis_info
         self.item_height = item_height
@@ -57,6 +61,35 @@ class ArenaFactory:
             if swipes > self.max_swipe:
                 self.max_swipe = swipes
 
+        self.event_dispatcher.subscribe('enter', self._enter)
+        self.event_dispatcher.subscribe('run', self._run)
+
+    def _enter(self):
+        click_on_progress_info()
+        click(600, self.x_axis_info)
+        sleep(1)
+
+        self.obtain()
+
+    def _run(self, props=None):
+        if props is not None:
+            self._apply_props(props=props)
+
+        if self.initial_refresh:
+            self._refresh_arena()
+            # @TODO Test
+            sleep(1)
+
+        while self.terminate is False:
+            self.attack()
+
+            last_results = self._get_last_results()
+
+            if self.terminate is False:
+                # at least one 'Defeat' or continued battles - should refresh
+                if last_results.count(False) > 0 or len(last_results) < OUTPUT_ITEMS_AMOUNT:
+                    self._refresh_arena()
+
     def _apply_props(self, props=None):
         if props is not None:
             if 'refill' in props:
@@ -65,7 +98,7 @@ class ArenaFactory:
                 self.initial_refresh = bool(props['initial_refresh'])
 
     def _refresh_arena(self):
-        log('Refreshing...')
+        self.log('Refreshing...')
         await_click([button_refresh], msg='Refresh button', mistake=10)
         sleep(1)
         for index in range(2):
@@ -73,15 +106,6 @@ class ArenaFactory:
             pyautogui.dragTo(560, 510, duration=.4)
             sleep(1.5)
         sleep(3)
-
-    def enter(self):
-        close_popup_recursive()
-
-        click_on_progress_info()
-        click(600, self.x_axis_info)
-        sleep(1)
-
-        self.obtain()
 
     def _refill(self):
         refilled = False
@@ -94,16 +118,16 @@ class ArenaFactory:
         ruby_button = find_needle_refill_ruby()
 
         if ruby_button is not None:
-            log('Free coins are NOT available')
+            self.log('Free coins are NOT available')
             if self.refill > 0:
                 self.refill -= 1
                 click_on_refill()
                 refilled = True
             else:
-                log('No more refill')
+                self.log('No more refill')
                 self.terminate = True
         elif pixels_wait([refill_free], msg='Free refill sacs', mistake=10, timeout=1, wait_limit=2)[0]:
-            log('Free coins are available')
+            self.log('Free coins are available')
             click_on_refill()
             refilled = True
 
@@ -197,9 +221,9 @@ class ArenaFactory:
             # checking - is an enemy already attacked
             is_not_attacked = len(results_local) - 1 < i
             if pixel_check_new([x, y, [187, 130, 5]]) and is_not_attacked:
-                log(self.name + ' | Attack')
+                self.log(self.name + ' | Attack')
                 # pyautogui.moveTo(x, y, 1)
-                # log(pyautogui.pixel(x, y))
+                # self.log(pyautogui.pixel(x, y))
                 # continue
                 click_on_battle()
 
@@ -207,7 +231,7 @@ class ArenaFactory:
                     click_on_battle()
 
                 if self.terminate:
-                    log('Terminated')
+                    self.log('Terminated')
                     break
 
                 click_on_start()
@@ -216,9 +240,9 @@ class ArenaFactory:
                 res = not pixel_check_new(defeat, 20)
                 results_local.append(res)
                 if res:
-                    log('VICTORY')
+                    self.log('VICTORY')
                 else:
-                    log('DEFEAT')
+                    self.log('DEFEAT')
 
                 tap_to_continue()
                 sleep(1)
@@ -237,41 +261,12 @@ class ArenaFactory:
     def report(self):
         return self._show_results(self.results, is_detailed=True)
 
-    def finish(self):
-        close_popup_recursive()
-        log('DONE - ' + self.name)
-        self._show_results(self._get_last_results())
-
-    def run(self, *args, props=None):
-        self.terminate = False
-
-        if props is not None:
-            self._apply_props(props=props)
-
-        self.enter()
-
-        if self.initial_refresh:
-            self._refresh_arena()
-            # @TODO Test
-            sleep(1)
-
-        while self.terminate is False:
-            self.attack()
-
-            last_results = self._get_last_results()
-
-            if self.terminate is False:
-                # at least one 'Defeat' or continued battles - should refresh
-                if last_results.count(False) > 0 or len(last_results) < OUTPUT_ITEMS_AMOUNT:
-                    self._refresh_arena()
-
-        self.finish()
-
 
 class ArenaClassic(ArenaFactory):
-    def __init__(self, props=None):
+    def __init__(self, app, props=None):
         ArenaFactory.__init__(
             self,
+            app=app,
             name='Classic Arena',
             x_axis_info=95,
             item_height=CLASSIC_ITEM_HEIGHT,
@@ -284,9 +279,10 @@ class ArenaClassic(ArenaFactory):
 
 
 class ArenaTag(ArenaFactory):
-    def __init__(self, props=None):
+    def __init__(self, app, props=None):
         ArenaFactory.__init__(
             self,
+            app=app,
             name='Tag Arena',
             x_axis_info=135,
             item_height=TAG_ITEM_HEIGHT,

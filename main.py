@@ -28,6 +28,7 @@ else:
     # @TODO Should be in the env file
     pytesseract.pytesseract.tesseract_cmd = os.path.normpath(r'C:\Program Files (x86)\Tesseract-OCR\tesseract.exe')
 
+
 def main():
     # print(str(np.array([1,2,3], dtype=object)))
     # return
@@ -128,26 +129,15 @@ def main():
                 # register addition commands according to 'presets'
                 presets_commands = []
                 if len(app.config['presets']):
-                    # presets_commands = list(map(lambda preset: {
-                    #     'command': make_command_key(f"preset {preset['name']}"),
-                    #     'description': f"commands in a row: {', '.join(preset['commands'])}",
-                    #     'handler': app.task(
-                    #         name=make_command_key(f"preset {preset['name']}"),
-                    #         cb=lambda *args: list(map(lambda x: app.get_entry(
-                    #             command_name=x
-                    #         )['instance'].run(*args), preset['commands']))
-                    #     ),
-                    # }, app.config['presets']))
-
-                    # @TODO Test
                     def process_preset_commands(upd, ctx, preset):
                         for i in range(len(preset['commands'])):
                             command = preset['commands'][i]
                             cb = app.get_entry(command_name=command)['instance'].run
                             app.task(
-                                name=make_command_key(f"preset {preset['name']}"),
+                                name=command,
                                 cb=cb
                             )(upd, ctx)
+                        return None
 
                     presets_commands = list(map(lambda preset: {
                         'command': make_command_key(f"preset {preset['name']}"),

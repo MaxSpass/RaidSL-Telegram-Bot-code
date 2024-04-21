@@ -23,6 +23,7 @@ class DoomTower(Feature):
 
     def __init__(self, app, props=None):
         Feature.__init__(self, feature_name='Doom Tower', app=app)
+
         self.bosses = []
         self.keys_golden = 0
         self.keys_silver = 0
@@ -30,7 +31,6 @@ class DoomTower(Feature):
         self.results = {'bosses': 0}
 
         self.event_dispatcher.subscribe('enter', self._enter)
-        self.event_dispatcher.subscribe('finish', self._finish)
         self.event_dispatcher.subscribe('run', self._run)
 
         self.apply_props(props=props)
@@ -44,9 +44,6 @@ class DoomTower(Feature):
         # mistake=200 for ignoring different backgrounds
         dungeon_select_difficulty('hard', mistake=200)
         sleep(5)
-
-    def _finish(self):
-        dungeons_click_stage_select()
 
     def _run(self, props=None):
         self._read_keys()
@@ -127,3 +124,5 @@ class DoomTower(Feature):
                     if res:
                         self.keys_silver -= cost
                         self.results['bosses'] += cost
+
+                dungeons_click_stage_select()

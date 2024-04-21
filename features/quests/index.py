@@ -114,6 +114,7 @@ hero_filter = HeroFilter({
 class Quests(Feature):
     def __init__(self, app, props=None):
         Feature.__init__(self, feature_name='Quests', app=app)
+
         self.results = []
         self.event_dispatcher.subscribe('enter', self._enter)
         self.event_dispatcher.subscribe('finish', self._finish)
@@ -126,7 +127,7 @@ class Quests(Feature):
             click(160, 110)
             sleep(1.5)
 
-    def _finish(self):
+    def _finish(self, *args):
         rewards = self.app.entries['rewards']['instance'] \
             if 'rewards' in self.app.entries else None
 
