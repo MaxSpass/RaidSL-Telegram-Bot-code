@@ -1,5 +1,5 @@
 from classes.EventDispatcher import EventDispatcher
-from helpers.common import close_popup_recursive
+from helpers.common import close_popup_recursive, log
 from datetime import datetime
 
 class Feature:
@@ -18,7 +18,7 @@ class Feature:
         })
 
     def log(self, msg):
-        print(f'{self.FEATURE_NAME} | {msg}')
+        log(f'{self.FEATURE_NAME} | {msg}')
         self.event_dispatcher.publish('log')
 
     def enter(self):
