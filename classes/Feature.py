@@ -1,24 +1,24 @@
 from classes.EventDispatcher import EventDispatcher
+from classes.Duration import Duration
 from helpers.common import close_popup_recursive, log
-from datetime import datetime
+
 
 class Feature:
-    def __init__(self, feature_name, app):
-        self.FEATURE_NAME = feature_name
+    def __init__(self, name, app):
+        self.NAME = name
         self.app = app
         self.update = None
         self.context = None
         self.terminate = False
         self.event_dispatcher = EventDispatcher()
-
-        self.start_time = None
+        self.duration = Duration()
 
         self.event_dispatcher.subscribe('finish', lambda data, *args: {
-            self.update.message.reply_text(f"Done: {self.FEATURE_NAME} | Duration: {data['duration']}")
+            self.update.message.reply_text(f"Done: {self.NAME} | Duration: {data['duration']}")
         })
 
     def log(self, msg):
-        log(f'{self.FEATURE_NAME} | {msg}')
+        log(f'{self.NAME} | {msg}')
         self.event_dispatcher.publish('log')
 
     def enter(self):
@@ -27,17 +27,20 @@ class Feature:
 
     def finish(self):
         close_popup_recursive()
-        duration = str(datetime.now() - self.start_time).split('.')[0]
-        self.log(f"Done: {self.FEATURE_NAME}")
-        self.event_dispatcher.publish('finish', {'duration': duration})
-
+        self.duration.update(variant='end')
+        self.log(f"Done: {self.NAME}")
+        
+        self.event_dispatcher.publish('finish', {
+            'duration': self.duration.get_last()
+        })
 
     def run(self, upd, ctx, *args):
         self.terminate = False
         self.update = upd
         self.context = ctx
 
-        self.start_time = datetime.now()
+        self.duration.create()
+        self.duration.update(variant='start')
 
         self.enter()
         self.event_dispatcher.publish('run', *args)
