@@ -1,12 +1,24 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 class Duration:
     def __init__(self):
         self.durations = []
 
-    def _get(self, start, end):
-        return str(end - start).split('.')[0]
+    def _format(self, duration):
+        return str(duration).split('.')[0]
+
+    def get_last(self):
+        last = self.durations[len(self.durations) - 1]
+        return self._format(timedelta() + last['end'] - last['start'])
+
+    def get_total(self):
+        total_duration = timedelta()
+        for item in self.durations:
+            if 'start' in item and 'end' in item:
+                total_duration += item['end'] - item['start']
+
+        return self._format(total_duration)
 
     def _update(self, variant, duration=None):
         # variant = start | end
@@ -16,19 +28,6 @@ class Duration:
 
     def _create(self):
         self.durations.append({})
-
-    def get_last(self):
-        last = self.durations[len(self.durations) - 1]
-        start = last['start']
-        end = last['end']
-        return self._get(start, end)
-
-    def get_total(self):
-        first = self.durations[0]
-        last = self.durations[len(self.durations) - 1]
-        start = first['start']
-        end = last['end']
-        return self._get(start, end)
 
     def start(self):
         self._create()
