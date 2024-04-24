@@ -46,21 +46,6 @@ INSTANCES_MAP = {
     'test_feature': TestFeature,
 }
 
-INSTANCES_WITH_FEATURE = [
-    'arena_live',
-    'arena_classic',
-    'arena_tag',
-    'demon_lord',
-    'hydra',
-    'dungeon',
-    'faction_wars',
-    'iron_twins',
-    'daily_quests',
-    'rewards',
-    'doom_tower',
-    'test_feature',
-]
-
 # EMULATE_NETWORK_ERROR = False
 
 def find_process_by_name(name):
@@ -239,15 +224,9 @@ class App:
                         if _task in INSTANCES_MAP:
                             # @TODO should take from memory later on
 
-                            # @TODO Temp
-                            if _task in INSTANCES_WITH_FEATURE:
-                                self.entries[_command] = {
-                                    'instance': INSTANCES_MAP[_task](app=self, props=_props),
-                                }
-                            else:
-                                self.entries[_command] = {
-                                    'instance': INSTANCES_MAP[_task](props=_props),
-                                }
+                            self.entries[_command] = {
+                                'instance': INSTANCES_MAP[_task](app=self, props=_props),
+                            }
                         else:
                             raise f"No {_task} among all instances"
                     else:
