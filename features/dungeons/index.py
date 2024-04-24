@@ -38,23 +38,21 @@ DUNGEON_LOCATIONS = {
 
 
 class Dungeons(Feature):
-    LOCATION_NAME = 'Dungeon'
     REFILL_PAID = [440, 376, [255, 33, 51]]
 
     RESULT_VICTORY = [450, 40, [15, 121, 182]]
     RESULT_DEFEAT = [450, 40, [178, 23, 38]]
 
     # @TODO Rework
-    DUNGEON_BANK_MIN_LIMIT = 14
+    DUNGEON_BANK_MIN_LIMIT = 20
     DUNGEON_DIFFICULTY_DEFAULT = 'hard'
 
     def __init__(self, app, props=None):
-        Feature.__init__(self, name='Dungeon', app=app)
+        Feature.__init__(self, name='Dungeon', app=app, report_predicate=self._report)
 
         self.dungeons = []
         self.results = {}
         self.current = None
-        self.terminate = False
 
         self.bank = 0
         self.refill = 0
@@ -67,9 +65,22 @@ class Dungeons(Feature):
 
         self.event_dispatcher.subscribe('run', self._run)
 
-    def _enter(self):
-        close_popup_recursive()
+    def _report(self):
+        res_list = []
 
+        for _id, value in self.results.items():
+            j, dungeon = find(DUNGEON_DATA, lambda x: x['id'] == _id)
+            key = dungeon['name'] if dungeon else _id
+            has_battles = bool(value['victory'] + value['defeat'])
+
+            if has_battles:
+                res_list.append(f"Location: {key}")
+                res_list.append(f"Battles: {value['victory'] + value['defeat']}")
+                res_list.append(f"Win rate: {calculate_win_rate(value['victory'], value['defeat'])}")
+
+        return res_list
+
+    def _enter(self):
         location = DUNGEON_LOCATIONS[str(self.current['id'])]
 
         battles_click()
@@ -260,21 +271,3 @@ class Dungeons(Feature):
 
             result = not pixel_check_new(self.RESULT_DEFEAT, mistake=10)
             self._save_result(result)
-
-    def report(self):
-        res = None
-
-        for _id, value in self.results.items():
-            j, dungeon = find(DUNGEON_DATA, lambda x: x['id'] == _id)
-            key = dungeon['name'] if dungeon else _id
-            has_battles = value['victory'] + value['defeat'] > 0
-
-            if has_battles:
-                if not res:
-                    res = f'{self.NAME} Report'
-
-                win_rate = calculate_win_rate(value['victory'], value['defeat'])
-                line = f"\n{key} | Battles: {value['victory'] + value['defeat']}, Win rate: {win_rate}"
-                res += f"{line}"
-
-        return res

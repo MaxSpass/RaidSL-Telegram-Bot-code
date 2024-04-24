@@ -8,7 +8,7 @@ class IronTwins(Feature):
     RESULT_DEFEAT = [450, 40, [178, 23, 38]]
 
     def __init__(self, app, props=None):
-        Feature.__init__(self, name='Iron Twins Fortress', app=app)
+        Feature.__init__(self, name='Iron Twins Fortress', app=app, report_predicate=self._report)
 
         self.results = []
         self.keys = TWIN_KEYS_LIMIT
@@ -17,6 +17,15 @@ class IronTwins(Feature):
 
         self.event_dispatcher.subscribe('enter', self._enter)
         self.event_dispatcher.subscribe('run', self._run)
+
+    def _report(self):
+        res_list = []
+
+        if len(self.results):
+            res_list.append(f"Used: {str(self.results.count(True))} keys")
+            res_list.append(f"Attempts: {str(len(self.results))} keys")
+
+        return res_list
 
     def _enter(self):
         click_on_progress_info()
@@ -75,12 +84,3 @@ class IronTwins(Feature):
         # @TODO Test
         if not self.terminate:
             dungeons_click_stage_select()
-
-    def report(self):
-        s = None
-
-        if len(self.results):
-            s = self.NAME + ' | Completed ' + str(self.results.count(True)) + ' keys in ' + str(
-                len(self.results)) + ' attempts '
-
-        return s

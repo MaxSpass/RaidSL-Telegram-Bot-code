@@ -37,7 +37,7 @@ class ArenaFactory(Feature):
             tiers_coordinates,
             props=None
     ):
-        Feature.__init__(self, name=name, app=app)
+        Feature.__init__(self, name=name, app=app, report_predicate=self._report)
 
         self.name = name
         self.x_axis_info = x_axis_info
@@ -51,7 +51,6 @@ class ArenaFactory(Feature):
         self.initial_refresh = False
         self.max_swipe = 0
         self.results = []
-        self.terminate = False
 
         self._apply_props(props=props)
 
@@ -64,6 +63,17 @@ class ArenaFactory(Feature):
         self.event_dispatcher.subscribe('enter', self._enter)
         self.event_dispatcher.subscribe('run', self._run)
 
+    def _report(self):
+        res_list = []
+        if len(self.results):
+            flatten_list = flatten(self.results)
+            w = flatten_list.count(True)
+            l = flatten_list.count(False)
+            res_list.append(f"Battles: {str(len(flatten_list))}")
+            res_list.append(f"Win rate: {calculate_win_rate(w, l)}")
+
+        return res_list
+
     def _enter(self):
         click_on_progress_info()
         click(600, self.x_axis_info)
@@ -72,7 +82,7 @@ class ArenaFactory(Feature):
         self.obtain()
 
     def _run(self, props=None):
-        # for i in range(3):
+        # for i in range(2):
         #     sleep(1)
         # return
         if props is not None:
@@ -92,9 +102,6 @@ class ArenaFactory(Feature):
                 # at least one 'Defeat' or continued battles - should refresh
                 if last_results.count(False) > 0 or len(last_results) < OUTPUT_ITEMS_AMOUNT:
                     self._refresh_arena()
-
-    def report(self):
-        return self._show_results(self.results, is_detailed=True)
 
     def _apply_props(self, props=None):
         if props is not None:
@@ -147,25 +154,6 @@ class ArenaFactory(Feature):
             return [self.results[len(self.results) - 1]]
         else:
             return self.results
-
-    def _show_results(self, results, is_detailed=False):
-        s = None
-        if len(results):
-            flatten_list = flatten(results)
-            w = flatten_list.count(True)
-            l = flatten_list.count(False)
-
-            if is_detailed:
-                t = w + l
-                wr = w * 100 / t
-                wr_str = str(round(wr)) + '%'
-                # lr = 100 - wr
-                # lr_str = str(round(lr)) + '%'
-                s = self.name + ' | ' + 'Battles: ' + str(len(flatten_list)) + ' | ' + 'Win rate: ' + wr_str
-            else:
-                s = 'Won: ' + str(w) + ' | Lost: ' + str(l)
-
-        return s
 
     def obtain(self):
         x = self.tiers_coordinates[0]

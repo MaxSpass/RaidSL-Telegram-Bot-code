@@ -15,7 +15,7 @@ DEMON_LORD_DAMAGE_REGION = axis_to_region(184, 150, 687, 202)
 # @TODO Refactor
 class DemonLord(Feature):
     def __init__(self, app, props=None):
-        Feature.__init__(self, name='Demon Lord', app=app)
+        Feature.__init__(self, name='Demon Lord', app=app, report_predicate=self._report)
 
         self.results = {
             'obtained': [],
@@ -30,6 +30,16 @@ class DemonLord(Feature):
 
         self.event_dispatcher.subscribe('enter', self._enter)
         self.event_dispatcher.subscribe('run', self._run)
+
+    def _report(self):
+        res_list = []
+
+        if len(self.results['obtained']):
+            res_list.append(f"Obtained: {','.join(self.results['obtained'])}")
+        if len(self.results['attacked']):
+            res_list.append(f"Attacked: {','.join(self.results['attacked'])}")
+
+        return res_list
 
     def _enter(self):
         # moving to the Demon Lord
@@ -121,17 +131,3 @@ class DemonLord(Feature):
                 # removing already attacked Demon Lord from the array
                 self.stages.remove(stage)
                 self.results['attacked'].append(str(stage))
-
-    def report(self):
-        s = None
-        has_obtained = len(self.results['obtained'])
-        has_attacked = len(self.results['attacked'])
-
-        if has_obtained or has_attacked:
-            s = 'Demon Lord'
-            if has_obtained:
-                s += ' | Obtained: ' + ','.join(self.results['obtained'])
-            if has_attacked:
-                s += ' | Attacked: ' + ','.join(self.results['attacked'])
-
-        return s

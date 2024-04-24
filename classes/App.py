@@ -295,12 +295,9 @@ class App:
             for i in range(len(reports)):
                 report = reports[i]
                 if report:
-                    res += f'{report}\n'
+                    res += f'{report}\n\n'
 
-        if res:
-            log(res)
-
-        return res
+        return res or "No reports yet"
 
     def kill(self, *args):
         log('App is terminated')

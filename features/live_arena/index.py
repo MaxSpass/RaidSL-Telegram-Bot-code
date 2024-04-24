@@ -38,7 +38,8 @@ stage_2 = [460, 330, [72, 60, 77]]
 stage_3 = [460, 330, [72, 87, 77]]
 
 turn_to_pick = [461, 245, [149, 242, 255]]
-not_available = [321, 421, [167, 49, 56]]
+status_active = [320, 420, [50, 165, 42]]
+status_not_active = [320, 420, [165, 45, 52]]
 
 # the white 'Clock' in the left-top corner
 finish_battle = [21, 46, [255, 255, 255]]
@@ -83,13 +84,12 @@ class ArenaLive(Feature):
     y_find_opponent = 460
 
     def __init__(self, app, props=None):
-        Feature.__init__(self, name='Live Arena', app=app)
+        Feature.__init__(self, name='Live Arena', app=app, report_predicate=self._report)
 
         self.results = []
         self.team = []
         self.pool = []
         self.leaders = []
-        self.terminate = False
         self.refill = PAID_REFILL_LIMIT
         self.battles_counter = 0
 
@@ -99,6 +99,17 @@ class ArenaLive(Feature):
         self.event_dispatcher.subscribe('enter', self._enter)
         self.event_dispatcher.subscribe('run', self._run)
 
+    def _report(self):
+        res_list = []
+        t = len(self.results)
+        if t:
+            v = self.results.count(True)
+            d = t - v
+            res_list.append('Battles: ' + str(t))
+            res_list.append('Win rate: ' + calculate_win_rate(v, d))
+
+        return res_list
+
     def _enter(self):
         click_on_progress_info()
         # live arena
@@ -106,15 +117,11 @@ class ArenaLive(Feature):
         sleep(3)
 
     def _run(self, props=None):
-        self.terminate = False
-
         if props is not None:
             self._apply_props(props=props)
 
-        # ideally to replace red by green color
-        is_disabled = pixel_check_new([320, 420, [165, 45, 52]], mistake=20)
-
-        if not is_disabled:
+        is_active = pixel_check_new(status_active, mistake=20)
+        if is_active:
             self.log('Active')
             has_pool = bool(len(self.pool))
             if has_pool:
@@ -184,7 +191,7 @@ class ArenaLive(Feature):
         sleep(1)
 
     def _is_available(self):
-        if pixel_check_new(not_available, mistake=20):
+        if pixel_check_new(status_not_active, mistake=20):
             self.terminate = True
 
         return not self.terminate
@@ -417,17 +424,6 @@ class ArenaLive(Feature):
         sleep(1)
         click(return_start_panel[0], return_start_panel[1])
         sleep(3)
-
-    def report(self):
-        s = None
-        if len(self.results):
-            w = self.results.count(True)
-            t = len(self.results)
-            wr = w * 100 / t
-            wr_str = str(round(wr)) + '%'
-            s = 'Battles: ' + str(len(self.results)) + ' | ' + 'Win rate: ' + wr_str
-
-        return s
 
     def check_availability(self):
         # @TODO Finish

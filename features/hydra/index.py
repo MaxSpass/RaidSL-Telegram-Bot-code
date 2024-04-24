@@ -91,7 +91,7 @@ hero_preset = HeroPreset()
 
 class Hydra(Feature):
     def __init__(self, app, props=None):
-        Feature.__init__(self, name='Hydra', app=app)
+        Feature.__init__(self, name='Hydra', app=app, report_predicate=self._report)
 
         self.runs = []
         self.runs_limit = DEFAULT_RUNS_LIMIT
@@ -104,6 +104,22 @@ class Hydra(Feature):
 
         self.event_dispatcher.subscribe('enter', self._enter)
         self.event_dispatcher.subscribe('run', self._run)
+
+    def _report(self):
+        res_list = []
+        for key, value in self.results.items():
+            part_1 = f'{key} hydra | {value["keys"]} keys used'
+            part_2 = f'{value["damage"]}M dd in {value["counter"]} attempts'
+            part_3 = ''
+
+            if len(value["results"]):
+                avg = round(sum(value["results"]) / len(value["results"]), 2)
+                part_3 = f'Results: {value["results"]}, Avg: {avg}M'
+
+            line = f"{part_1} | {part_2} | {part_3} \n"
+            res_list.append(line)
+
+        return res_list
 
     def _enter(self):
         click_on_progress_info()
@@ -327,24 +343,6 @@ class Hydra(Feature):
                 if limit > DEFAULT_RUNS_LIMIT_MAX:
                     limit = DEFAULT_RUNS_LIMIT_MAX
                 self.runs_limit = limit
-
-    def report(self):
-        res = None
-        for key, value in self.results.items():
-            if res is None:
-                res = 'Hydra Report\n'
-
-            line_1 = f'{key} hydra | {value["keys"]} keys used'
-            line_2 = f'{value["damage"]}M dd in {value["counter"]} attempts'
-            line_3 = ''
-
-            if len(value["results"]):
-                avg = round(sum(value["results"]) / len(value["results"]), 2)
-                line_3 = f'Results: {value["results"]}, Avg: {avg}M'
-
-            res += line_1 + ' | ' + line_2 + ' | ' + line_3 + '\n'
-
-        return res
 
     def scan(self):
         self.log('Scanning all heads...')

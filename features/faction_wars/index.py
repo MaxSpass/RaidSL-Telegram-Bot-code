@@ -71,7 +71,7 @@ class FactionWars(Feature):
     }
 
     def __init__(self, app, props=None):
-        Feature.__init__(self, name='Faction Wars', app=app)
+        Feature.__init__(self, name='Faction Wars', app=app, report_predicate=self._report)
 
         self.results = {}
         self.crypts = self._prepare_crypts()
@@ -85,6 +85,15 @@ class FactionWars(Feature):
 
         self._apply_props(props=props)
 
+    def _report(self):
+        res_list = []
+        items = self.results.items()
+        if len(items):
+            progress = '\n'.join(list(map(lambda arr: f"{arr[0]}: {str(arr[1]['commitment'])}keys", items)))
+            res_list.append(progress)
+
+        return res_list
+
     def _enter(self):
         click_on_progress_info()
 
@@ -93,8 +102,6 @@ class FactionWars(Feature):
         sleep(1)
 
     def _run(self, props=None):
-        # close_popup_recursive()
-
         self._apply_props(props=props)
         self._swipe_left_border()
 
@@ -235,13 +242,3 @@ class FactionWars(Feature):
     def _swipe_right_border(self, times=2):
         for k in range(times):
             swipe('right', 850, 200, 690, speed=1)
-
-    def report(self):
-        s = None
-
-        items = self.results.items()
-        if len(items):
-            progress = ', '.join(list(map(lambda arr: f"{arr[0]}: {str(arr[1]['commitment'])}keys", items)))
-            s = f"{self.NAME} | {progress}"
-
-        return s

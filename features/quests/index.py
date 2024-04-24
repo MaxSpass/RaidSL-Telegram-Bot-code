@@ -113,12 +113,20 @@ hero_filter = HeroFilter({
 
 class Quests(Feature):
     def __init__(self, app, props=None):
-        Feature.__init__(self, name='Quests', app=app)
+        Feature.__init__(self, name='Quests', app=app, report_predicate=self._report)
 
         self.results = []
         self.event_dispatcher.subscribe('enter', self._enter)
         self.event_dispatcher.subscribe('finish', self._finish)
         self.event_dispatcher.subscribe('run', self._run)
+
+    def _report(self):
+        res_list = []
+
+        if len(self.results):
+            res_list.append(f"Completed Daily quest IDs: {str(np.array(self.results, dtype=object))}")
+
+        return res_list
 
     def _enter(self):
         if await_click(pixels=[[258, 494, [222, 185, 103]]], msg=self.NAME, mistake=10)[0]:
@@ -766,11 +774,3 @@ class Quests(Feature):
                 break
 
         return list(map(lambda s: self._get_daily_quest_id_by_text(s), quests_texts))
-
-    def report(self):
-        res = None
-
-        if len(self.results):
-            res = f'{self.NAME} | Completed Daily quest IDs: {str(np.array(self.results, dtype=object))}'
-
-        return res

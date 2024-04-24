@@ -22,7 +22,7 @@ class DoomTower(Feature):
     STAGE_ENTER = [890, 200, [93, 25, 27]]
 
     def __init__(self, app, props=None):
-        Feature.__init__(self, name='Doom Tower', app=app)
+        Feature.__init__(self, name='Doom Tower', app=app, report_predicate=self._report)
 
         self.bosses = []
         self.keys_golden = 0
@@ -34,6 +34,14 @@ class DoomTower(Feature):
         self.event_dispatcher.subscribe('run', self._run)
 
         self.apply_props(props=props)
+
+    def _report(self):
+        res_list = []
+
+        if self.results['bosses'] > 0:
+            res_list.append(f"Boss Commitment: {str(self.results['bosses'])}")
+
+        return res_list
 
     def _enter(self):
         click_on_progress_info()
@@ -99,14 +107,6 @@ class DoomTower(Feature):
                 if position:
                     break
         return position
-
-    def report(self):
-        res = None
-
-        if self.results['bosses'] > 0:
-            res = f"{self.NAME} | Commitment: {str(self.results['bosses'])}"
-
-        return res
 
     def attack(self, x, y):
         self.log("Attacking")

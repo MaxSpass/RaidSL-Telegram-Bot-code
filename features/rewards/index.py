@@ -38,7 +38,7 @@ QUESTS_TABS = [
 
 class Rewards(Feature):
     def __init__(self, app, props=None):
-        Feature.__init__(self, name='Rewards', app=app)
+        Feature.__init__(self, name='Rewards', app=app, report_predicate=self._report)
 
         self.results = {
             'regular_quests': {
@@ -52,6 +52,17 @@ class Rewards(Feature):
         }
 
         self.event_dispatcher.subscribe('run', self._run)
+
+    def _report(self):
+        res_list = []
+        t1 = self.results['regular_quests']['total']
+        t2 = self.results['play_time']['total']
+        total = t1 + t2
+
+        if total > 0:
+            res_list.append(f"Obtained: {str(total)}")
+
+        return res_list
 
     def _run(self, props=None):
         self.quests_run()
@@ -188,14 +199,3 @@ class Rewards(Feature):
                             click(x_collect, y_collect)
 
         close_popup_recursive()
-
-    def report(self):
-        s = None
-        t1 = self.results['regular_quests']['total']
-        t2 = self.results['play_time']['total']
-        total = t1 + t2
-
-        if total > 0:
-            s = 'Rewards | Total obtained: ' + str(total)
-
-        return s

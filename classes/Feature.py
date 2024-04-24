@@ -14,19 +14,21 @@ class Feature:
         self.completed = False
         self.event_dispatcher = EventDispatcher()
         self.duration = Duration()
+        self.run_counter = 0
 
-        self.event_dispatcher.subscribe('finish', lambda data, *args: {
-            self.update.message.reply_text(f"Done: {self.NAME} | Duration: {data['duration']}")
-        })
+    def report(self):
+        report_list = self.report_predicate() if self.report_predicate else []
 
-    # def report(self):
-    #     report = self.report_predicate() if self.report_predicate else None
-    #     if report:
-    #         if len(self.duration.durations):
-    #             report += f"\nDuration: {self.duration.get_last()}"
-    #
-    #     return report
+        if len(self.duration.durations):
+            report_list.append(f"Duration: {self.duration.get_total()}")
 
+        if self.run_counter:
+            report_list.append(f"Run counter: {str(self.run_counter)}")
+
+        if len(report_list):
+            report_list = [f"***{self.NAME}***"] + report_list
+
+        return '\n'.join(report_list)
 
     def log(self, msg):
         log(f'{self.NAME} | {msg}')
@@ -39,11 +41,10 @@ class Feature:
     def finish(self):
         close_popup_recursive()
         self.duration.end()
-        self.log(f"Done: {self.NAME}")
-        
-        self.event_dispatcher.publish('finish', {
-            'duration': self.duration.get_last()
-        })
+        message_done = f"Done: {self.NAME} | Duration: {self.duration.get_last()}"
+
+        self.log(message_done)
+        self.update.message.reply_text(message_done)
 
     def run(self, upd, ctx, *args):
         self.terminate = False
@@ -51,6 +52,7 @@ class Feature:
         self.context = ctx
 
         if not self.completed:
+            self.run_counter += 1
             self.duration.start()
 
             self.enter()
