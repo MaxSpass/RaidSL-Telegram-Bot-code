@@ -4,6 +4,7 @@ import copy
 
 from helpers.time_mgr import *
 from features.hero_filter.index import *
+from classes.Feature import Feature
 
 time_mgr = TimeMgr()
 hero_filter = HeroFilter()
@@ -75,13 +76,15 @@ rewards_pixels = [
 
 
 # Requires: checking amount of keys
-class ArenaLive:
+class ArenaLive(Feature):
     x_config = 600
     y_config = 175
     x_find_opponent = 500
     y_find_opponent = 460
 
-    def __init__(self, props=None):
+    def __init__(self, app, props=None):
+        Feature.__init__(self, name='Live Arena', app=app)
+
         self.results = []
         self.team = []
         self.pool = []
@@ -92,6 +95,48 @@ class ArenaLive:
 
         if props is not None:
             self._apply_props(props=props)
+
+        self.event_dispatcher.subscribe('enter', self._enter)
+        self.event_dispatcher.subscribe('run', self._run)
+
+    def _enter(self):
+        click_on_progress_info()
+        # live arena
+        click(self.x_config, self.y_config)
+        sleep(3)
+
+    def _run(self, props=None):
+        self.terminate = False
+
+        if props is not None:
+            self._apply_props(props=props)
+
+        # ideally to replace red by green color
+        is_disabled = pixel_check_new([320, 420, [165, 45, 52]], mistake=20)
+
+        if not is_disabled:
+            self.log('Active')
+            has_pool = bool(len(self.pool))
+            if has_pool:
+                self.obtain()
+
+                while self._is_available():
+                    self._claim_free_refill_coins()
+                    self._claim_chest()
+
+                    if self._refill():
+                        break
+
+                    self.battles_counter += 1
+                    self.attack()
+
+                self.obtain()
+
+            else:
+                self.log("Terminated | The 'pool' property is NOT specified")
+        else:
+            self.log('NOT Active')
+            close_popup_recursive()
 
     def _apply_props(self, props):
         if 'pool' in props:
@@ -139,21 +184,21 @@ class ArenaLive:
         sleep(1)
 
     def _is_available(self):
-        if pixel_check_new(not_available):
+        if pixel_check_new(not_available, mistake=20):
             self.terminate = True
 
         return not self.terminate
 
     def _save_result(self, result):
         self.results.append(result)
-        s = 'Live Arena | '
+        s = ''
 
         if result:
             s += 'WIN'
         else:
             s += 'DEFEAT'
 
-        log(s)
+        self.log(s)
 
     def _refill(self):
         self._click_on_find_opponent()
@@ -162,7 +207,7 @@ class ArenaLive:
         ruby_button = find_needle_refill_ruby()
 
         if ruby_button is not None:
-            log('Free coins are NOT available')
+            self.log('Free coins are NOT available')
             if self.refill > 0:
                 # wait and click on refill_paid
                 click(refill_paid[0], refill_paid[1])
@@ -170,24 +215,16 @@ class ArenaLive:
                 self.refill -= 1
                 self._click_on_find_opponent()
             else:
-                log('No more refill')
+                self.log('No more refill')
                 self.terminate = True
         elif pixels_wait([refill_free], msg='Free refill sacs', mistake=10, timeout=1, wait_limit=2)[0]:
-            log('Free coins are available')
+            self.log('Free coins are available')
             # wait and click on refill_free
             click(refill_free[0], refill_free[1])
             sleep(2)
             self._click_on_find_opponent()
 
         return self.terminate
-
-    def enter(self):
-        go_index_page()
-
-        click_on_progress_info()
-        # live arena
-        click(self.x_config, self.y_config)
-        sleep(3)
 
     def obtain(self):
         for i in range(len(rewards_pixels)):
@@ -201,7 +238,7 @@ class ArenaLive:
 
     def attack(self):
         sorted_pool = copy.deepcopy(self.pool)
-        log('Live Arena | Attack | Pool Length: ' + str(len(sorted_pool)))
+        self.log('Attack | Pool Length: ' + str(len(sorted_pool)))
         team = []
         leaders = []
         slots_counter = 0
@@ -215,7 +252,7 @@ class ArenaLive:
             hero_filter.close()
 
         def find_character(role=None):
-            log(f'Current pool length: {len(sorted_pool)}')
+            self.log(f'Current pool length: {len(sorted_pool)}')
             if role is None:
                 role = sorted_pool[0]['role']
 
@@ -273,15 +310,15 @@ class ArenaLive:
             else:
                 opponent_found = True
 
-        log('Live Arena | Starts battle: ' + str(self.battles_counter))
+        self.log('Starts battle: ' + str(self.battles_counter))
         pattern = ARCHIVE_PATTERN_FIRST[:]
         if start_pixels[1]:
-            log("I'm first")
+            self.log("I'm first")
         elif start_pixels[2]:
-            log("I'm second")
+            self.log("I'm second")
             pattern.reverse()
 
-        log(pattern)
+        self.log(pattern)
 
         if pixels_wait(
                 [stage_1],
@@ -306,7 +343,7 @@ class ArenaLive:
                         unit = find_character()
                         team.append(unit['name'])
                         sleep(.1)
-                        log(f"Picked: {unit['name']}")
+                        self.log(f"Picked: {unit['name']}")
                         slots_counter += 1
 
                     self._confirm()
@@ -388,13 +425,9 @@ class ArenaLive:
             t = len(self.results)
             wr = w * 100 / t
             wr_str = str(round(wr)) + '%'
-            s = 'Live Arena | Battles: ' + str(len(self.results)) + ' | ' + 'Win rate: ' + wr_str
+            s = 'Battles: ' + str(len(self.results)) + ' | ' + 'Win rate: ' + wr_str
 
         return s
-
-    def finish(self):
-        go_index_page()
-        log('Live Arena | Finish')
 
     def check_availability(self):
         # @TODO Finish
@@ -414,41 +447,3 @@ class ArenaLive:
         hour = parsed_time['hour']
         hour = 14
         pause.until(datetime(year, month, day, hour, 1, 0, tzinfo=timezone.utc))
-
-    def run(self, *args, props=None):
-        self.terminate = False
-        # self.check_availability()
-
-        # required
-        close_popup_recursive()
-
-        if props is not None:
-            self._apply_props(props=props)
-
-        is_active = pixel_check_new([822, 472, [41, 162, 33]], mistake=10)
-
-        if not is_active:
-            log('Live Arena | NOT Active')
-            go_index_page()
-
-        has_pool = bool(len(self.pool))
-        if not has_pool:
-            log('Live Arena is Terminated | The POOL is NOT specified')
-
-        if has_pool and is_active:
-            log('Live Arena | Active')
-            self.enter()
-            self.obtain()
-
-            while self._is_available():
-                self._claim_free_refill_coins()
-                self._claim_chest()
-
-                if self._refill():
-                    break
-
-                self.battles_counter += 1
-                self.attack()
-
-            self.obtain()
-            self.finish()

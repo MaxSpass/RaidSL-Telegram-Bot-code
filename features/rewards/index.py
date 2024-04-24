@@ -1,4 +1,5 @@
 from helpers.common import *
+from classes.Feature import Feature
 
 red_dot_region = axis_to_region(170, 170, 790, 360)
 
@@ -35,9 +36,10 @@ QUESTS_TABS = [
 ]
 
 
-class Rewards:
-    NAME = 'Rewards'
-    def __init__(self, props=None):
+class Rewards(Feature):
+    def __init__(self, app, props=None):
+        Feature.__init__(self, name='Rewards', app=app)
+
         self.results = {
             'regular_quests': {
                 'name': 'Regular Quests',
@@ -49,12 +51,13 @@ class Rewards:
             }
         }
 
-    def finish(self, quest_type):
-        go_index_page()
-        name = self.results[quest_type]['name']
-        total = self.results[quest_type]['total']
-        log('DONE - ' + name + ' rewards')
-        log('Total ' + name + ' rewards obtained: ' + str(total))
+        self.event_dispatcher.subscribe('run', self._run)
+
+    def _run(self, props=None):
+        self.quests_run()
+        self.play_time_run()
+        self.clan_war_rewards()
+        self.clan_quests_rewards()
 
     def quests_obtain(self):
         for i in range(len(QUESTS_TABS)):
@@ -124,12 +127,10 @@ class Rewards:
                 sleep(1)
                 # obtain
                 self.quests_obtain()
-                # finish and log output
-                self.finish('regular_quests')
             else:
-                log('Quests rewards are not available')
+                self.log('Quests rewards are not available')
         else:
-            log("Skipped! No Index Page found")
+            self.log("Skipped! No Index Page found")
 
     def play_time_run(self):
         if is_index_page():
@@ -141,12 +142,10 @@ class Rewards:
                 sleep(1)
                 # obtain
                 self.play_time_obtain()
-                # finish and log output
-                self.finish('play_time')
             else:
-                log('Play-Time rewards are not available')
+                self.log('Play-Time rewards are not available')
         else:
-            log("Skipped! No Index Page found")
+            self.log("Skipped! No Index Page found")
 
     def clan_war_rewards(self):
         # grabs "clan war" related rewards
@@ -200,11 +199,3 @@ class Rewards:
             s = 'Rewards | Total obtained: ' + str(total)
 
         return s
-
-    def run(self, *args, props=None):
-        log(f"{self.NAME} | Running")
-        close_popup_recursive()
-        self.quests_run()
-        self.play_time_run()
-        self.clan_war_rewards()
-        self.clan_quests_rewards()

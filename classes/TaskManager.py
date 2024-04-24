@@ -2,14 +2,14 @@ import uuid
 import queue
 import threading
 import traceback
-from datetime import datetime
-from classes.EventDispatcher import EventDispatcher
-from helpers.common import log_save
 from telegram.error import NetworkError
-from helpers.common import log
+from classes.EventDispatcher import EventDispatcher
+from helpers.common import log_save, log
 
 MAX_RETRIES = 3
 DELAY = 1
+
+
 EMULATE_NETWORK_ERROR = False
 
 class Task:
@@ -34,6 +34,7 @@ class TaskManager:
     def add(self, name, cb, props):
         task = Task(name, cb, props)
         _type = props['type'] if 'type' in props else 'sync'
+
         if bool(task.onDone):
             self.event_dispatcher.subscribe(task.event_id_done, task.onDone)
         if bool(task.onError):
@@ -44,13 +45,20 @@ class TaskManager:
         elif _type == 'sync':
             self.run(task)
 
+    # def run(self, task):
+    #     res = task.callback()
+    #
+    #     # @TODO Temp (Requires Preset Feature)
+    #     if bool(res) and type(res) is str:
+    #         self.event_dispatcher.publish(task.event_id_done, res)
+
     def run(self, task, retry=True):
         global EMULATE_NETWORK_ERROR
 
         try:
             if EMULATE_NETWORK_ERROR:
                 EMULATE_NETWORK_ERROR = False
-                raise NetworkError("Emulated network error")
+                raise NetworkError("Emulated network error from TaskManager")
 
             res = task.callback()
 
@@ -64,8 +72,13 @@ class TaskManager:
             if retry:
                 self.run(task, retry=False)
 
-            # @TODO Temp, should be removed
-            self.event_dispatcher.publish(task.event_id_error, error)
+        #     # @TODO Temp, should be removed
+        #     self.event_dispatcher.publish(task.event_id_error, error)
+
+        except NetworkError as e:
+            error = f"NetworkError: {e}"
+            log(error)
+            pass
 
         except Exception as e:
             error = traceback.format_exc()
@@ -75,7 +88,6 @@ class TaskManager:
         finally:
             self.event_dispatcher.unsubscribe(task.event_id_done, task.callback)
             self.event_dispatcher.unsubscribe(task.event_id_error, task.callback)
-
 
     def listen(self, queue):
         while True:

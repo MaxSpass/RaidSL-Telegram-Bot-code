@@ -609,6 +609,7 @@ def close_popup():
         x = special_offer_popup[0]
         y = special_offer_popup[1]
         click(x, y)
+        sleep(3)
         log('Special offer popup closed')
 
     return [close_popup_button, special_offer_button]

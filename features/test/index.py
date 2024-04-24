@@ -4,7 +4,7 @@ from classes.Feature import Feature
 
 class TestFeature(Feature):
     def __init__(self, app, props=None):
-        Feature.__init__(self, feature_name='Test feature', app=app)
+        Feature.__init__(self, name='Test feature', app=app)
         self.event_dispatcher.subscribe('run', self._run)
         self.seconds = 3600
 

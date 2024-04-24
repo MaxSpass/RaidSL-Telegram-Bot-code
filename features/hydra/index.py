@@ -1,5 +1,6 @@
 from helpers.common import *
 from features.hero_preset.index import *
+from classes.Feature import Feature
 import pyautogui
 
 AVATAR_FRAME_WIDTH = 38
@@ -88,10 +89,10 @@ screen_certain_hydra = [447, 304, [14, 42, 64]]
 hero_preset = HeroPreset()
 
 
-class Hydra:
-    LOCATION_NAME = 'Hydra'
+class Hydra(Feature):
+    def __init__(self, app, props=None):
+        Feature.__init__(self, name='Hydra', app=app)
 
-    def __init__(self, props=None):
         self.runs = []
         self.runs_limit = DEFAULT_RUNS_LIMIT
         self.heads = []
@@ -100,6 +101,21 @@ class Hydra:
         self.focused_head = None
 
         self.apply_props(props=props)
+
+        self.event_dispatcher.subscribe('enter', self._enter)
+        self.event_dispatcher.subscribe('run', self._run)
+
+    def _enter(self):
+        click_on_progress_info()
+        # Hydra Keys
+        click(600, 340)
+        sleep(1)
+
+    def _run(self, props=None):
+        if props is not None:
+            self.apply_props(props=props)
+
+        self.attack()
 
     def _get_priority(self, head_name):
         priority = self.current['priority']
@@ -128,13 +144,13 @@ class Hydra:
             self.results[stage]['results'] = []
         self.results[stage]['results'].append(int_damage)
 
-        log('Damage Dealt: ' + str(int_damage) + 'M')
+        self.log('Damage Dealt: ' + str(int_damage) + 'M')
         if int_damage >= min_damage:
-            log(self.LOCATION_NAME + ' | Dealt Damage is enough')
+            self.log('Dealt Damage is enough')
             await_click([button_keep_result], msg="await 'button_keep_result'", timeout=1, mistake=20)
             self._save_result(int_damage)
         else:
-            log(self.LOCATION_NAME + ' | Dealt Damage is NOT enough')
+            self.log('Dealt Damage is NOT enough')
             await_click([button_free_regroup], msg="await 'button_free_regroup'", timeout=1, mistake=20)
 
     def _is_battle_finished(self):
@@ -169,13 +185,13 @@ class Hydra:
             name = hydra['name']
             h = HEADS_POSITIONS[i]
             click(h['focus']['x'], 175)
-            log(self.LOCATION_NAME + ' | Focus: ' + self._format_name(name))
+            self.log('Focus: ' + self._format_name(name))
         else:
-            log(f'No Hydra head with name: {name}')
+            self.log(f'No Hydra head with name: {name}')
 
     def _reset_focus(self):
         if not self._is_battle_in_progress():
-            log("Resetting focus is interrupted: no 'BUTTON_PAUSE' found")
+            self.log("Resetting focus is interrupted: no 'BUTTON_PAUSE' found")
             return
 
         # works with critically low FPS
@@ -192,7 +208,7 @@ class Hydra:
             _click()
 
         await_click([BUTTON_AUTO_PIXEL_DISABLED], mistake=10)
-        log(self.LOCATION_NAME + ' | Reset focus')
+        self.log('Reset focus')
 
     def _format_name(self, name):
         return name.replace('_', ' ').title()
@@ -204,9 +220,9 @@ class Hydra:
                        and self.results[stage]['damage'] < self.current['min_damage']
 
         if can_continue:
-            log(self.LOCATION_NAME + ' | Can continue')
+            self.log('Can continue')
         else:
-            log(self.LOCATION_NAME + " | Can't continue")
+            self.log("Can't continue")
 
         return can_continue
 
@@ -312,16 +328,6 @@ class Hydra:
                     limit = DEFAULT_RUNS_LIMIT_MAX
                 self.runs_limit = limit
 
-    def enter(self):
-        go_index_page()
-        sleep(1)
-        go_index_page()
-
-        click_on_progress_info()
-        # Hydra Keys
-        click(600, 340)
-        sleep(1)
-
     def report(self):
         res = None
         for key, value in self.results.items():
@@ -340,12 +346,8 @@ class Hydra:
 
         return res
 
-    def finish(self):
-        go_index_page()
-        log('DONE - ' + self.LOCATION_NAME)
-
     def scan(self):
-        log(self.LOCATION_NAME + ' | ' + 'Scanning all heads...')
+        self.log('Scanning all heads...')
         queue = []
         reset = False
 
@@ -379,14 +381,14 @@ class Hydra:
                     if d is None:
                         if is_alive and is_not_focused:
                             if digesting:
-                                log(self.LOCATION_NAME + ' | Digestion head: ' + self._format_name(name))
+                                self.log('Digestion head: ' + self._format_name(name))
                                 queue.append({
                                     'name': name,
                                     'reason': 1,
                                     'priority': priority
                                 })
                             elif has_priority:
-                                log(self.LOCATION_NAME + ' | Priority head: ' + self._format_name(name))
+                                self.log('Priority head: ' + self._format_name(name))
                                 queue.append({
                                     'name': name,
                                     'reason': 2,
@@ -395,12 +397,12 @@ class Hydra:
                     elif become_dead or not_digesting:
                         queue.pop(d)
                         if become_dead:
-                            log(self.LOCATION_NAME + ' | Died: ' + self._format_name(name))
+                            self.log('Died: ' + self._format_name(name))
                         elif not_digesting:
-                            log(self.LOCATION_NAME + ' | Saved from digestion by: ' + self._format_name(name))
+                            self.log('Saved from digestion by: ' + self._format_name(name))
 
             queue = self._sort_by_priority(queue)
-            log(queue)
+            self.log(queue)
 
             if len(queue):
                 name = queue[0]['name']
@@ -425,7 +427,7 @@ class Hydra:
 
     def attack(self):
         def hydra_enter(data):
-            log(self.LOCATION_NAME + ' | ' + 'Internal method called - hydra_enter')
+            self.log('Internal method called - hydra_enter')
             swipes = data['swipes']
             x = data['x']
             y = data['y']
@@ -446,7 +448,7 @@ class Hydra:
             is_picked = True
 
             while self._while_stage_available():
-                log(self.LOCATION_NAME + ' | ' + 'Internal method called - hydra_start')
+                self.log('Internal method called - hydra_start')
                 # skips then logic, when all_hydra_screen appears
                 is_certain = self._certain_hydra_or_all_hydra_screens()[0]
                 if is_certain:
@@ -460,12 +462,12 @@ class Hydra:
                         await_click([button_start], timeout=1, mistake=10)
 
                         if pixels_wait([BUTTON_PAUSE], timeout=2, mistake=10, msg='Pause icon', wait_limit=100)[0]:
-                            log(self.LOCATION_NAME + ' | ' + 'Battle just started')
+                            self.log('Battle just started')
                             self.scan()
 
             # depending on the case: saved damage/regroup the team
             if self._certain_hydra_or_all_hydra_screens()[0] and is_picked:
-                log(self.LOCATION_NAME + " | Checking hydra screen after each iteration")
+                self.log("Checking hydra screen after each iteration")
                 close_popup()
 
         for i in range(len(self.runs)):
@@ -483,19 +485,9 @@ class Hydra:
                 screens = self._certain_hydra_or_all_hydra_screens()
 
                 if screens[0]:
-                    log(self.LOCATION_NAME + ' | ' + 'All Hydra')
+                    self.log('All Hydra')
                 elif screens[1]:
-                    log(self.LOCATION_NAME + ' | ' + 'Certain Hydra')
+                    self.log('Certain Hydra')
                     hydra_enter(HYDRA_LOCATIONS[stage])
 
                 hydra_start()
-
-    def run(self, *args, props=None):
-        if props is not None:
-            self.apply_props(props=props)
-
-        self.enter()
-        self.attack()
-
-        self.finish()
-        go_index_page()

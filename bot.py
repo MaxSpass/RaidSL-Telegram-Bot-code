@@ -1,6 +1,11 @@
 import threading
+from helpers.common import log, log_save
+import traceback
 from telegram.ext import Updater, CommandHandler, CallbackContext
-from helpers.common import log
+from telegram.error import NetworkError
+
+
+EMULATE_NETWORK_ERROR = False
 
 class TelegramBOT(threading.Thread):
     def __init__(self, props=None):
@@ -50,7 +55,52 @@ class TelegramBOT(threading.Thread):
         command = obj['command']
         handler = obj['handler']
 
-        self.dp.add_handler(CommandHandler(command, handler, run_async=True))
+        def final_callback(*args, retry=True):
+            global EMULATE_NETWORK_ERROR
+            try:
+                if EMULATE_NETWORK_ERROR:
+                    EMULATE_NETWORK_ERROR = False
+                    raise NetworkError("Emulated network error from Bot")
+                log(f"Logging the command: {command}")
+
+            except NetworkError as e:
+                error = f"NetworkError: {e}"
+                log(error)
+                log_save(error)
+                if retry:
+                    final_callback(*args, retry=False)
+                    return
+
+            log(f"Starting the command: {command}")
+            handler(*args)
+
+        self.dp.add_handler(CommandHandler(command, final_callback, run_async=True))
+
+        # except Exception as e:
+        #     error = traceback.format_exc()
+        #     log_save(error)
+
+        # def final_callback_new(*args, retry=True):
+        #     global EMULATE_NETWORK_ERROR
+        #     try:
+        #         if EMULATE_NETWORK_ERROR:
+        #             EMULATE_NETWORK_ERROR = False
+        #             raise NetworkError("from bot.add")
+        #
+        #         log(f"Starting the command: {command}")
+        #         handler(*args)
+        #
+        #     except NetworkError as e:
+        #         error = f"NetworkError: {e}"
+        #         log_save(error)
+        #         if retry:
+        #             final_callback_new(*args, retry=False)
+        #             return
+        #
+        #     except Exception as e:
+        #         error = traceback.format_exc()
+        #         log_save(error)
+        # self.dp.add_handler(CommandHandler(command, final_callback_new, run_async=True))
 
     def listen(self):
         # Start the Bot

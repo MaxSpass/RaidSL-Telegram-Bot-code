@@ -22,6 +22,7 @@ import cv2
 import numpy as np
 from PIL import Image, ImageDraw
 from io import BytesIO
+from telegram.error import NetworkError
 
 GAME_WINDOW = 'Raid: Shadow Legends'
 GAME_PROCESS_NAME = 'Raid.exe'
@@ -46,14 +47,21 @@ INSTANCES_MAP = {
 }
 
 INSTANCES_WITH_FEATURE = [
+    'arena_live',
     'arena_classic',
     'arena_tag',
+    'demon_lord',
+    'hydra',
     'dungeon',
     'faction_wars',
+    'iron_twins',
     'daily_quests',
+    'rewards',
     'doom_tower',
     'test_feature',
 ]
+
+# EMULATE_NETWORK_ERROR = False
 
 def find_process_by_name(name):
     for proc in psutil.process_iter(['pid', 'name']):
@@ -247,11 +255,6 @@ class App:
 
                     _config['tasks'].append(task_d)
 
-            # rewards init
-            self.entries['rewards'] = {
-                'instance': INSTANCES_MAP['rewards']()
-            }
-
             # handling presets
             presets_length = len(config_json['presets'])
             if presets_length:
@@ -284,7 +287,7 @@ class App:
         # primitive validation
         currentYear = datetime.now().year
         currentMonth = datetime.now().month
-        return currentYear == 2024 and (currentMonth <= 4)
+        return currentYear == 2024 and (currentMonth <= 5)
 
     def load_config(self, config):
         self.config = self._prepare_config(config)
@@ -498,8 +501,25 @@ class App:
     def get_entry(self, command_name):
         return self.entries[command_name]
 
+    # def on_message(self, upd, text, retry=True):
+    #     global EMULATE_NETWORK_ERROR
+    #     try:
+    #         if EMULATE_NETWORK_ERROR:
+    #             EMULATE_NETWORK_ERROR = False
+    #             raise NetworkError('from App.on_message')
+    #
+    #         upd.message.reply_text(text)
+    #     except NetworkError as e:
+    #         if retry:
+    #             self.on_message(upd, text, retry=False)
+    #     except Exception:
+    #         pass
+
+
     def task(self, name, cb, task_type="aside"):
         return lambda upd, ctx: self.taskManager.add(name, lambda: cb(upd, ctx), props={
+            # 'onDone': lambda text: self.on_message(upd, text),
+            # 'onError': lambda text: self.on_message(upd, text),
             'onDone': upd.message.reply_text,
             'onError': upd.message.reply_text,
             'type': task_type,

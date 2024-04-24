@@ -113,7 +113,7 @@ hero_filter = HeroFilter({
 
 class Quests(Feature):
     def __init__(self, app, props=None):
-        Feature.__init__(self, feature_name='Quests', app=app)
+        Feature.__init__(self, name='Quests', app=app)
 
         self.results = []
         self.event_dispatcher.subscribe('enter', self._enter)
@@ -121,7 +121,7 @@ class Quests(Feature):
         self.event_dispatcher.subscribe('run', self._run)
 
     def _enter(self):
-        if await_click(pixels=[[258, 494, [222, 185, 103]]], msg="Quests", mistake=10)[0]:
+        if await_click(pixels=[[258, 494, [222, 185, 103]]], msg=self.NAME, mistake=10)[0]:
             sleep(1.5)
             # click on the 'Daily' quests tab
             click(160, 110)
@@ -132,7 +132,7 @@ class Quests(Feature):
             if 'rewards' in self.app.entries else None
 
         if rewards:
-            rewards.run()
+            rewards.run(self.update, self.context)
 
     def _run(self, props=None):
         quests_ids = self.get_not_completed_ids()
@@ -628,7 +628,7 @@ class Quests(Feature):
             if 'dungeon_sand_devil' in self.app.entries else None
 
         if dungeon_sand_devil:
-            dungeon_sand_devil.run(props={"locations": [{"id": 6}], "bank": 40})
+            dungeon_sand_devil.run(self.update, self.context, props={"locations": [{"id": 6}], "bank": 40})
         else:
             self.update.message.reply_text(no_task_text)
             self.daily_quest_8()
@@ -641,7 +641,7 @@ class Quests(Feature):
             if 'arena_classic' in self.app.entries else None
 
         if arena_classic:
-            arena_classic.run()
+            arena_classic.run(self.update, self.context)
             self.results.append(quest_id)
         else:
             self.update.message.reply_text(no_task_text)
@@ -771,6 +771,6 @@ class Quests(Feature):
         res = None
 
         if len(self.results):
-            res = f'{self.FEATURE_NAME} | Completed Daily quest IDs: {str(np.array(self.results, dtype=object))}'
+            res = f'{self.NAME} | Completed Daily quest IDs: {str(np.array(self.results, dtype=object))}'
 
         return res

@@ -37,7 +37,7 @@ class ArenaFactory(Feature):
             tiers_coordinates,
             props=None
     ):
-        Feature.__init__(self, feature_name=name, app=app)
+        Feature.__init__(self, name=name, app=app)
 
         self.name = name
         self.x_axis_info = x_axis_info
@@ -72,6 +72,9 @@ class ArenaFactory(Feature):
         self.obtain()
 
     def _run(self, props=None):
+        # for i in range(3):
+        #     sleep(1)
+        # return
         if props is not None:
             self._apply_props(props=props)
 
@@ -89,6 +92,9 @@ class ArenaFactory(Feature):
                 # at least one 'Defeat' or continued battles - should refresh
                 if last_results.count(False) > 0 or len(last_results) < OUTPUT_ITEMS_AMOUNT:
                     self._refresh_arena()
+
+    def report(self):
+        return self._show_results(self.results, is_detailed=True)
 
     def _apply_props(self, props=None):
         if props is not None:
@@ -175,7 +181,7 @@ class ArenaFactory(Feature):
                 dot = find_needle_arena_reward()
                 if dot is not None:
                     x = dot[0]
-                    y = dot[1]+20
+                    y = dot[1] + 20
                     # click on the chest
                     click(x, y)
                     sleep(1)
@@ -186,7 +192,6 @@ class ArenaFactory(Feature):
 
             click(tab_battle[0], tab_battle[1])
             sleep(.3)
-
 
     def attack(self):
         results_local = []
@@ -257,9 +262,6 @@ class ArenaFactory(Feature):
         if len(results_local):
             self.results.append(results_local)
         # return results_local
-
-    def report(self):
-        return self._show_results(self.results, is_detailed=True)
 
 
 class ArenaClassic(ArenaFactory):

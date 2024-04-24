@@ -49,7 +49,7 @@ class Dungeons(Feature):
     DUNGEON_DIFFICULTY_DEFAULT = 'hard'
 
     def __init__(self, app, props=None):
-        Feature.__init__(self, feature_name='Dungeon', app=app)
+        Feature.__init__(self, name='Dungeon', app=app)
 
         self.dungeons = []
         self.results = {}
@@ -271,7 +271,7 @@ class Dungeons(Feature):
 
             if has_battles:
                 if not res:
-                    res = f'{self.FEATURE_NAME} Report'
+                    res = f'{self.NAME} Report'
 
                 win_rate = calculate_win_rate(value['victory'], value['defeat'])
                 line = f"\n{key} | Battles: {value['victory'] + value['defeat']}, Win rate: {win_rate}"

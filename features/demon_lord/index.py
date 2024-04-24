@@ -1,4 +1,5 @@
 from helpers.common import *
+from classes.Feature import Feature
 
 # demon lord | levels for attack
 DEFAULT_STAGES = [6, 5]
@@ -12,32 +13,25 @@ DEMON_LORD_REWARD_COORDINATES = {
 DEMON_LORD_DAMAGE_REGION = axis_to_region(184, 150, 687, 202)
 
 # @TODO Refactor
-class DemonLord:
-    def __init__(self, props=None):
+class DemonLord(Feature):
+    def __init__(self, app, props=None):
+        Feature.__init__(self, name='Demon Lord', app=app)
+
         self.results = {
             'obtained': [],
             'attacked': []
         }
         self.stages = DEFAULT_STAGES
-        self.terminate = False
         self.completed = False
 
         if props is not None:
             if 'stages' in props:
                 self.stages = props['stages']
 
-    def _check_refill(self):
-        sleep(1)
-        ruby_button = find_needle_refill_ruby()
+        self.event_dispatcher.subscribe('enter', self._enter)
+        self.event_dispatcher.subscribe('run', self._run)
 
-        if ruby_button is not None:
-            self.terminate = True
-
-    def enter(self):
-        go_index_page()
-        sleep(1)
-        go_index_page()
-
+    def _enter(self):
         # moving to the Demon Lord
         # click on the red button "Battles"
         battles_click()
@@ -53,6 +47,17 @@ class DemonLord:
         pyautogui.moveTo(580, 400, 1)
         pyautogui.dragTo(580, 120, duration=1)
         sleep(2)
+
+    def _run(self, props=None):
+        self.obtain()
+        self.attack()
+
+    def _check_refill(self):
+        sleep(1)
+        ruby_button = find_needle_refill_ruby()
+
+        if ruby_button is not None:
+            self.terminate = True
 
     def obtain(self):
         global DEFAULT_STAGES
@@ -117,10 +122,6 @@ class DemonLord:
                 self.stages.remove(stage)
                 self.results['attacked'].append(str(stage))
 
-    def finish(self):
-        go_index_page()
-        log('DONE - Demon Lord')
-
     def report(self):
         s = None
         has_obtained = len(self.results['obtained'])
@@ -134,11 +135,3 @@ class DemonLord:
                 s += ' | Attacked: ' + ','.join(self.results['attacked'])
 
         return s
-
-    def run(self, *args, props=None):
-        self.terminate = False
-
-        self.enter()
-        self.obtain()
-        self.attack()
-        self.finish()

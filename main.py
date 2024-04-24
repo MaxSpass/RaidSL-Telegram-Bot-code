@@ -37,7 +37,7 @@ def main():
     #     swipe('bottom', 450, 490, 340, speed=3)
     # return
 
-    # print(pyautogui.pixel(258, 494))
+    # print(pyautogui.pixel(320, 420))
     # return
 
     # quests = Quests()

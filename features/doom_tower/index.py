@@ -22,7 +22,7 @@ class DoomTower(Feature):
     STAGE_ENTER = [890, 200, [93, 25, 27]]
 
     def __init__(self, app, props=None):
-        Feature.__init__(self, feature_name='Doom Tower', app=app)
+        Feature.__init__(self, name='Doom Tower', app=app)
 
         self.bosses = []
         self.keys_golden = 0
@@ -104,7 +104,7 @@ class DoomTower(Feature):
         res = None
 
         if self.results['bosses'] > 0:
-            res = f"{self.FEATURE_NAME} | Commitment: {str(self.results['bosses'])}"
+            res = f"{self.NAME} | Commitment: {str(self.results['bosses'])}"
 
         return res
 
@@ -119,7 +119,7 @@ class DoomTower(Feature):
             if cost and self.keys_silver:
                 while self.keys_silver >= cost:
                     dungeons_start_battle()
-                    waiting_battle_end_regular(f"{self.FEATURE_NAME} | Battle end", x=28, y=88)
+                    waiting_battle_end_regular(f"{self.NAME} | Battle end", x=28, y=88)
                     res = not pixel_check_new(self.RESULT_DEFEAT, mistake=30)
                     if res:
                         self.keys_silver -= cost

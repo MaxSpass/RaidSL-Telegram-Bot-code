@@ -4,18 +4,29 @@ from helpers.common import close_popup_recursive, log
 
 
 class Feature:
-    def __init__(self, name, app):
+    def __init__(self, name, app, report_predicate=None):
         self.NAME = name
         self.app = app
+        self.report_predicate = report_predicate
         self.update = None
         self.context = None
         self.terminate = False
+        self.completed = False
         self.event_dispatcher = EventDispatcher()
         self.duration = Duration()
 
         self.event_dispatcher.subscribe('finish', lambda data, *args: {
             self.update.message.reply_text(f"Done: {self.NAME} | Duration: {data['duration']}")
         })
+
+    # def report(self):
+    #     report = self.report_predicate() if self.report_predicate else None
+    #     if report:
+    #         if len(self.duration.durations):
+    #             report += f"\nDuration: {self.duration.get_last()}"
+    #
+    #     return report
+
 
     def log(self, msg):
         log(f'{self.NAME} | {msg}')
@@ -27,7 +38,7 @@ class Feature:
 
     def finish(self):
         close_popup_recursive()
-        self.duration.update(variant='end')
+        self.duration.end()
         self.log(f"Done: {self.NAME}")
         
         self.event_dispatcher.publish('finish', {
@@ -39,9 +50,11 @@ class Feature:
         self.update = upd
         self.context = ctx
 
-        self.duration.create()
-        self.duration.update(variant='start')
+        if not self.completed:
+            self.duration.start()
 
-        self.enter()
-        self.event_dispatcher.publish('run', *args)
-        self.finish()
+            self.enter()
+            self.event_dispatcher.publish('run', *args)
+            self.finish()
+        else:
+            self.log('is already completed')

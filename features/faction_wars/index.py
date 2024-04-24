@@ -71,7 +71,7 @@ class FactionWars(Feature):
     }
 
     def __init__(self, app, props=None):
-        Feature.__init__(self, feature_name='Faction Wars', app=app)
+        Feature.__init__(self, name='Faction Wars', app=app)
 
         self.results = {}
         self.crypts = self._prepare_crypts()
@@ -151,7 +151,7 @@ class FactionWars(Feature):
                                     while not self._get_result_by_name(_name)["completed"]:
                                         dungeons_start_battle()
 
-                                        waiting_battle_end_regular(f"{self.FEATURE_NAME} | {_name}", x=28, y=88)
+                                        waiting_battle_end_regular(f"{self.NAME} | {_name}", x=28, y=88)
                                         sleep(1)
 
                                         # battle has been won
@@ -242,6 +242,6 @@ class FactionWars(Feature):
         items = self.results.items()
         if len(items):
             progress = ', '.join(list(map(lambda arr: f"{arr[0]}: {str(arr[1]['commitment'])}keys", items)))
-            s = f"{self.FEATURE_NAME} | {progress}"
+            s = f"{self.NAME} | {progress}"
 
         return s
