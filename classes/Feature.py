@@ -23,7 +23,7 @@ class Feature:
             report_list.append(f"Duration: {self.duration.get_total()}")
 
         if self.run_counter:
-            report_list.append(f"Run counter: {str(self.run_counter)}")
+            report_list.append(f"Runs counter: {str(self.run_counter)}")
 
         if len(report_list):
             report_list = [f"***{self.NAME}***"] + report_list
@@ -44,19 +44,20 @@ class Feature:
         message_done = f"Done: {self.NAME} | Duration: {self.duration.get_last()}"
 
         self.log(message_done)
+        self.event_dispatcher.publish('finish')
         self.update.message.reply_text(message_done)
 
     def run(self, upd, ctx, *args):
-        self.terminate = False
+        if self.completed:
+            self.log('is already completed')
+            return
+
         self.update = upd
         self.context = ctx
+        self.terminate = False
+        self.run_counter += 1
+        self.duration.start()
 
-        if not self.completed:
-            self.run_counter += 1
-            self.duration.start()
-
-            self.enter()
-            self.event_dispatcher.publish('run', *args)
-            self.finish()
-        else:
-            self.log('is already completed')
+        self.enter()
+        self.event_dispatcher.publish('run', *args)
+        self.finish()

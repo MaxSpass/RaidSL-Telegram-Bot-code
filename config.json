@@ -290,6 +290,26 @@
       ]
     },
     {
+      "name": "noon with minotaur",
+      "commands": [
+        "demon_lord",
+        "rewards",
+        "doom_tower",
+        "dungeon_minotaur",
+        "arena_classic"
+      ]
+    },
+    {
+      "name": "noon with sand devil",
+      "commands": [
+        "demon_lord",
+        "rewards",
+        "doom_tower",
+        "dungeon_sand_devil",
+        "arena_classic"
+      ]
+    },
+    {
       "name": "night",
       "commands": [
         "arena_live",

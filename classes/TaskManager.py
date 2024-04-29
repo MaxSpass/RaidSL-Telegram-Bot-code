@@ -72,14 +72,6 @@ class TaskManager:
             if retry:
                 self.run(task, retry=False)
 
-        #     # @TODO Temp, should be removed
-        #     self.event_dispatcher.publish(task.event_id_error, error)
-
-        except NetworkError as e:
-            error = f"NetworkError: {e}"
-            log(error)
-            pass
-
         except Exception as e:
             error = traceback.format_exc()
             log_save(error)

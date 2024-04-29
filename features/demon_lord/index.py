@@ -42,16 +42,10 @@ class DemonLord(Feature):
         return res_list
 
     def _enter(self):
-        # moving to the Demon Lord
-        # click on the red button "Battles"
-        battles_click()
-        sleep(1)
-        # click on the clan boss
-        click(890, 300)
-        sleep(1)
-        # click on the Demon Lord
-        click(320, 290)
-        sleep(1)
+        click_on_progress_info()
+        # Demon Lord
+        click(600, 300)
+        sleep(2)
 
         # swapping to the bottom @TODO
         pyautogui.moveTo(580, 400, 1)
@@ -89,10 +83,10 @@ class DemonLord(Feature):
                     click(460, 444)
                     sleep(5)
 
-                log('Obtained reward from Demon Lord ' + stage)
+                self.log('Obtained reward from Demon Lord ' + stage)
                 self.results['obtained'].append(stage)
             else:
-                log('No reward found from Demon Lord ' + stage)
+                self.log('No reward found from Demon Lord ' + stage)
             sleep(2)
 
     def attack(self):

@@ -12,10 +12,13 @@ class Duration:
         last = self.durations[len(self.durations) - 1]
         return self._format(timedelta() + last['end'] - last['start'])
 
-    def get_total(self):
+    def get_total(self, durations=None):
+        if durations is None:
+            durations = self.durations
+
         total_duration = timedelta()
-        for item in self.durations:
-            if 'start' in item and 'end' in item:
+        for item in durations:
+            if item['start'] is not None and item['end'] is not None:
                 total_duration += item['end'] - item['start']
 
         return self._format(total_duration)
@@ -27,7 +30,7 @@ class Duration:
         self.durations[len(self.durations) - 1][variant] = duration
 
     def _create(self):
-        self.durations.append({})
+        self.durations.append({'start': None, 'end': None})
 
     def start(self):
         self._create()

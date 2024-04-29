@@ -125,7 +125,7 @@ class Hydra(Feature):
         click_on_progress_info()
         # Hydra Keys
         click(600, 340)
-        sleep(1)
+        sleep(2)
 
     def _run(self, props=None):
         if props is not None:
