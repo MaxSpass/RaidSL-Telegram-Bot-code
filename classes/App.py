@@ -305,12 +305,17 @@ class App:
         sys.exit(0)
 
     def relogin(self, *args):
+        if not is_logged_out():
+            return False
+
+        log('Re-logging into the app')
+
         # limit in seconds
         limit = 60
         timeout = 3
         counter = 0
 
-        click(425, 300)
+        click(350, 290)
         time.sleep(2)
 
         burger = find_needle_burger()
@@ -319,7 +324,9 @@ class App:
             counter += timeout
             burger = find_needle_burger()
 
-        if not burger:
+        if burger:
+            sleep(3)
+        else:
             self.restart()
 
         return True
@@ -429,7 +436,7 @@ class App:
         if len(response):
             return upd.message.reply_text('\n'.join(response))
 
-    def start_game(self):
+    def start(self):
         # atexit.register(self.report)
         signal.signal(signal.SIGINT, self.kill)
         signal.signal(signal.SIGTERM, self.kill)
@@ -438,6 +445,7 @@ class App:
         game_path = self.get_game_path()
 
         if find_process_by_name(GAME_PROCESS_NAME):
+            self.relogin()
             self.prepare()
         elif game_path:
             self.launch()
@@ -465,8 +473,8 @@ class App:
         if game_path:
             terminate_process_by_name(GAME_PROCESS_NAME)
             sleep(2)
-
             self.launch()
+            sleep(2)
         else:
             return "No 'game_path' provided field in the config"
 

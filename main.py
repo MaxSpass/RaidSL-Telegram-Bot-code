@@ -2,6 +2,7 @@ import traceback
 import pyautogui
 from bot import TelegramBOT
 from classes.App import *
+# from classes.EventTree import *
 from constants.index import IS_DEV
 from features.quests.index import QUEST_DAILY_DATA
 
@@ -30,6 +31,49 @@ else:
 
 
 def main():
+    # pixels = [
+    #     [350, 290],
+    #     [550, 290],
+    # ]
+    #
+    # for i in range(len(pixels)):
+    #     print(pyautogui.pixel(pixels[i][0], pixels[i][1]))
+
+    # print(is_logged_out())
+    # return
+    # print(pyautogui.pixel(x, y))
+    # print(dominant_color_rgb([1400, 560, 50, 50]))
+    # return
+
+    # @TODO EventTree in progress START
+    # 1150, 600
+    # rgb_grey = [127, 127, 127]
+    # rgb_light_blue = [0, 162, 232]
+    # x = 1000
+    # y = 500
+    # width = 150
+    # height = 150
+    # region = [x, y, width, height]
+    #
+    # sl = EventTree()
+    #
+    # sl.new_loop([
+    #     {
+    #         "name": 'pixel_check_new',
+    #         "cb": lambda: pixel_check_new([x, y, rgb_grey], mistake=0)
+    #     },
+    #     {
+    #         "name": 'dominant_color_rgb',
+    #         "cb": lambda: rgb_check(rgb_light_blue, dominant_color_rgb(region=region, reverse=False), mistake=0)
+    #     },
+    #     {
+    #         "name": 'needle',
+    #         "cb": lambda: find_needle('market_mystery_shard.jpg', region=region)
+    #     }
+    # ])
+    # return
+    # @TODO EventTree in progress END
+
     # print(str(np.array([1,2,3], dtype=object)))
     # return
 
@@ -54,7 +98,7 @@ def main():
 
         try:
             if app.config['start_immediate']:
-                app.start_game()
+                app.start()
 
             if has_telegram_token:
                 telegram_bot = TelegramBOT({

@@ -226,7 +226,7 @@
       "task": "demon_lord",
       "enable": 1,
       "props": {
-        "stages": [6, 5, 4]
+        "stages": [6, 5, 4, 3]
       }
     },
     {
@@ -263,32 +263,6 @@
     }
   ],
   "presets": [
-    {
-      "name": "primary",
-      "commands": [
-        "arena_classic",
-        "arena_tag",
-        "rewards",
-        "faction_wars",
-        "rewards",
-        "arena_tag",
-        "rewards",
-        "arena_classic",
-        "iron_twins",
-        "daily_quests",
-        "rewards",
-        "dungeon_sand_devil",
-        "doom_tower"
-      ]
-    },
-    {
-      "name": "secondary",
-      "commands": [
-        "rewards",
-        "arena_classic",
-        "dungeon_sand_devil"
-      ]
-    },
     {
       "name": "noon with minotaur",
       "commands": [
@@ -370,15 +344,6 @@
       "commands": [
         "test_feature_3sec",
         "test_feature_3sec"
-      ]
-    },
-    {
-      "name": "test 60min",
-      "commands": [
-        "test_feature_15min",
-        "test_feature_15min",
-        "test_feature_15min",
-        "test_feature_15min"
       ]
     },
     {
