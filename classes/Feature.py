@@ -52,6 +52,8 @@ class Feature:
             self.log('is already completed')
             return
 
+        self.app.relogin()
+
         self.update = upd
         self.context = ctx
         self.terminate = False

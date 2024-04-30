@@ -146,11 +146,8 @@ def pixel_check_new(pixel, mistake=10):
     y = pixel[1]
     rgb = pixel[2]
     p = pyautogui.pixel(x, y)
-    if mistake == 0:
-        return p[0] == rgb[0] and p[1] == rgb[1] and p[2] == rgb[2]
-    else:
-        return rgb[0] - mistake < p[0] < rgb[0] + mistake and rgb[1] - mistake < p[1] < rgb[1] + mistake and \
-               rgb[2] - mistake < p[2] < rgb[2] + mistake
+
+    return rgb_check(p, rgb, mistake=mistake)
 
 
 def rgb_check(rgb_1, rgb_2, mistake=0):
@@ -976,7 +973,8 @@ def dominant_color_hue(region, rank=1):
     return dominant_color_hue
 
 
-def dominant_color_rgb(region, rank=1):
+# @TODO Remove 'reverse' property
+def dominant_color_rgb(region, rank=1, reverse=True):
     screenshot = pyautogui.screenshot(region=region)
     image = screenshot_to_image(screenshot)
 
@@ -995,8 +993,13 @@ def dominant_color_rgb(region, rank=1):
     # Convert the index to RGB values
     r, g, b = np.unravel_index(dominant_color_index, (256, 256, 256))
 
-    return [r, g, b]
+    res = [r, g, b]
 
+    # Making right format here
+    if not reverse:
+        res.reverse()
+
+    return res
 
 def is_number(s):
     try:
@@ -1004,3 +1007,22 @@ def is_number(s):
         return True
     except ValueError:
         return False
+
+
+def is_logged_out():
+    _is_logged_out = True
+
+    rgb = [16, 126, 158]
+    pixels = [
+        # Re-log In button
+        [350, 290, rgb],
+        # Support button
+        [550, 290, rgb],
+    ]
+
+    for i in range(len(pixels)):
+        if not pixel_check_new(pixels[i], mistake=5):
+            _is_logged_out = False
+            break
+
+    return _is_logged_out
