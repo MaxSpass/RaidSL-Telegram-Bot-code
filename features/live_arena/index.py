@@ -38,8 +38,13 @@ stage_2 = [460, 330, [72, 60, 77]]
 stage_3 = [460, 330, [72, 87, 77]]
 
 turn_to_pick = [461, 245, [149, 242, 255]]
-status_active = [320, 420, [50, 165, 42]]
-status_not_active = [320, 420, [165, 45, 52]]
+
+# Statuses are not working properly (en localization only)
+# status_active = [320, 420, [50, 165, 42]]
+# status_not_active = [320, 420, [165, 45, 52]]
+
+# index page
+index_indicator_active = [822, 474, [62, 170, 53]]
 
 # the white 'Clock' in the left-top corner
 finish_battle = [21, 46, [255, 255, 255]]
@@ -76,6 +81,9 @@ rewards_pixels = [
 ]
 
 
+def find_indicator_active():
+    return find_needle('live_arena/indicator_active.jpg', confidence=.6, region=[260, 390, 120, 60])
+
 # Requires: checking amount of keys
 class ArenaLive(Feature):
     x_config = 600
@@ -111,6 +119,12 @@ class ArenaLive(Feature):
         return res_list
 
     def _enter(self):
+        # Additional check for avoiding further proceeding
+        if not pixel_check_new(index_indicator_active, mistake=10):
+            self.log("IndexPage indicator is NOT active")
+            self.terminate = True
+            return
+
         click_on_progress_info()
         # live arena
         click(self.x_config, self.y_config)
@@ -120,8 +134,7 @@ class ArenaLive(Feature):
         if props is not None:
             self._apply_props(props=props)
 
-        is_active = pixel_check_new(status_active, mistake=20)
-        if is_active:
+        if find_indicator_active() is not None:
             self.log('Active')
             has_pool = bool(len(self.pool))
             if has_pool:
@@ -191,7 +204,7 @@ class ArenaLive(Feature):
         sleep(1)
 
     def _is_available(self):
-        if pixel_check_new(status_not_active, mistake=20):
+        if find_indicator_active() is None:
             self.terminate = True
 
         return not self.terminate

@@ -61,5 +61,6 @@ class Feature:
         self.duration.start()
 
         self.enter()
-        self.event_dispatcher.publish('run', *args)
+        if not self.terminate:
+            self.event_dispatcher.publish('run', *args)
         self.finish()

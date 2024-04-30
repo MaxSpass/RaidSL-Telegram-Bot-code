@@ -580,7 +580,6 @@ def find_doom_tower_golden_keys():
 def find_doom_tower_silver_keys():
     return find_needle('bank_keys_silver.jpg', confidence=.65)
 
-
 def battles_click():
     battle_button = find_needle_battles()
     if battle_button is not None:
