@@ -106,14 +106,14 @@ def click(x, y, smart=False, timeout=1, interval=2):
     pyautogui.click(x, y)
 
     if smart and rgb:
-        if pixel_check_new([x, y, rgb]):
-            counter = 0
-            sleep(timeout)
-            while pixel_check_new([x, y, rgb]) and counter < 3:
-                log('Delay occurred, re-trying to click again')
-                click(x, y)
-                sleep(interval)
-                counter += 1
+        counter = 0
+        while pixel_check_new([x, y, rgb]) and counter < 3:
+            if counter == 0:
+                sleep(timeout)
+            log('Delay occurred, re-trying to click again')
+            click(x, y)
+            sleep(interval)
+            counter += 1
 
 
 
@@ -226,7 +226,7 @@ def pixels_wait_every():
     return 0
 
 
-def await_click(pixels, msg=None, timeout=5, mistake=0, wait_limit=None):
+def await_click(pixels, msg=None, timeout=5, mistake=0, wait_limit=None, smart=True):
     res = pixels_wait(pixels, msg=msg, timeout=timeout, mistake=mistake, wait_limit=wait_limit)
 
     for i in range(len(res)):
@@ -236,7 +236,7 @@ def await_click(pixels, msg=None, timeout=5, mistake=0, wait_limit=None):
             x = pixel[0]
             y = pixel[1]
 
-            click(x, y, smart=True)
+            click(x, y, smart=smart)
             time.sleep(.3)
 
             break
@@ -377,8 +377,8 @@ def dungeon_select_difficulty(difficulty, mistake=5):
     }
 
     if difficulty in DIFFICULTIES:
-        await_click([DIFFICULTY_SELECT], mistake=mistake)
-        await_click([DIFFICULTIES[difficulty]], mistake=mistake)
+        await_click([DIFFICULTY_SELECT], mistake=mistake, smart=False)
+        await_click([DIFFICULTIES[difficulty]], mistake=mistake, smart=False)
 
 
 def enable_super_raid(pixel=None):
