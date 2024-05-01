@@ -100,8 +100,21 @@ def capture_by_source(src, region, confidence=.9, grayscale=False):
     return pyautogui.locateCenterOnScreen(src, region=region, confidence=confidence, grayscale=grayscale)
 
 
-def click(x, y):
+def click(x, y, smart=False, timeout=1, interval=2):
+    rgb = pyautogui.pixel(x, y) if smart else None
+
     pyautogui.click(x, y)
+
+    if smart and rgb:
+        if pixel_check_new([x, y, rgb]):
+            counter = 0
+            sleep(timeout)
+            while pixel_check_new([x, y, rgb]) and counter < 3:
+                log('Delay occurred, re-trying to click again')
+                click(x, y)
+                sleep(interval)
+                counter += 1
+
 
 
 def click_alt(x, y, duration=1, moving=True):
@@ -223,7 +236,7 @@ def await_click(pixels, msg=None, timeout=5, mistake=0, wait_limit=None):
             x = pixel[0]
             y = pixel[1]
 
-            click(x, y)
+            click(x, y, smart=True)
             time.sleep(.3)
 
             break
@@ -314,7 +327,7 @@ def dungeons_scroll(direction='bottom', times=2):
 
 def dungeons_replay():
     sleep(0.5)
-    click(500, 480)
+    click(500, 480, smart=True)
     sleep(0.3)
 
 
@@ -326,7 +339,7 @@ def dungeons_start():
 def dungeons_click_stage_select():
     # click on the "Stage selection"
     sleep(2)
-    click(820, 55)
+    click(820, 55, smart=True)
     sleep(2)
 
 

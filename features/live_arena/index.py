@@ -82,7 +82,8 @@ rewards_pixels = [
 
 
 def find_indicator_active():
-    return find_needle('live_arena/indicator_active.jpg', confidence=.6, region=[260, 390, 120, 60])
+    region = [260, 390, 120, 60]
+    return find_needle('live_arena/indicator_active.jpg', confidence=.6, region=region)
 
 # Requires: checking amount of keys
 class ArenaLive(Feature):

@@ -204,11 +204,11 @@ class ArenaFactory(Feature):
             y = pos[1]
 
             def click_on_battle():
-                click(x, y)
+                click(x, y, smart=True)
                 sleep(1.5)
 
             def click_on_start():
-                click(860, 480)
+                click(860, 480, smart=True)
                 sleep(0.5)
 
             # checking - is an enemy already attacked
