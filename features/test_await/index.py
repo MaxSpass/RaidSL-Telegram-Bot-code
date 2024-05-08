@@ -1,6 +1,6 @@
 from classes.Feature import Feature
 from helpers.common import *
-from features.live_arena.index_new import E_VICTORY, E_DEFEAT
+from features.live_arena.index import E_VICTORY, E_DEFEAT
 
 rgb_grey = [127, 127, 127]
 rgb_light_blue = [0, 162, 232]
