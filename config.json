@@ -260,6 +260,10 @@
       "task": "test_feature",
       "title": "60min",
       "enable": 1
+    },
+    {
+      "task": "test_await",
+      "enable": 1
     }
   ],
   "presets": [

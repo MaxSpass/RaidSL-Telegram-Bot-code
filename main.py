@@ -1,8 +1,9 @@
 import traceback
 import pyautogui
+import copy
 from bot import TelegramBOT
 from classes.App import *
-# from classes.EventTree import *
+from classes.Location import *
 from constants.index import IS_DEV
 from features.quests.index import QUEST_DAILY_DATA
 
@@ -21,58 +22,73 @@ from features.quests.index import QUEST_DAILY_DATA
 # from in_progress import *
 
 pyautogui.FAILSAFE = False
+is_prod = is_production()
 
-if not IS_DEV and getattr(sys, 'frozen', False):
+if not IS_DEV and is_prod:
     _path = os.path.join(sys._MEIPASS, './vendor/tesseract/tesseract.exe')
     pytesseract.pytesseract.tesseract_cmd = _path
 else:
     # @TODO Should be in the env file
     pytesseract.pytesseract.tesseract_cmd = os.path.normpath(r'C:\Program Files (x86)\Tesseract-OCR\tesseract.exe')
 
-
 def main():
-    # pixels = [
-    #     [350, 290],
-    #     [550, 290],
-    # ]
-    #
-    # for i in range(len(pixels)):
-    #     print(pyautogui.pixel(pixels[i][0], pixels[i][1]))
-
-    # print(is_logged_out())
+    # print(pyautogui.pixel(x_img_2, y_img_2))
     # return
+
     # print(pyautogui.pixel(x, y))
     # print(dominant_color_rgb([1400, 560, 50, 50]))
     # return
 
-    # @TODO EventTree in progress START
-    # 1150, 600
+    # # @TODO Location in progress START 1150, 600
     # rgb_grey = [127, 127, 127]
     # rgb_light_blue = [0, 162, 232]
-    # x = 1000
-    # y = 500
-    # width = 150
-    # height = 150
+    # x = 0
+    # y = 300
+    # width = 250
+    # height = 250
     # region = [x, y, width, height]
     #
-    # sl = EventTree()
+    # test_var = 333
+    # context = {'test': 333}
     #
-    # sl.new_loop([
-    #     {
-    #         "name": 'pixel_check_new',
-    #         "cb": lambda: pixel_check_new([x, y, rgb_grey], mistake=0)
-    #     },
-    #     {
-    #         "name": 'dominant_color_rgb',
-    #         "cb": lambda: rgb_check(rgb_light_blue, dominant_color_rgb(region=region, reverse=False), mistake=0)
-    #     },
-    #     {
-    #         "name": 'needle',
-    #         "cb": lambda: find_needle('market_mystery_shard.jpg', region=region)
-    #     }
-    # ])
+    # def test(msg):
+    #     context['test'] = 444
+    #     print(f"Test: {msg} | {str(test_var)}")
+    #
+    # event_grey = {
+    #     "name": 'Grey | Pixel Check',
+    #     "expect": lambda: pixel_check_new([x+50, y+50, rgb_grey], mistake=10),
+    #     "callback": lambda *args: test('1'),
+    # }
+    #
+    # event_blue = {
+    #     "name": 'Blue | RGB Check',
+    #     "expect": lambda: rgb_check(rgb_light_blue, dominant_color_rgb(region=region, reverse=False), mistake=10),
+    #     "callback": lambda *args: test('2'),
+    # }
+    #
+    # event_needle = {
+    #     "name": 'Needle Check',
+    #     "expect": lambda: find_needle('market_mystery_shard.jpg', region=region),
+    #     "callback": lambda *args: test('3'),
+    #     "children": {"events": [event_blue], "interval": 2},
+    # }
+    #
+    # tree_main = Location(core_events=[event_grey])
+    #
+    # # event_needle_ext = event_needle.copy()
+    # # event_needle_ext.items()
+    #
+    # events_core = tree_main.create(
+    #     events=[event_blue, event_needle],
+    #     interval=.5
+    # )
+    #
+    # events_core()
+    # # print('test_var', context['test'])
+    #
     # return
-    # @TODO EventTree in progress END
+    # @TODO Location in progress END
 
     # print(str(np.array([1,2,3], dtype=object)))
     # return
@@ -87,6 +103,10 @@ def main():
     # quests = Quests()
     # quests.get_not_completed_ids()
     # return
+
+    if is_prod:
+        log("The App is starting, don't touch the mouse and keyboard")
+        sleep(10)
 
     app = App()
     # return
@@ -194,6 +214,10 @@ def main():
                 for i in range(len(commands)):
                     print(commands[i])
                     telegram_bot.add(commands[i])
+
+                # daily_quests = app.get_instance('daily_quests')
+                # doom_tower = app.get_instance('doom_tower')
+                # daily_quests.daily_quest_2()
 
                 telegram_bot.listen()
                 telegram_bot.updater.idle()

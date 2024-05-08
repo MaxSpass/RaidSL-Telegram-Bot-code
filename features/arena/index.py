@@ -237,7 +237,7 @@ class ArenaFactory(Feature):
                 else:
                     self.log('DEFEAT')
 
-                tap_to_continue()
+                tap_to_continue(times=2)
                 sleep(1)
                 # tells to skip several teams by swiping
                 should_use_multi_swipe = True

@@ -12,6 +12,9 @@ DEMON_LORD_REWARD_COORDINATES = {
 }
 DEMON_LORD_DAMAGE_REGION = axis_to_region(184, 150, 687, 202)
 
+corner_right_top = [890, 45, [1, 21, 38]]
+
+
 # @TODO Refactor
 class DemonLord(Feature):
     def __init__(self, app, props=None):
@@ -78,8 +81,11 @@ class DemonLord(Feature):
                 click(870, 457)
                 sleep(5)
 
-                # click on the "Obtain reward button" twice
-                for i in range(2):
+                click(460, 444)
+                sleep(5)
+
+                # click on the "Obtain reward button" second time if needed
+                if not pixel_check_new(corner_right_top, mistake=5):
                     click(460, 444)
                     sleep(5)
 

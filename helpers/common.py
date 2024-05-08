@@ -14,6 +14,8 @@ from helpers.time_mgr import *
 import pytesseract
 from PIL import Image
 import PIL
+import sys
+import copy
 
 time_mgr = TimeMgr()
 
@@ -100,7 +102,7 @@ def capture_by_source(src, region, confidence=.9, grayscale=False):
     return pyautogui.locateCenterOnScreen(src, region=region, confidence=confidence, grayscale=grayscale)
 
 
-def click(x, y, smart=False, timeout=1, interval=2):
+def click(x, y, smart=False, timeout=0.5, interval=2):
     rgb = pyautogui.pixel(x, y) if smart else None
 
     pyautogui.click(x, y)
@@ -114,7 +116,6 @@ def click(x, y, smart=False, timeout=1, interval=2):
             click(x, y)
             sleep(interval)
             counter += 1
-
 
 
 def click_alt(x, y, duration=1, moving=True):
@@ -143,15 +144,6 @@ def debug_save_screenshot(region=None, prefix_name=None):
     folder_ensure(DEBUG_FOLDER)
     screenshot = pyautogui.screenshot(region=region)
     screenshot.save(os.path.join(DEBUG_FOLDER, f"{file_name}.jpg"))
-
-
-def pixel_check_old(x, y, rgb, mistake=0):
-    pixel = pyautogui.pixel(x, y)
-    if mistake == 0:
-        return pixel[0] == rgb[0] and pixel[1] == rgb[1] and pixel[2] == rgb[2]
-    else:
-        return rgb[0] - mistake < pixel[0] < rgb[0] + mistake and rgb[1] - mistake < pixel[1] < rgb[1] + mistake and \
-               rgb[2] - mistake < pixel[2] < rgb[2] + mistake
 
 
 def pixel_check_new(pixel, mistake=10):
@@ -226,7 +218,7 @@ def pixels_wait_every():
     return 0
 
 
-def await_click(pixels, msg=None, timeout=5, mistake=0, wait_limit=None, smart=True):
+def await_click(pixels, msg=None, timeout=5, mistake=0, wait_limit=None, smart=False):
     res = pixels_wait(pixels, msg=msg, timeout=timeout, mistake=mistake, wait_limit=wait_limit)
 
     for i in range(len(res)):
@@ -303,11 +295,14 @@ def waiting_battle_end_regular(msg, timeout=5, x=20, y=46):
     return pixel_wait(msg, x, y, [255, 255, 255], timeout, mistake=10)
 
 
-def tap_to_continue():
+def tap_to_continue(times=1, wait_after=None):
     sleep(1)
-    for i in range(2):
+    for i in range(times):
         click(420, 490)
         sleep(1)
+
+    if type(wait_after) is int:
+        sleep(wait_after)
 
 
 def dungeons_scroll(direction='bottom', times=2):
@@ -339,7 +334,7 @@ def dungeons_start():
 def dungeons_click_stage_select():
     # click on the "Stage selection"
     sleep(2)
-    click(820, 55, smart=True)
+    click(820, 55)
     sleep(2)
 
 
@@ -377,8 +372,8 @@ def dungeon_select_difficulty(difficulty, mistake=5):
     }
 
     if difficulty in DIFFICULTIES:
-        await_click([DIFFICULTY_SELECT], mistake=mistake, smart=False)
-        await_click([DIFFICULTIES[difficulty]], mistake=mistake, smart=False)
+        await_click([DIFFICULTY_SELECT], mistake=mistake)
+        await_click([DIFFICULTIES[difficulty]], mistake=mistake)
 
 
 def enable_super_raid(pixel=None):
@@ -397,6 +392,11 @@ def enable_super_raid(pixel=None):
             click(x, y)
             sleep(.3)
 
+
+def enable_auto_play():
+    AUTO_PLAY_BUTTON = [49, 486]
+    sleep(2)
+    click(AUTO_PLAY_BUTTON[0], AUTO_PLAY_BUTTON[1])
 
 def calculate_win_rate(w, l):
     t = w + l
@@ -480,17 +480,6 @@ def show_image(path=None, image=None):
     cv2.imshow('Matches', image)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
-
-
-# run only in case when you are aware of the action
-def find_perfect_pixel():
-    tracker = []
-    for x in range(913):
-        for y in range(540):
-            log('X: ' + str(x) + ' Y: ' + str(y))
-            if pixel_check_old(x, y, [222, 0, 0]):
-                log("Found")
-                tracker.append([x, y])
 
 
 def click_on_progress_info(delay=0.5):
@@ -592,6 +581,7 @@ def find_doom_tower_golden_keys():
 
 def find_doom_tower_silver_keys():
     return find_needle('bank_keys_silver.jpg', confidence=.65)
+
 
 def battles_click():
     battle_button = find_needle_battles()
@@ -1013,6 +1003,7 @@ def dominant_color_rgb(region, rank=1, reverse=True):
 
     return res
 
+
 def is_number(s):
     try:
         int(s)
@@ -1038,3 +1029,24 @@ def is_logged_out():
             break
 
     return _is_logged_out
+
+
+def is_production():
+    return getattr(sys, 'frozen', False)
+
+
+def merge_dicts(dict1, dict2):
+    """
+    Merge two dictionaries deeply.
+    """
+    merged_dict = copy.deepcopy(dict1)
+
+    for key, value in dict2.items():
+        if key in merged_dict and isinstance(merged_dict[key], dict) and isinstance(value, dict):
+            # If both values are dictionaries, merge them recursively
+            merged_dict[key] = merge_dicts(merged_dict[key], value)
+        else:
+            # Otherwise, update the value in merged_dict with the value from dict2
+            merged_dict[key] = value
+
+    return merged_dict

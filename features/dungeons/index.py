@@ -266,7 +266,7 @@ class Dungeons(Feature):
         if not skip:
             if not FAKE_BATTLE:
                 _name = self.current['name']
-                waiting_battle_end_regular(f'{_name} | Battle end', x=28, y=88)
+                self.waiting_battle_end_regular(f'{_name} | Battle end', x=28, y=88)
                 sleep(.5)
 
             result = not pixel_check_new(self.RESULT_DEFEAT, mistake=10)

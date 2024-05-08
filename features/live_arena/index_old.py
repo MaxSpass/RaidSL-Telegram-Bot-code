@@ -60,7 +60,8 @@ refill_paid = [444, 393, [195, 40, 66]]
 claim_refill = [875, 173, [218, 0, 0]]
 claim_chest = [534, 448, [233, 0, 0]]
 
-# return_start_panel = [444, 490]
+auto_mode = [49, 486]
+return_start_panel = [444, 490]
 
 PAID_REFILL_LIMIT = 1
 ARCHIVE_PATTERN_FIRST = [1, 2, 2]
@@ -79,62 +80,10 @@ rewards_pixels = [
     [875, 272, rgb_reward],
 ]
 
-E_CANT_FIND_OPPONENT = {
-    "name": "Can't find an opponent",
-    "expect": lambda: pixel_check_new(cant_find_opponent, mistake=5),
-    "interval": 3,
-}
-E_PICK_FIRST = {
-    "name": "Pick first",
-    "expect": lambda: pixel_check_new(first, mistake=5),
-}
-E_PICK_SECOND = {
-    "name": "Pick second",
-    "expect": lambda: pixel_check_new(second, mistake=5),
-}
-E_VICTORY = {
-    "name": "Victory",
-    "expect": lambda: pixel_check_new(victory, mistake=20),
-}
-E_DEFEAT = {
-    "name": "Defeat",
-    "expect": lambda: pixel_check_new(defeat, mistake=20),
-}
-E_STAGE_1 = {
-    "name": "Stage 1 | Picking characters",
-    "expect": lambda: pixel_check_new(stage_1, mistake=10),
-    "interval": 2,
-}
-E_PICKING_PROCESS = {
-    "name": "Picking characters process",
-    "expect": lambda: pixel_check_new(first, mistake=10),
-    "interval": 2,
-}
-E_STAGE_2 = {
-    "name": "Stage 2 | Ban hero",
-    "expect": lambda: pixel_check_new(stage_2, mistake=10),
-    "interval": 2,
-}
-E_STAGE_3 = {
-    "name": "Stage 3 | Choosing leader",
-    "expect": lambda: pixel_check_new(stage_3, mistake=10),
-    "interval": 2,
-}
-E_CHOOSING_LEADER = {
-    "name": "Choosing leader process",
-    "expect": lambda: pixel_check_new(first, mistake=10),
-    "interval": 2,
-}
-E_BATTLE_START = {
-    "name": "Battle start",
-    "expect": lambda: pixel_check_new(battle_start, mistake=20),
-}
-
 
 def find_indicator_active():
     region = [260, 390, 120, 60]
     return find_needle('live_arena/indicator_active.jpg', confidence=.6, region=region)
-
 
 # Requires: checking amount of keys
 class ArenaLive(Feature):
@@ -307,8 +256,8 @@ class ArenaLive(Feature):
                 click(x, y)
                 sleep(.5)
 
+
     def attack(self):
-        self.stop = False
         sorted_pool = copy.deepcopy(self.pool)
         self.log('Attack | Pool Length: ' + str(len(sorted_pool)))
         team = []
@@ -359,83 +308,55 @@ class ArenaLive(Feature):
 
             return res
 
-        # def return_to_arena():
-        #     tap_to_continue(wait_after=3)
-
-        def force_stop(*args):
-            self._save_result(True)
-            self.log("OPPONENT LEFT THE BATTLE")
-            self.stop = True
-            # return_to_arena()
-
-        def apply_results(name):
-            if E_VICTORY['name'] == name:
-                self._save_result(True)
-            elif E_DEFEAT['name'] == name:
-                self._save_result(False)
-
-        E_OPPONENT_LEFT_BATTLE = merge_dicts(E_VICTORY, {
-            "name": "Opponent left the battle",
-            "callback": force_stop
-        })
-
-        def await_start_events():
-            return self.awaits(
-                events=[E_CANT_FIND_OPPONENT, E_PICK_FIRST, E_PICK_SECOND],
-                interval=.1
+        def wait_start_pixels():
+            return pixels_wait(
+                [cant_find_opponent, first, second],
+                msg="Start screen 1",
+                timeout=0.1,
+                mistake=5,
+                debug=True
             )
 
-        def await_stage_1():
-            return self.awaits(events=[E_OPPONENT_LEFT_BATTLE, E_STAGE_1])
-
-        def await_pick():
-            return self.awaits(events=[E_OPPONENT_LEFT_BATTLE, E_PICKING_PROCESS])
-
-        def await_stage_2():
-            return self.awaits(events=[E_OPPONENT_LEFT_BATTLE, E_STAGE_2])
-
-        def await_stage_3():
-            return self.awaits(events=[E_OPPONENT_LEFT_BATTLE, E_STAGE_3])
-
-        def await_choosing_leader():
-            return self.awaits(events=[E_OPPONENT_LEFT_BATTLE, E_CHOOSING_LEADER])
-
-        def await_battle_final():
-            return self.awaits(events=[E_BATTLE_START, E_VICTORY, E_DEFEAT])
-
-        def await_battle_results():
-            return self.awaits(events=[E_VICTORY, E_DEFEAT])
-
-        start_events = await_start_events()
+        start_pixels = wait_start_pixels()
         opponent_found = False
         while not opponent_found:
             # for "can't find opponent" cases
-            if start_events['name'] == E_CANT_FIND_OPPONENT['name']:
+            if start_pixels[0]:
                 x_find = cant_find_opponent[0]
                 y_find = cant_find_opponent[1]
                 click(x_find, y_find)
                 sleep(.5)
                 self._click_on_find_opponent()
-                start_events = await_start_events()
+                start_pixels = wait_start_pixels()
             else:
-                self.log('Starts battle: ' + str(self.battles_counter))
                 opponent_found = True
 
-        self.log(start_events['name'])
+        self.log('Starts battle: ' + str(self.battles_counter))
         pattern = ARCHIVE_PATTERN_FIRST[:]
-        if start_events['name'] == E_PICK_SECOND['name']:
+        if start_pixels[1]:
+            self.log("I'm first")
+        elif start_pixels[2]:
+            self.log("I'm second")
             pattern.reverse()
 
-        stage_1_events = await_stage_1()
+        self.log(pattern)
 
-        if E_STAGE_1['name'] == stage_1_events['name']:
+        if pixels_wait(
+                [stage_1],
+                msg='Stage 1 | Picking characters',
+                timeout=2,
+                mistake=5,
+                debug=True
+        )[0]:
             sleep(.5)
             for i in range(len(pattern)):
-                if self.stop:
-                    break
-
-                pick_process_events = await_pick()
-                if E_PICKING_PROCESS['name'] == pick_process_events['name']:
+                if pixels_wait(
+                        [first],
+                        msg='Picking characters',
+                        timeout=2,
+                        mistake=10,
+                        debug=True
+                )[0]:
                     sleep(.2)
 
                     # picking heroes logic
@@ -448,11 +369,13 @@ class ArenaLive(Feature):
 
                     self._confirm()
 
-                    # elif E_OPPONENT_LEFT_BATTLE['name'] == pick_process_events['name']:
-                    #     return_to_arena()
-
-        stage_2_events = await_stage_2()
-        if E_STAGE_2['name'] == stage_2_events['name']:
+        if pixels_wait(
+                [stage_2],
+                msg='Stage 2 | Ban hero',
+                timeout=2,
+                mistake=5,
+                debug=True
+        )[0]:
             sleep(.5)
             # Banning random second slot
             random_slot = random.choice(enemy_slots)
@@ -462,12 +385,21 @@ class ArenaLive(Feature):
             sleep(.5)
             self._confirm()
 
-        stage_3_events = await_stage_3()
-        if E_STAGE_3['name'] == stage_3_events['name']:
+        if pixels_wait(
+                [stage_3],
+                msg='Stage 3 | Choosing leader',
+                timeout=2,
+                mistake=5,
+                debug=True
+        )[0]:
             sleep(.5)
-
-            choosing_leader_events = await_choosing_leader()
-            if E_CHOOSING_LEADER['name'] == choosing_leader_events['name']:
+            if pixels_wait(
+                    [first],
+                    msg='Choosing leader',
+                    timeout=2,
+                    mistake=10,
+                    debug=True
+            )[0]:
                 leaders_indicis = find_leaders_indicis()
 
                 for i in range(len(leaders_indicis)):
@@ -479,33 +411,33 @@ class ArenaLive(Feature):
                     sleep(.5)
                 self._confirm()
 
-        battle_final_events = await_battle_final()
-        # my_turn_or_defeat_or_victory = pixels_wait(
-        #     [battle_start, defeat, victory],
-        #     msg='My turn or Defeat',
-        #     timeout=2,
-        #     mistake=20,
-        #     debug=True
-        # )
+        my_turn_or_defeat_or_victory = pixels_wait(
+            [battle_start, defeat, victory],
+            msg='My turn or Defeat',
+            timeout=2,
+            mistake=20,
+            debug=True
+        )
 
         # Battle just started
-        if E_BATTLE_START['name'] == battle_final_events['name']:
-            enable_auto_play()
-            battle_result_events = await_battle_results()
-            apply_results(battle_result_events['name'])
-            # battle_result = pixels_wait(
-            #     [victory, defeat],
-            #     msg='Victory or Defeat',
-            #     timeout=2,
-            #     mistake=20,
-            #     debug=True
-            # )
-            # self._save_result(battle_result[0])
-        elif battle_final_events['name'] in [E_VICTORY['name'], E_DEFEAT['name']]:
-            apply_results(battle_final_events['name'])
+        if my_turn_or_defeat_or_victory[0]:
+            click(auto_mode[0], auto_mode[1])
+            battle_result = pixels_wait(
+                [victory, defeat],
+                msg='Victory or Defeat',
+                timeout=2,
+                mistake=20,
+                debug=True
+            )
+            self._save_result(battle_result[0])
+        elif my_turn_or_defeat_or_victory[1]:
+            self._save_result(False)
+        elif my_turn_or_defeat_or_victory[2]:
+            self._save_result(True)
 
-        # if not self.stop:
-        tap_to_continue(wait_after=3)
+        sleep(1)
+        click(return_start_panel[0], return_start_panel[1])
+        sleep(3)
 
     def check_availability(self):
         # @TODO Finish

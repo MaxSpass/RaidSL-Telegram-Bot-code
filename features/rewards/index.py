@@ -100,8 +100,8 @@ class Rewards(Feature):
                 button_position = get_button_claim()
 
             # Daily, Weekly, Monthly
-            all_quests_are_done = pixel_check_old(460, 120, [231, 206, 88], 5)
-            can_claim_reward = pixel_check_old(856, 107, [184, 130, 7], 5)
+            all_quests_are_done = pixel_check_new([460, 120, [231, 206, 88]], mistake=10)
+            can_claim_reward = pixel_check_new([856, 107, [184, 130, 7]], mistake=10)
             if all_quests_are_done and can_claim_reward:
                 click(856, 107)
                 sleep(0.5)
@@ -114,7 +114,7 @@ class Rewards(Feature):
                     advanced_pixel = advanced_pixels[j]
                     x2 = advanced_pixel['x']
                     y2 = advanced_pixel['y']
-                    if pixel_check_old(x2, y2, advanced_rgb, 10):
+                    if pixel_check_new([x2, y2, advanced_rgb], mistake=10):
                         self.results['regular_quests']['total'] += 1
                         # click on a reward
                         click(x2, y2 + 10)

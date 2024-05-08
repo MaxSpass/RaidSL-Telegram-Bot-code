@@ -1,10 +1,13 @@
 from classes.EventDispatcher import EventDispatcher
 from classes.Duration import Duration
+from classes.Location import Location
 from helpers.common import close_popup_recursive, log
 
 
-class Feature:
+class Feature(Location):
     def __init__(self, name, app, report_predicate=None):
+        Location.__init__(self, name=name)
+
         self.NAME = name
         self.app = app
         self.report_predicate = report_predicate

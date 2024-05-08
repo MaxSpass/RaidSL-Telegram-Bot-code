@@ -1,6 +1,7 @@
 from helpers.common import *
 from classes.TaskManager import TaskManager
 from features.rewards.index import *
+# from features.live_arena.index_old import *
 from features.live_arena.index import *
 from features.arena.index import *
 from features.demon_lord.index import *
@@ -11,18 +12,19 @@ from features.hydra.index import *
 from features.doom_tower.index import *
 from features.quests.index import *
 from features.test.index import *
-import atexit
+from features.test_await.index import *
+# import atexit
 import signal
 import sys
-import pytesseract
+# import pytesseract
 import subprocess
 import psutil
 import os
 import cv2
 import numpy as np
-from PIL import Image, ImageDraw
+from PIL import Image
 from io import BytesIO
-from telegram.error import NetworkError
+# from telegram.error import NetworkError
 
 GAME_WINDOW = 'Raid: Shadow Legends'
 GAME_PROCESS_NAME = 'Raid.exe'
@@ -44,7 +46,9 @@ INSTANCES_MAP = {
     'doom_tower': DoomTower,
     'daily_quests': Quests,
     'test_feature': TestFeature,
+    'test_await': TestAwait,
 }
+
 
 # EMULATE_NETWORK_ERROR = False
 
@@ -56,6 +60,7 @@ def find_process_by_name(name):
     log(f"No process found with the title: {name}")
     return False
 
+
 def terminate_process_by_name(name):
     proc = find_process_by_name(name)
     if proc:
@@ -66,8 +71,10 @@ def terminate_process_by_name(name):
     log(f"No process found with the title: {name}")
     return False
 
+
 def get_game_windows():
     return pyautogui.getWindowsWithTitle(GAME_WINDOW)
+
 
 def resize_window():
     win = None
@@ -82,6 +89,7 @@ def resize_window():
     else:
         log("No RAID window found")
     return win
+
 
 def calibrate_window():
     log('Preparing the window')
@@ -166,6 +174,7 @@ def make_command_key(input_string):
 
 def make_title(input_string):
     return input_string.replace('_', ' ').title()
+
 
 class App:
     def __init__(self):
@@ -483,7 +492,13 @@ class App:
         calibrate_window()
 
     def get_entry(self, command_name):
-        return self.entries[command_name]
+        return self.entries[command_name] \
+            if command_name in self.entries \
+            else None
+
+    def get_instance(self, command_name):
+        entry = self.get_entry(command_name)
+        return entry['instance'] if entry and 'instance' in entry else None
 
     # def on_message(self, upd, text, retry=True):
     #     global EMULATE_NETWORK_ERROR
@@ -498,7 +513,6 @@ class App:
     #             self.on_message(upd, text, retry=False)
     #     except Exception:
     #         pass
-
 
     def task(self, name, cb, task_type="aside"):
         return lambda upd, ctx: self.taskManager.add(name, lambda: cb(upd, ctx), props={
