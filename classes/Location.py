@@ -1,4 +1,4 @@
-from helpers.common import sleep, pixel_check_new, click
+from helpers.common import sleep, pixel_check_new, click, log
 from datetime import datetime, timedelta
 import numpy as np
 
@@ -26,7 +26,7 @@ class Location:
 
         events_names_list = list(map(lambda el: el['name'], events))
         events_names_str = str(np.array(events_names_list, dtype=object))
-        print(f"Events checking: {events_names_str}")
+        log(f"Events checking: {events_names_str}")
 
         # events = self._extend_by_core_events(events)
         while response is None and not self.stop:
@@ -46,7 +46,7 @@ class Location:
 
                 res = expect()
                 if bool(res):
-                    print(f'Event occurred: {name}')
+                    log(f'Event occurred: {name}')
                     if blocking:
                         response = {"name": name, "data": res}
                     if callback is not None:
@@ -57,7 +57,7 @@ class Location:
                     #     if 'children' in events[counter] \
                     #     else None
                     # if sub_items:
-                    #     print('Sub-items')
+                    #     log('Sub-items')
                     #     events_sub_items = self.awaits(
                     #         events=sub_items['events'],
                     #         interval=sub_items['interval'] if 'interval' in sub_items else interval
@@ -77,7 +77,7 @@ class Location:
     #     return self.events + events if len(self.events) else events
 
     def waiting_battle_end_regular(self, msg, timeout=5, x=20, y=46):
-        print(f"Waiting battle End: {msg}")
+        log(f"Waiting battle End: {msg}")
 
         # for reading the text
         width = 174
@@ -92,7 +92,7 @@ class Location:
         rgb_2 = [181, 130, 5]
 
         def retry_callback(*args):
-            print('Establishing connection...')
+            log('Establishing connection...')
             click(x_2, y_2)
 
         E_BATTLE_END = {
