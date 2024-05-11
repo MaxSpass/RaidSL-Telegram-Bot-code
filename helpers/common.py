@@ -11,6 +11,7 @@ import cv2
 from datetime import datetime
 from constants.index import IS_DEV
 from helpers.time_mgr import *
+from constants.index import *
 import pytesseract
 from PIL import Image
 import PIL
@@ -296,7 +297,7 @@ def waiting_battle_end_regular(msg, timeout=5, x=20, y=46):
 
 
 def tap_to_continue(times=1, wait_after=None):
-    sleep(1)
+    sleep(2)
     for i in range(times):
         click(420, 490)
         sleep(1)
@@ -398,6 +399,7 @@ def enable_auto_play():
     sleep(2)
     click(AUTO_PLAY_BUTTON[0], AUTO_PLAY_BUTTON[1])
 
+
 def calculate_win_rate(w, l):
     t = w + l
     wr = w * 100 / t
@@ -473,11 +475,12 @@ def show_pyautogui_image(pyautogui_screenshot):
     cv2.waitKey()
 
 
-def show_image(path=None, image=None):
+def show_image(path=None, image=None, title='Image'):
     if path:
         image = cv2.imread(path)
 
-    cv2.imshow('Matches', image)
+    cv2.imshow(title, image)
+    cv2.moveWindow(title, 0, 0)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
@@ -551,6 +554,10 @@ def find_needle_energy_bank(region=None):
         region = axis_to_region(220, 32, 790, 68)
 
     return find_needle('bank_energy.jpg', region)
+
+
+def find_needle_refill_plus(region):
+    return find_needle('refill_plus.jpg', region=region)
 
 
 def find_needle_energy_cost(region=None):
@@ -882,16 +889,22 @@ def read_run_cost(region=None, scale=4):
 
 def read_available_energy(region=None):
     log('Computing available energy...')
-    x1 = 352
-
-    # computing generic x1
-    position = find_needle_energy_bank()
-    if position:
-        x1 = position[0] - 75
-
     if not region:
-        # index page
-        region = axis_to_region(x1, 38, 414, 56)
+        IMG_ENERGY_WIDTH = 17
+        PREDICTED_OFFSET_X = 150
+        IMG_REFILL_SIDE = 12
+
+        position_energy = find_needle_energy_bank()
+        if position_energy:
+            x1_refill_button = position_energy[0] - PREDICTED_OFFSET_X + IMG_ENERGY_WIDTH
+            region_refill_button = [x1_refill_button, 38, 100, 18]
+            position_refill_button = find_needle_refill_plus(region=region_refill_button)
+            if position_refill_button:
+                x1 = position_refill_button[0] + IMG_REFILL_SIDE
+                x2 = position_energy[0] - IMG_ENERGY_WIDTH / 2
+                region = axis_to_region(x1, 38, x2, 56)
+
+        # show_pyautogui_image(pyautogui.screenshot(region=region))
 
     configs = [
         '--psm 1 --oem 3',
@@ -913,8 +926,8 @@ def read_keys_bank(region=None, scale=10, key=None):
     log(f"Computing{' ' + key if bool(key) else ''} keys bank...")
 
     if not region:
-        # @TODO Test
-        region = axis_to_region(504, 43, 566, 55)
+        region = [558, 43, 40, 12]
+        # show_pyautogui_image(pyautogui.screenshot(region=region))
 
     configs = [
         '--psm 1 --oem 3',
@@ -1050,3 +1063,18 @@ def merge_dicts(dict1, dict2):
             merged_dict[key] = value
 
     return merged_dict
+
+
+def get_result(rgb):
+    REGION_BATTLE_RESULT = [
+        WINDOW_SIZE[0] / 2 - BORDER_WIDTH - 25,
+        BORDER_WIDTH + WINDOW_TOP_BAR_HEIGHT,
+        50,
+        10
+    ]
+    dominant_rgb = dominant_color_rgb(region=REGION_BATTLE_RESULT)
+    # print(f"Dominant rgb: {dominant_rgb}")
+
+    # high mistake is needed,
+    # because, dominant_color_rgb returns not accurate result
+    return rgb_check(rgb, dominant_rgb, mistake=50)
