@@ -963,7 +963,7 @@ def read_available_energy(region=None):
     log('Computing available energy...')
     if not region:
         region = get_resource_region(needle_predicate=find_needle_energy_bank, needle_width=17)
-        show_pyautogui_image(pyautogui.screenshot(region=region))
+        # show_pyautogui_image(pyautogui.screenshot(region=region))
 
     configs = [
         '--psm 1 --oem 3',
