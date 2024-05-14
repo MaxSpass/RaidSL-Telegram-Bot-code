@@ -48,7 +48,7 @@ class TaskManager:
     # def run(self, task):
     #     res = task.callback()
     #
-    #     # @TODO Temp (Requires Preset Feature)
+    #     # @TODO Temp (Requires Preset Location)
     #     if bool(res) and type(res) is str:
     #         self.event_dispatcher.publish(task.event_id_done, res)
 
@@ -62,7 +62,7 @@ class TaskManager:
 
             res = task.callback()
 
-            # @TODO Temp (Requires Preset Feature)
+            # @TODO Temp (Requires Preset Location)
             if bool(res) and type(res) is str:
                 self.event_dispatcher.publish(task.event_id_done, res)
 

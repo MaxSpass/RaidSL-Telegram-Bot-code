@@ -1,18 +1,19 @@
 from helpers.common import *
 from classes.TaskManager import TaskManager
-from features.rewards.index import *
-# from features.live_arena.index_old import *
-from features.live_arena.index import *
-from features.arena.index import *
-from features.demon_lord.index import *
-from features.faction_wars.index import *
-from features.iron_twins_fortress.index import *
-from features.dungeons.index import *
-from features.hydra.index import *
-from features.doom_tower.index import *
-from features.quests.index import *
-from features.test.index import *
-from features.test_await.index import *
+from locations.rewards.index import *
+# from locations.live_arena.index_old import *
+from locations.live_arena.index import *
+from locations.arena.index import *
+from locations.demon_lord.index import *
+from locations.faction_wars.index import *
+from locations.iron_twins_fortress.index import *
+from locations.dungeons.index import *
+from locations.hydra.index import *
+from locations.doom_tower.index import *
+from locations.quests.index import *
+from locations.test.index import *
+from locations.test_await.index import *
+from constants.index import *
 # import atexit
 import signal
 import sys
@@ -24,15 +25,16 @@ import cv2
 import numpy as np
 from PIL import Image
 from io import BytesIO
+
 # from telegram.error import NetworkError
 
-GAME_WINDOW = 'Raid: Shadow Legends'
-GAME_PROCESS_NAME = 'Raid.exe'
-WINDOW_TOP_BAR_HEIGHT = 25
-BORDER_WIDTH = 7
+# GAME_WINDOW = 'Raid: Shadow Legends'
+# GAME_PROCESS_NAME = 'Raid.exe'
+# WINDOW_TOP_BAR_HEIGHT = 25
+# BORDER_WIDTH = 7
+# CONFIG_PATH = "config.json"
+# WINDOW_SIZE = [920, 540]
 
-CONFIG_PATH = "config.json"
-WINDOW_SIZE = [920, 540]
 INSTANCES_MAP = {
     'arena_live': ArenaLive,
     'arena_classic': ArenaClassic,
@@ -72,8 +74,12 @@ def terminate_process_by_name(name):
     return False
 
 
+def get_windows(title):
+    return pyautogui.getWindowsWithTitle(title)
+
+
 def get_game_windows():
-    return pyautogui.getWindowsWithTitle(GAME_WINDOW)
+    return get_windows(GAME_WINDOW)
 
 
 def resize_window():
@@ -180,6 +186,7 @@ class App:
     def __init__(self):
         self.config = None
         self.window = None
+        self.window_region = None
         self.entries = {}
         self.read_config()
         self.taskManager = TaskManager()
@@ -286,7 +293,7 @@ class App:
             with open(CONFIG_PATH) as config_file:
                 config = json.load(config_file)
                 self.config = self._prepare_config(config)
-                log('Reading App Config...')
+                log('Config is processed')
 
         except SystemError:
             log('An error occurred while reading ' + CONFIG_PATH + ' file')
@@ -324,7 +331,7 @@ class App:
         timeout = 3
         counter = 0
 
-        click(350, 290)
+        click(350, 294)
         time.sleep(2)
 
         burger = find_needle_burger()
@@ -340,11 +347,9 @@ class App:
 
         return True
 
-    def screen(self, *args):
-        global WINDOW_TOP_BAR_HEIGHT
-        global BORDER_WIDTH
-        # hidden window
-        # <Win32Window left="-32000", top="-32000", width="160", height="28", title="Raid: Shadow Legends">
+    def get_window_region(self):
+        if self.window_region is not None:
+            return self.window_region
 
         x = self.window.left
         y = self.window.top
@@ -359,7 +364,13 @@ class App:
             height - BORDER_WIDTH * 2 - WINDOW_TOP_BAR_HEIGHT,
         ]
 
-        screenshot = pyautogui.screenshot(region=region)
+        self.window_region = region
+
+        return region
+
+    def screen(self, *args):
+        _region = self.get_window_region()
+        screenshot = pyautogui.screenshot(region=_region)
 
         # Convert the screenshot to bytes
         image_bytes = BytesIO()
@@ -449,13 +460,11 @@ class App:
         # atexit.register(self.report)
         signal.signal(signal.SIGINT, self.kill)
         signal.signal(signal.SIGTERM, self.kill)
-        # prepare_window()
 
         game_path = self.get_game_path()
 
         if find_process_by_name(GAME_PROCESS_NAME):
-            self.relogin()
-            self.prepare()
+            self.prepare(predicate=self.relogin)
         elif game_path:
             self.launch()
         else:
@@ -466,13 +475,13 @@ class App:
         if game_path:
             subprocess.run(f"{game_path} -gameid=101 -tray-start")
             sleep(3)
-            self.window = resize_window()
+            def _wait_game_window():
+                while not is_index_page(logger=False):
+                    log('Waiting the game window')
+                    sleep(5)
 
-            while not is_index_page(logger=False):
-                log('Waiting the game window')
-                sleep(5)
+            self.prepare(predicate=_wait_game_window)
 
-            calibrate_window()
             log('Game window is ready')
         else:
             return "No 'game_path' provided field in the config"
@@ -487,8 +496,11 @@ class App:
         else:
             return "No 'game_path' provided field in the config"
 
-    def prepare(self):
+    def prepare(self, *args, predicate=None):
         self.window = resize_window()
+        self.window_region = None
+        if predicate is not None:
+            predicate()
         calibrate_window()
 
     def get_entry(self, command_name):

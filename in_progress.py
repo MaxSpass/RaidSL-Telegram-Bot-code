@@ -1,6 +1,8 @@
 import cv2
 import pyautogui
+import threading
 from helpers.common import *
+from locations.live_arena.index import *
 
 
 def test_func(msg, limit=3):
@@ -155,3 +157,60 @@ def in_progress_find_squares():
     cv2.imshow('Squares', image)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
+
+def in_progress_improve_results():
+    # print(E_VICTORY['expect']())
+    # return
+
+    offset = 0
+    # offset = 8
+
+    REGION_BATTLE_RESULT = [
+        WINDOW_SIZE[0] / 2 - BORDER_WIDTH - 25 + offset,
+        BORDER_WIDTH + WINDOW_TOP_BAR_HEIGHT,
+        50,
+        10
+    ]
+
+    # arena_classic victory: [59, 37, 11]
+    # arena_classic defeat: [27, 19, 131]
+    # arena_live victory: [77, 53, 10]
+
+    def capture():
+        sleep(1)
+        print(dominant_color_rgb(region=REGION_BATTLE_RESULT))
+        debug_save_screenshot(region=REGION_BATTLE_RESULT)
+        # show_pyautogui_image(pyautogui.screenshot(region=REGION_BATTLE_RESULT))
+
+    # dominant_color = dominant_color_rgb(region=REGION_BATTLE_RESULT)
+    # print('dominant_color', dominant_color)
+    # return
+
+    # callback = lambda: print(pixel_check_new(victory, mistake=30))
+    # return
+
+    title = 'opponent_left_the_battle'
+
+    def display_image(title):
+        image = os.path.join(os.getcwd(), 'images', 'for_test', 'opponent_left_the_battle.png')
+        show_image(path=image, title=title)
+
+    # Create a thread to display the image
+    display_thread = threading.Thread(target=display_image, args=(title,))
+    display_thread.start()
+
+    for i in range(15):
+        sleep(1)
+        print(f"Victory: {get_result(rgb_victory)} | Defeat: {get_result(rgb_defeat)}")
+
+    # capture()
+
+    # capture_thread = threading.Thread(target=capture)
+    # capture_thread.start()
+
+    # wins = get_windows(title)
+    # if len(wins):
+    #     print('opponent_left_the_battle')
+    #     win = wins[0]
+    #     win.activate()
+    #     win.moveTo(0, 0)

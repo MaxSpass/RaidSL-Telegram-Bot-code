@@ -23,6 +23,10 @@ time_mgr = TimeMgr()
 special_offer_popup = [300, 370, [22, 124, 156]]
 
 
+def get_date_for_log():
+    return datetime.now().strftime('%Y_%m_%d')
+
+
 def get_time_for_log(s=':'):
     return '{}'.format(str(datetime.now().strftime(f"%H{s}%M{s}%S")))
 
@@ -64,12 +68,10 @@ def log(message):
 
 def folder_ensure(folder_path):
     # Check if the folder exists
-    if not os.path.exists(folder_path):
+    if not os.path.exists(os.path.normpath(folder_path)):
         # If the folder doesn't exist, create it
         os.makedirs(folder_path)
         print(f"Folder '{folder_path}' created successfully.")
-    else:
-        print(f"Folder '{folder_path}' already exists.")
 
 
 def sleep(duration):
@@ -135,16 +137,18 @@ def random_easying():
     ])
 
 
-def debug_save_screenshot(region=None, prefix_name=None):
+def debug_save_screenshot(region=None, suffix_name=None, output=None, quality=75, ext='jpg'):
     if not region:
         region = [0, 0, 906, 533]
-    DEBUG_FOLDER = 'debug'
-    # @TODO Region is hardcoded
+    output_debug = 'debug'
+    if output is not None:
+        output_debug = os.path.normpath(f"{output_debug}/{output}")
+
     time = get_time_for_log(s='-')
-    file_name = format_string_for_log(f"{time}-{str(prefix_name).lower()}" if prefix_name else time)
-    folder_ensure(DEBUG_FOLDER)
+    folder_ensure(output_debug)
+    file_name = format_string_for_log(f"{time}-{str(suffix_name).lower()}" if suffix_name else time)
     screenshot = pyautogui.screenshot(region=region)
-    screenshot.save(os.path.join(DEBUG_FOLDER, f"{file_name}.jpg"))
+    screenshot.save(os.path.join(output_debug, f"{file_name}.{ext}"), quality=quality)
 
 
 def pixel_check_new(pixel, mistake=10):
@@ -209,7 +213,7 @@ def pixels_wait(pixels, msg=None, timeout=5, mistake=0, wait_limit=None, debug=F
 
     if debug and has_wait_limit and counter >= wait_limit:
         # debug
-        debug_save_screenshot(prefix_name=msg)
+        debug_save_screenshot(suffix_name=msg)
 
     return checked_pixels
 
@@ -468,10 +472,11 @@ def clear_folder(path):
         os.remove(f)
 
 
-def show_pyautogui_image(pyautogui_screenshot):
+def show_pyautogui_image(pyautogui_screenshot, title='match'):
     open_cv_image = np.array(pyautogui_screenshot)
     open_cv_image = open_cv_image[:, :, ::-1].copy()
-    cv2.imshow('Matches', open_cv_image)
+    cv2.imshow(title, open_cv_image)
+    cv2.moveWindow(title, 1000, 1000)
     cv2.waitKey()
 
 
@@ -480,7 +485,7 @@ def show_image(path=None, image=None, title='Image'):
         image = cv2.imread(path)
 
     cv2.imshow(title, image)
-    cv2.moveWindow(title, 0, 0)
+    cv2.moveWindow(title, 1000, 1000)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
@@ -500,33 +505,53 @@ def image_path(image):
     return os.path.join(os.getcwd(), 'image', image)
 
 
-def find_needle(image_name, region=None, confidence=None, scale=None):
+def find_needle(
+        image_name,
+        region=None,
+        confidence=None,
+        scale=None,
+        retries=0,
+        retry_interval=1,
+        return_dimensions=True
+):
     if region is None:
         region = [0, 0, 900, 530]
     if confidence is None:
         confidence = .8
 
     path_image = os.path.join(os.getcwd(), 'images/needles/' + image_name)
+    # width = None
+    # height = None
 
     if scale:
         physical_image = cv2.imread(path_image)
-        height, width = physical_image.shape
+        _height, _width = physical_image.shape
         # Scale the physical image to match the screen size
         # Calculate the new dimensions
-        new_width = width * scale
-        new_height = height * scale
-
+        width = _width * scale
+        height = _height * scale
         # Resize the image with Lanczos interpolation
         # scaled_image = image.resize((new_width, new_height), Image.LANCZOS)
-        scaled_image = cv2.resize(physical_image, (new_width, new_height))
+        scaled_image = cv2.resize(physical_image, (width, height))
 
         path_image = scaled_image
 
         # show_pyautogui_image(path_image)
 
-    # path_image = image_path(os.path.join('needles', image_name))
-    return capture_by_source(path_image, region,
-                             confidence=confidence)
+    position = capture_by_source(path_image, region, confidence=confidence)
+    while retries > 0 and position is None:
+        position = capture_by_source(path_image, region, confidence=confidence)
+        retries -= 1
+        sleep(retry_interval)
+
+    # if return_dimensions:
+    #     if width and height:
+    #         return position, width, height
+    #     else:
+    #         _height, _width = cv2.imread(path_image).shape
+    #         return position + (_width, _height)
+
+    return position
 
 
 def find_needle_refill_ruby():
@@ -554,6 +579,13 @@ def find_needle_energy_bank(region=None):
         region = axis_to_region(220, 32, 790, 68)
 
     return find_needle('bank_energy.jpg', region)
+
+
+def find_faction_keys_bank(region=None):
+    if not region:
+        region = [0, 32, 900, 50]
+
+    return find_needle('bank_faction_keys.jpg', region, confidence=.6)
 
 
 def find_needle_refill_plus(region):
@@ -588,6 +620,14 @@ def find_doom_tower_golden_keys():
 
 def find_doom_tower_silver_keys():
     return find_needle('bank_keys_silver.jpg', confidence=.65)
+
+
+def find_hero_filter_default(region=None, confidence=.7, retries=None):
+    return find_needle('filter.jpg', region=region, confidence=confidence, retries=retries)
+
+
+def find_hero_filter_small(region=None, confidence=.7, retries=None):
+    return find_needle('filter_small.png', region=region, confidence=confidence, retries=retries)
 
 
 def battles_click():
@@ -779,7 +819,16 @@ def crop(image=None, region=None):
         return image[region[1]:region[1] + region[3], region[0]:region[0] + region[2]]
 
 
-def read_text(region, configs=None, timeout=0.1, parser=None, update_screenshot=False, scale=2, debug=False):
+def read_text(
+        region,
+        configs=None,
+        timeout=0.1,
+        parser=None,
+        update_screenshot=False,
+        scale=2,
+        debug=False,
+        title='match'
+):
     # debug = True
     res = []
     screenshot = None
@@ -808,16 +857,22 @@ def read_text(region, configs=None, timeout=0.1, parser=None, update_screenshot=
             screenshot = pyautogui.screenshot(region=region)
 
         config = configs[i]
-        # proper resize
-        image = scale_up(screenshot=screenshot, factor=scale)
-        # image = screenshot_to_image(screenshot)
+        # image = scale_up(screenshot=screenshot, factor=scale)
+
+
+        # @TODO Should be well tested
+        img = screenshot_to_image(screenshot)
+        image = cv2.resize(img, None, fx=scale, fy=scale, interpolation=cv2.INTER_LANCZOS4)
+        # thresh = cv2.threshold(image, 175, 255, cv2.THRESH_BINARY_INV)[1]
+        # kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+        # opening = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
 
         # greyscale
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
         # @TODO Debug
         if debug and i == 0:
-            cv2.imshow('Matches', image)
+            cv2.imshow(title, image)
             cv2.waitKey()
 
         text = pytesseract.image_to_string(image, config=config)
@@ -887,24 +942,28 @@ def read_run_cost(region=None, scale=4):
     return read_text(configs=configs, region=region, parser=parse_energy_cost, scale=scale)
 
 
+def get_resource_region(needle_predicate, needle_width, predicted_offset_x=150):
+    region = None
+    IMG_REFILL_SIDE = 12
+
+    position_energy = needle_predicate()
+    if position_energy:
+        x1_refill_button = position_energy[0] - predicted_offset_x + needle_width
+        region_refill_button = [x1_refill_button, 38, 100, 18]
+        position_refill_button = find_needle_refill_plus(region=region_refill_button)
+        if position_refill_button:
+            x1 = position_refill_button[0] + IMG_REFILL_SIDE
+            x2 = position_energy[0] - needle_width / 2
+            region = axis_to_region(x1, 38, x2, 56)
+
+    return region
+
+
 def read_available_energy(region=None):
     log('Computing available energy...')
     if not region:
-        IMG_ENERGY_WIDTH = 17
-        PREDICTED_OFFSET_X = 150
-        IMG_REFILL_SIDE = 12
-
-        position_energy = find_needle_energy_bank()
-        if position_energy:
-            x1_refill_button = position_energy[0] - PREDICTED_OFFSET_X + IMG_ENERGY_WIDTH
-            region_refill_button = [x1_refill_button, 38, 100, 18]
-            position_refill_button = find_needle_refill_plus(region=region_refill_button)
-            if position_refill_button:
-                x1 = position_refill_button[0] + IMG_REFILL_SIDE
-                x2 = position_energy[0] - IMG_ENERGY_WIDTH / 2
-                region = axis_to_region(x1, 38, x2, 56)
-
-        # show_pyautogui_image(pyautogui.screenshot(region=region))
+        region = get_resource_region(needle_predicate=find_needle_energy_bank, needle_width=17)
+        show_pyautogui_image(pyautogui.screenshot(region=region))
 
     configs = [
         '--psm 1 --oem 3',
@@ -922,11 +981,11 @@ def read_available_energy(region=None):
     return read_text(configs=configs, region=region, parser=parse_energy_bank, scale=4)
 
 
-def read_keys_bank(region=None, scale=10, key=None):
+def read_keys_bank(region=None, scale=8, key=None):
     log(f"Computing{' ' + key if bool(key) else ''} keys bank...")
 
     if not region:
-        region = [558, 43, 40, 12]
+        region = get_resource_region(needle_predicate=find_faction_keys_bank, needle_width=24)
         # show_pyautogui_image(pyautogui.screenshot(region=region))
 
     configs = [
@@ -1031,13 +1090,13 @@ def is_logged_out():
     rgb = [16, 126, 158]
     pixels = [
         # Re-log In button
-        [350, 290, rgb],
+        [350, 294, rgb],
         # Support button
-        [550, 290, rgb],
+        [550, 294, rgb],
     ]
 
     for i in range(len(pixels)):
-        if not pixel_check_new(pixels[i], mistake=5):
+        if not pixel_check_new(pixels[i], mistake=10):
             _is_logged_out = False
             break
 

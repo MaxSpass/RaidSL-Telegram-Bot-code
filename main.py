@@ -3,9 +3,11 @@ import pyautogui
 import copy
 from bot import TelegramBOT
 from classes.App import *
-from classes.Location import *
+from classes.Debug import *
+from classes.Foundation import *
 from constants.index import IS_DEV
-from features.quests.index import QUEST_DAILY_DATA
+from locations.hero_filter.index import *
+# from locations.quests.index import QUEST_DAILY_DATA
 
 # from telegram.ext import CommandHandler
 # import pyautogui
@@ -16,9 +18,9 @@ from features.quests.index import QUEST_DAILY_DATA
 # import pytesseract
 # from PIL import Image
 # from io import BytesIO
-# from features.faction_wars.index import *
-# from features.hero_preset.index import HeroPreset
-# from features.doom_tower.index import *
+# from locations.faction_wars.index import *
+# from locations.hero_preset.index import HeroPreset
+# from locations.doom_tower.index import *
 # from in_progress import *
 
 pyautogui.FAILSAFE = False
@@ -31,7 +33,94 @@ else:
     # @TODO Should be in the env file
     pytesseract.pytesseract.tesseract_cmd = os.path.normpath(r'C:\Program Files (x86)\Tesseract-OCR\tesseract.exe')
 
+# # TEST 1
+# x = 633
+# y = 41
+# rgb_test = [255, 34, 51]
+# x_offset = 825
+# y_offset = 448
+#
+# # TEST 2
+# x = 725
+# y = 50
+# rgb_test = [16, 40, 49]
+# x_offset = 825
+# y_offset = 448
+#
+# pixel_origin = [x, y, rgb_test]
+# x_mistake = x_offset + 2
+# y_mistake = y_offset - 30
+# pixel_debug = [
+#     x + x_mistake,
+#     y + y_mistake,
+#     rgb_test
+# ]
+
 def main():
+    # print(read_available_energy())
+    # print(read_keys_bank())
+    # position = find_needle_close_popup()
+    # print(position)
+    # return
+
+    # hero_filter = HeroFilter()
+    # hero_filter.choose('Armanz')
+    # return
+
+    # print(pyautogui.pixel(725, 50))
+    # return
+
+    # same = False
+    # counter = 0
+    # while not same:
+    #     x_test = pixel_debug[0]
+    #     y_test = pixel_debug[1] + counter
+    #     print(f"X: {x_test}, Y: {y_test}")
+    #     _pixel = pyautogui.pixel(x_test, y_test)
+    #     same = rgb_check(rgb_test, _pixel)
+    #     print('O Pixel:', rgb_test)
+    #     print('D Pixel:', _pixel)
+    #     print('===================')
+    #     counter += 1
+    #     sleep(.3)
+
+    # while True:
+    #     print('original', pyautogui.pixel(pixel_origin[0], pixel_origin[1]))
+    #     show_pyautogui_image(
+    #         pyautogui.screenshot(region=[pixel_origin[0], pixel_origin[1], 20, 20])
+    #     )
+    #     print('debug', pyautogui.pixel(pixel_debug[0], pixel_debug[1]))
+    #     show_pyautogui_image(
+    #         pyautogui.screenshot(region=[pixel_debug[0], pixel_debug[1], 20, 20])
+    #     )
+    # return
+
+    # folder_ensure()
+    # debug_save_screenshot(output=f"test/{get_date_for_log()}")
+    # return
+    # print(pyautogui.pixel(350, 294))
+    # print(pyautogui.pixel(550, 294))
+    # return
+
+    # for affinity, region in TAVERN_AFFINITY_REGIONS.items():
+    #     beer_total_float = read_text(
+    #         region=region,
+    #         scale=6,
+    #         parser=parse_energy_cost
+    #     )
+    #     print(f"{str(beer_total_float)}")
+    #     if affinity == 'spirit':
+    #         show_pyautogui_image(pyautogui.screenshot(region=region))
+    # return
+
+    # print(read_keys_bank())
+    # return
+    # for i in range(10):
+    #     # print(E_VICTORY['expect']())
+    #     print(E_DEFEAT['expect']())
+    #     sleep(1)
+    # return
+
     # print(pyautogui.pixel(x_img_2, y_img_2))
     # return
 
@@ -90,16 +179,6 @@ def main():
     # return
     # @TODO Location in progress END
 
-    # print(str(np.array([1,2,3], dtype=object)))
-    # return
-
-    # for i in range(2):
-    #     swipe('bottom', 450, 490, 340, speed=3)
-    # return
-
-    # print(pyautogui.pixel(320, 420))
-    # return
-
     # quests = Quests()
     # quests.get_not_completed_ids()
     # return
@@ -119,6 +198,10 @@ def main():
         try:
             if app.config['start_immediate']:
                 app.start()
+                # debug_save_screenshot(region=app.get_window_region(), quality=100, ext='png')
+                # debug = Debug(app=app, name='arena_live')
+                # debug.screenshot(suffix_name="Custom prefix name")
+                # app.get_instance('daily_quests').daily_quest_1()
 
             if has_telegram_token:
                 telegram_bot = TelegramBOT({
@@ -142,6 +225,11 @@ def main():
                         'command': 'relogin',
                         'description': 'Re-log in',
                         'handler': app.task(name='relogin', cb=app.relogin),
+                    })
+                    telegram_bot.add({
+                        'command': 'prepare',
+                        'description': 'Prepares the Game window',
+                        'handler': app.task(name='prepare', cb=app.prepare),
                     })
 
                 # Sync
