@@ -349,7 +349,8 @@ class ArenaLive(Location):
 
                     index_to_remove = i
 
-                del sorted_pool[index_to_remove]
+                if index_to_remove in sorted_pool:
+                    del sorted_pool[index_to_remove]
 
             return next_char
 
