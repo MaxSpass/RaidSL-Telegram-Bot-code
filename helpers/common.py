@@ -17,6 +17,7 @@ from PIL import Image
 import PIL
 import sys
 import copy
+import traceback
 
 time_mgr = TimeMgr()
 
@@ -740,15 +741,23 @@ def parse_dealt_damage(variants):
         arr = arr[0:2]
         # joining to the one string
         str_damage = '.'.join(arr)
+        int_damage = 0
 
-        # avoid phantom bug for some cases
-        if str_damage:
-            int_damage = float(str_damage)
-        else:
-            int_damage = 0
+        try:
+            last_char = str_damage[len(str_damage) - 1]
+            multiplier = s[s.index(last_char) + 1].upper()
 
-        if s.count('K'):
-            int_damage = int_damage / 1000
+            if str_damage:
+                int_damage = float(str_damage)
+
+            if multiplier in ['K', 'M', 'B']:
+                if multiplier == 'K':
+                    int_damage = int_damage / 1000
+                elif multiplier == 'B':
+                    int_damage = int_damage * 1000
+        except Exception:
+            error = traceback.format_exc()
+            log_save(error)
 
         return int_damage
 
