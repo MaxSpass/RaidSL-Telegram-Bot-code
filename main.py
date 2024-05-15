@@ -128,57 +128,6 @@ def main():
     # print(dominant_color_rgb([1400, 560, 50, 50]))
     # return
 
-    # # @TODO Location in progress START 1150, 600
-    # rgb_grey = [127, 127, 127]
-    # rgb_light_blue = [0, 162, 232]
-    # x = 0
-    # y = 300
-    # width = 250
-    # height = 250
-    # region = [x, y, width, height]
-    #
-    # test_var = 333
-    # context = {'test': 333}
-    #
-    # def test(msg):
-    #     context['test'] = 444
-    #     print(f"Test: {msg} | {str(test_var)}")
-    #
-    # event_grey = {
-    #     "name": 'Grey | Pixel Check',
-    #     "expect": lambda: pixel_check_new([x+50, y+50, rgb_grey], mistake=10),
-    #     "callback": lambda *args: test('1'),
-    # }
-    #
-    # event_blue = {
-    #     "name": 'Blue | RGB Check',
-    #     "expect": lambda: rgb_check(rgb_light_blue, dominant_color_rgb(region=region, reverse=False), mistake=10),
-    #     "callback": lambda *args: test('2'),
-    # }
-    #
-    # event_needle = {
-    #     "name": 'Needle Check',
-    #     "expect": lambda: find_needle('market_mystery_shard.jpg', region=region),
-    #     "callback": lambda *args: test('3'),
-    #     "children": {"events": [event_blue], "interval": 2},
-    # }
-    #
-    # tree_main = Location(core_events=[event_grey])
-    #
-    # # event_needle_ext = event_needle.copy()
-    # # event_needle_ext.items()
-    #
-    # events_core = tree_main.create(
-    #     events=[event_blue, event_needle],
-    #     interval=.5
-    # )
-    #
-    # events_core()
-    # # print('test_var', context['test'])
-    #
-    # return
-    # @TODO Location in progress END
-
     # quests = Quests()
     # quests.get_not_completed_ids()
     # return
@@ -188,7 +137,6 @@ def main():
         sleep(10)
 
     app = App()
-    # return
 
     if IS_DEV or app.validation():
         game_path = app.get_game_path()

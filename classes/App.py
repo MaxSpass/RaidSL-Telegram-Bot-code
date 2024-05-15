@@ -351,6 +351,9 @@ class App:
         if self.window_region is not None:
             return self.window_region
 
+        if self.window is None:
+            self.window = resize_window()
+
         x = self.window.left
         y = self.window.top
         width = self.window.width
