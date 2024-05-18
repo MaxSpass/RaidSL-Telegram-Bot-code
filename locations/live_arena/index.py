@@ -11,15 +11,17 @@ hero_filter = HeroFilter()
 
 first = [334, 209, [22, 51, 90]]
 second = [899, 94, [90, 24, 24]]
-cant_find_opponent = [590, 290, [187, 130, 5]]
+cant_find_opponent_button_find = [590, 290, [187, 130, 5]]
+cant_find_opponent_button_cancel = [280, 290, [22, 124, 156]]
 rgb_empty_slot = [49, 54, 49]
-
+width_empty_slot = 48
+height_empty_slot = 64
 my_slots = [
-    [240, 170, rgb_empty_slot],
-    [200, 270, rgb_empty_slot],
-    [160, 170, rgb_empty_slot],
-    [120, 270, rgb_empty_slot],
-    [76, 170, rgb_empty_slot],
+    [226, 162, rgb_empty_slot],
+    [184, 264, rgb_empty_slot],
+    [146, 162, rgb_empty_slot],
+    [105, 264, rgb_empty_slot],
+    [64, 162, rgb_empty_slot],
 ]
 
 enemy_slots = [
@@ -85,9 +87,16 @@ rewards_pixels = [
     [875, 272, rgb_reward],
 ]
 
+# E_CANT_FIND_OPPONENT = {
+#     "name": "Can't find an opponent",
+#     "expect": lambda: pixel_check_new(cant_find_opponent_button_find, mistake=5),
+#     "interval": 3,
+# }
 E_CANT_FIND_OPPONENT = {
     "name": "Can't find an opponent",
-    "expect": lambda: pixel_check_new(cant_find_opponent, mistake=5),
+    "expect": lambda: pixels_every(
+        same_pixels_line(cant_find_opponent_button_cancel), lambda p: pixel_check_new(p, mistake=5)
+    ),
     "interval": 3,
 }
 E_PICK_FIRST = {
@@ -106,16 +115,6 @@ E_DEFEAT = {
     "name": "Defeat",
     "expect": lambda: pixel_check_new(defeat, mistake=30),
 }
-
-# @TODO TEST (does not work well)
-# E_VICTORY = {
-#     "name": "Victory",
-#     "expect": lambda: get_result(rgb_victory),
-# }
-# E_DEFEAT = {
-#     "name": "Defeat",
-#     "expect": lambda: get_result(rgb_defeat),
-# }
 
 E_STAGE_1 = {
     "name": "Stage 1 | Picking characters",
@@ -149,6 +148,7 @@ E_BATTLE_START = {
 
 
 def find_indicator_active():
+    # @TODO Should Test and rework
     region = [260, 390, 120, 60]
     return find_needle('live_arena/indicator_active.jpg', confidence=.6, region=region)
 
@@ -243,7 +243,7 @@ class ArenaLive(Location):
             self.refill = int(props['refill'])
 
     def _confirm(self):
-        click(800, 490)
+        click(870, 465)
         sleep(.5)
 
     def _claim_chest(self):
@@ -266,10 +266,9 @@ class ArenaLive(Location):
             sleep(2)
 
     def _click_on_find_opponent(self):
-        sleep(2)
         self.debug.screenshot(folder=self.current_battle_time, suffix_name='Click on find opponent')
-        await_click([find_opponent], msg="Click on find opponent", mistake=20)
-        sleep(2)
+        if not await_click([find_opponent], msg="Click on find opponent", mistake=20, wait_limit=65)[0]:
+            self.terminate = True
 
     def _is_available(self):
         if find_indicator_active() is None:
@@ -332,6 +331,7 @@ class ArenaLive(Location):
         slots_counter = 0
 
         def find_character(role=None):
+            # @TODO Refactor due to E_OPPONENT_LEFT_BATTLE
             self.log(f'Current pool length: {len(sorted_pool)}')
             if role is None:
                 role = sorted_pool[0]['role']
@@ -341,16 +341,23 @@ class ArenaLive(Location):
                 i, char = find(sorted_pool, lambda x: x.get('role') == role)
                 index_to_remove = 0
 
-                if char:
-                    hero_filter.choose(title=char['name'])
+                if char and not self.stop:
+                    hero_filter.choose(title=char['name'], wait_after=1.5)
 
-                    if not pixel_check_new(my_slots[slots_counter], mistake=5):
+                    _slot = my_slots[slots_counter]
+                    _region = [_slot[0], _slot[1], width_empty_slot, height_empty_slot]
+                    # show_pyautogui_image(pyautogui.screenshot(region=_region))
+                    _position_empty = find_hero_slot_active(region=_region)
+                    if _position_empty is None and not self.stop:
                         next_char = char
+
+                    # if not pixel_check_new(my_slots[slots_counter], mistake=10):
+                    #     next_char = char
 
                     index_to_remove = i
 
-                if index_to_remove in sorted_pool:
-                    del sorted_pool[index_to_remove]
+                # @TODO Add checking
+                del sorted_pool[index_to_remove]
 
             return next_char
 
@@ -381,17 +388,11 @@ class ArenaLive(Location):
             elif E_DEFEAT['name'] == name:
                 self._save_result(False)
 
-        # E_OPPONENT_LEFT_BATTLE = merge_dicts(E_VICTORY, {
-        #     "name": "Opponent left the battle",
-        #     "callback": force_stop
-        # })
-
-        E_OPPONENT_LEFT_BATTLE = {
+        E_OPPONENT_LEFT_BATTLE = prepare_event(E_VICTORY, {
             "name": "Opponent left the battle",
-            # "expect": lambda: pixel_check_new(find_opponent, mistake=10) or E_VICTORY['expect'](),
-            "expect": E_VICTORY['expect'],
-            "callback": force_stop
-        }
+            "interval": .5,
+            "callback": force_stop,
+        })
 
         def await_start_events():
             return self.awaits(
@@ -422,15 +423,15 @@ class ArenaLive(Location):
 
         start_events = await_start_events()
         opponent_found = False
-        while not opponent_found:
+        while not opponent_found and not self.terminate:
             # for "can't find opponent" cases
             if E_CANT_FIND_OPPONENT['name'] == start_events['name']:
                 self.debug.screenshot(folder=self.current_battle_time, suffix_name="E_CANT_FIND_OPPONENT")
-                x_find = cant_find_opponent[0]
-                y_find = cant_find_opponent[1]
+                x_find = cant_find_opponent_button_cancel[0]
+                y_find = cant_find_opponent_button_cancel[1]
                 click(x_find, y_find)
                 sleep(.5)
-                # self._click_on_find_opponent()
+                self._click_on_find_opponent()
                 start_events = await_start_events()
             else:
                 self.debug.screenshot(folder=self.current_battle_time, suffix_name="Starts battle")
@@ -463,7 +464,8 @@ class ArenaLive(Location):
                     # picking heroes logic
                     for j in range(pattern[i]):
                         if self.stop:
-                            self.debug.screenshot(folder=self.current_battle_time, suffix_name="E_PICKING_PROCESS break")
+                            self.debug.screenshot(folder=self.current_battle_time,
+                                                  suffix_name="E_PICKING_PROCESS break")
                             break
 
                         unit = find_character()

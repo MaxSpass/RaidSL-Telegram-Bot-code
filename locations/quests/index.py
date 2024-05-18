@@ -289,7 +289,7 @@ class Quests(Location):
 
                         hero_filter.open()
                         hero_filter.filter()
-                        hero_filter.close()
+                        hero_filter.hide()
 
                     x_steps, y_steps = SIDEBAR_SLOTS_MATRIX[i]
                     x_initial = x_steps * SIDEBAR_SLOT_WIDTH + SIDEBAR_SLOTS_OFFSET['x']

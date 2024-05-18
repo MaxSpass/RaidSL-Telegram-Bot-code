@@ -192,7 +192,7 @@ def pixels_wait(pixels, msg=None, timeout=5, mistake=0, wait_limit=None, debug=F
     if length > 1:
         pixels_str = 'pixels'
     if msg is not None:
-        log('Waiting some of ' + str(length) + ' ' + pixels_str + ': ' + msg)
+        log(f"Waiting {pixels_str}: {msg}")
 
     def restart():
         res = []
@@ -205,12 +205,13 @@ def pixels_wait(pixels, msg=None, timeout=5, mistake=0, wait_limit=None, debug=F
     has_wait_limit = type(wait_limit) is int or type(wait_limit) is float
 
     while checked_pixels.count(False) == length:
-        sleep(timeout)
         counter += timeout
         checked_pixels = restart()
-        log(str(counter) + ' seconds left')
         if has_wait_limit and counter >= wait_limit:
             break
+
+        log(str(counter) + ' seconds left')
+        sleep(timeout)
 
     if debug and has_wait_limit and counter >= wait_limit:
         # debug
@@ -631,6 +632,10 @@ def find_hero_filter_small(region=None, confidence=.7, retries=None):
     return find_needle('filter_small.png', region=region, confidence=confidence, retries=retries)
 
 
+def find_hero_slot_active(region):
+    return find_needle('hero_slot_active.jpg', region=region, confidence=.65, retries=2)
+
+
 def battles_click():
     battle_button = find_needle_battles()
     if battle_button is not None:
@@ -868,7 +873,6 @@ def read_text(
         config = configs[i]
         # image = scale_up(screenshot=screenshot, factor=scale)
 
-
         # @TODO Should be well tested
         img = screenshot_to_image(screenshot)
         image = cv2.resize(img, None, fx=scale, fy=scale, interpolation=cv2.INTER_LANCZOS4)
@@ -915,6 +919,7 @@ def read_dealt_damage():
         '--psm 10 --oem 3',
     ]
 
+    move_out_cursor()
     return read_text(configs=configs, region=region, timeout=.5, update_screenshot=True, parser=parse_dealt_damage)
 
 
@@ -1133,6 +1138,10 @@ def merge_dicts(dict1, dict2):
     return merged_dict
 
 
+def prepare_event(event, props):
+    event_copy = copy.copy(event)
+    return merge_dicts(event_copy, props)
+
 def get_result(rgb):
     REGION_BATTLE_RESULT = [
         WINDOW_SIZE[0] / 2 - BORDER_WIDTH - 25,
@@ -1146,3 +1155,35 @@ def get_result(rgb):
     # high mistake is needed,
     # because, dominant_color_rgb returns not accurate result
     return rgb_check(rgb, dominant_rgb, mistake=50)
+
+
+def pixels_some(pixels, predicate):
+    res = False
+    for i in range(len(pixels)):
+        _p = pixels[i]
+        if predicate(_p):
+            res = True
+            break
+    return res
+
+
+def pixels_every(pixels, predicate):
+    res = True
+    for i in range(len(pixels)):
+        _p = pixels[i]
+        if not predicate(_p):
+            res = False
+            break
+    return res
+
+
+def same_pixels_line(pixel, long=3, axis='x'):
+    _el = copy.copy(pixel)
+    acc = []
+    for i in range(long):
+        acc.append(copy.copy(_el))
+        if axis == 'x':
+            _el[0] += 1
+        elif axis == 'y':
+            _el[1] += 1
+    return acc

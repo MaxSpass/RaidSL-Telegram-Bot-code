@@ -1,4 +1,4 @@
-from helpers.common import sleep, pixel_check_new, click, log
+from helpers.common import sleep, pixel_check_new, click, log, prepare_event
 from datetime import datetime, timedelta
 import numpy as np
 
@@ -7,6 +7,9 @@ DUMMY_RESPONSE = {"name": NOT_FOUND_EVENT, "data": None}
 
 
 class Foundation:
+    E_BATTLE_END = {"name": "Battle end", "interval": 2}
+    E_CONNECTION_ERROR = {"name": "No connection", "interval": 300, "blocking": False}
+
     def __init__(self, name, events=None):
         self.name = name
         self.stop = False
@@ -64,12 +67,7 @@ class Foundation:
                     #     )
                     #     events_sub_items()
 
-            if counter < len(events) - 1:
-                counter += 1
-            else:
-                counter = 0
-
-            sleep(interval)
+            counter = counter + 1 if counter < len(events) - 1 else 0
 
         return response if response is not None else DUMMY_RESPONSE
 
@@ -96,26 +94,20 @@ class Foundation:
             log('Establishing connection...')
             click(x_2, y_2)
 
-        E_BATTLE_END = {
-            "name": "Battle end",
-            "interval": 5,
-            "expect": lambda: pixel_check_new([x, y, [255, 255, 255]], mistake=10),
-        }
+        e_battle_end = prepare_event(self.E_BATTLE_END, {
+            "expect": lambda: pixel_check_new([x, y, [255, 255, 255]], mistake=3),
+        })
 
-        E_CONNECTION_ERROR = {
-            "name": "No connection",
-            "interval": 300,
-            "blocking": False,
+        e_connection_error = prepare_event(self.E_CONNECTION_ERROR, {
             "callback": retry_callback,
             "expect": lambda: bool(
                 pixel_check_new([x_1, y_1, rgb_1], mistake=10) and pixel_check_new([x_2, y_2, rgb_2], mistake=10)
             ),
-        }
+        })
 
         battle_end_events = self.awaits(
-            events=[E_BATTLE_END, E_CONNECTION_ERROR],
+            events=[e_battle_end, e_connection_error],
             interval=timeout
         )
 
-        # @TODO Return right result
         return battle_end_events

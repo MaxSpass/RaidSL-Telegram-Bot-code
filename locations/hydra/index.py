@@ -152,6 +152,7 @@ class Hydra(Location):
         stage = self.current['stage']
         min_damage = self.current['min_damage']
         int_damage = read_dealt_damage()
+        self.debug.screenshot()
         self.current['runs_counter'] += 1
 
         self.results[stage]['counter'] = self.current['runs_counter']
