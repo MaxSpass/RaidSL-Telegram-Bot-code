@@ -1,14 +1,6 @@
-import random
-
-import pyautogui
 import pyperclip
 import keyboard
 from helpers.common import *
-
-# def get_filter(x2, y2):
-#     return capture_by_source('images/needles/filter.jpg', axis_to_region(0, 0, x2, y2),
-#                              confidence=.8)
-
 
 filter_button = [45, 269, [96, 209, 229]]
 filter_reset = [450, 490, [118, 32, 30]]
