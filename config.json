@@ -51,12 +51,12 @@
           {
             "name": "Cupidus",
             "role": "a",
-            "priority": 1
+            "priority": 0
           },
           {
             "name": "Venus",
             "role": "s",
-            "priority": 1
+            "priority": 0
           },
           {
             "name": "Rotos",
@@ -64,15 +64,12 @@
           },
           {
             "name": "Ramantu Drakesblood",
-            "role": "a"
+            "role": "s",
+            "priority": 1
           },
           {
             "name": "Candraphon",
             "role": "a"
-          },
-          {
-            "name": "Tormin",
-            "role": "s"
           },
           {
             "name": "Pythion",
