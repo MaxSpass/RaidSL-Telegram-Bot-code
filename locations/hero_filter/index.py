@@ -11,10 +11,10 @@ from helpers.common import *
 
 
 filter_button = [45, 269, [96, 209, 229]]
-filter_reset = [377, 491, [66, 68, 70]]
-filter_close = [570, 493, [217, 211, 194]]
-input_field = [442, 99, [230, 224, 203]]
-input_clear = [656, 102, [24, 47, 56]]
+filter_reset = [450, 490, [118, 32, 30]]
+filter_hide = [660, 490, [20, 123, 156]]
+input_field = [653, 104, [239, 233, 211]]
+input_clear = [653, 104, [255, 255, 255]]
 include_vault = [287, 142, [16, 43, 64]]
 
 BASIC_PARAMETERS = {
@@ -35,6 +35,7 @@ BASIC_PARAMETERS = {
     }
 }
 
+
 class HeroFilter:
     FILTER_TYPE_DEFAULT = 'default'
     FILTER_TYPE_SMALL = 'small'
@@ -45,6 +46,7 @@ class HeroFilter:
     }
 
     def __init__(self, props=None):
+        self.NAME = 'Hero filter'
         self.filter_props = None
         self.filter_needle_type = self.FILTER_TYPE_DEFAULT
         self.is_filter_opened = False
@@ -94,42 +96,40 @@ class HeroFilter:
         else:
             log('Have not found the filter button')
 
-    def close(self):
+    def hide(self):
         if self.is_filter_opened:
-            # close hero_filter
-            click(filter_close[0], filter_close[1])
-            sleep(.3)
-            self.is_filter_opened = False
+            # click(filter_hide[0], filter_hide[1])
+            if await_click([filter_hide], msg=f"{self.NAME} | hide", mistake=5, wait_limit=1)[0]:
+                sleep(.3)
+                self.is_filter_opened = False
         else:
             log('Filter is not opened')
 
     def input(self, title):
         if self.is_filter_opened:
-            # focus input_field
-            click(input_field[0], input_field[1])
-            sleep(.5)
-            self.is_input_focused = True
-            # interval = random.randint(2, 5) / 10
-
-            pyperclip.copy(title)
-            keyboard.press_and_release('ctrl + v')
-            sleep(.5)
+            # click(input_field[0], input_field[1])
+            if await_click([input_field], msg=f"{self.NAME} | input", mistake=5, wait_limit=1)[0]:
+                sleep(.3)
+                self.is_input_focused = True
+                pyperclip.copy(title)
+                keyboard.press_and_release('ctrl + v')
+                sleep(.5)
         else:
             log('Filter is not opened')
 
     def clear(self):
         if self.is_filter_opened:
-            # reset hero_filter
-            click(input_clear[0], input_clear[1])
-            sleep(.3)
+            # click(input_clear[0], input_clear[1])
+            if await_click([input_clear], msg=f"{self.NAME} | clear", mistake=5, wait_limit=1)[0]:
+                sleep(.3)
         else:
             log('Filter is not opened')
 
     def reset(self):
         if self.is_filter_opened:
-            # reset hero_filter
-            click(filter_reset[0], filter_reset[1])
-            sleep(.3)
+            # click(filter_reset[0], filter_reset[1])
+            if await_click([filter_reset], msg=f"{self.NAME} | reset", mistake=5, wait_limit=1)[0]:
+                sleep(.3)
         else:
             log('Filter is not opened')
 
@@ -142,11 +142,11 @@ class HeroFilter:
         else:
             log('Filter is not opened')
 
-    def choose(self, title, x2=900, slot='1'):
+    def choose(self, title, x2=900, slot='1', wait_after=.5):
         self.open(x2=x2)
         self.input(title=title)
         self.pick(slot=slot)
         self.clear()
         self.reset()
-        self.close()
-
+        self.hide()
+        sleep(wait_after)
