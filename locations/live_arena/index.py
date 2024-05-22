@@ -55,7 +55,7 @@ victory = [451, 38, [23, 146, 218]]
 defeat = [451, 38, [199, 26, 48]]
 
 find_opponent = [500, 460, [187, 130, 5]]
-battle_start = [341, 74, [86, 191, 255]]
+battle_start_turn = [341, 74, [86, 191, 255]]
 refill_free = [454, 373, [187, 130, 5]]
 refill_paid = [444, 393, [195, 40, 66]]
 claim_refill = [875, 173, [218, 0, 0]]
@@ -141,9 +141,12 @@ E_CHOOSING_LEADER = {
     "expect": lambda: pixel_check_new(first, mistake=10),
     "interval": 2,
 }
-E_BATTLE_START = {
-    "name": "Battle start",
-    "expect": lambda: pixel_check_new(battle_start, mistake=20),
+E_BATTLE_START_LIVE = {
+    "name": "Battle start Live",
+    "expect": lambda: pixel_check_new(battle_start_turn, mistake=20),
+    "callback": enable_auto_play,
+    "blocking": False,
+    "limit": 1,
 }
 
 
@@ -166,6 +169,7 @@ class ArenaLive(Location):
         self.pool = []
         self.leaders = []
         self.refill = PAID_REFILL_LIMIT
+        self.idle_after_defeat = 0
         self.battles_counter = 0
         self.current_battle_time = None
 
@@ -242,6 +246,9 @@ class ArenaLive(Location):
         if 'refill' in props:
             self.refill = int(props['refill'])
 
+        if 'idle_after_defeat' in props:
+            self.idle_after_defeat = int(props['idle_after_defeat'])
+
     def _confirm(self):
         click(870, 465)
         sleep(.5)
@@ -266,7 +273,6 @@ class ArenaLive(Location):
             sleep(2)
 
     def _click_on_find_opponent(self):
-        self.debug.screenshot(folder=self.current_battle_time, suffix_name='Click on find opponent')
         if not await_click([find_opponent], msg="Click on find opponent", mistake=20, wait_limit=65)[0]:
             self.terminate = True
 
@@ -380,6 +386,7 @@ class ArenaLive(Location):
             self.debug.screenshot(folder=self.current_battle_time, suffix_name='opponent_left')
             self.log("OPPONENT LEFT THE BATTLE")
             self.stop = True
+
             self._save_result(True)
 
         def apply_results(name):
@@ -387,6 +394,8 @@ class ArenaLive(Location):
                 self._save_result(True)
             elif E_DEFEAT['name'] == name:
                 self._save_result(False)
+                if self.idle_after_defeat:
+                    sleep(self.idle_after_defeat)
 
         E_OPPONENT_LEFT_BATTLE = prepare_event(E_VICTORY, {
             "name": "Opponent left the battle",
@@ -415,18 +424,14 @@ class ArenaLive(Location):
         def await_choosing_leader():
             return self.awaits(events=[E_CHOOSING_LEADER, E_OPPONENT_LEFT_BATTLE])
 
-        def await_battle_start():
-            return self.awaits(events=[E_BATTLE_START, E_VICTORY, E_DEFEAT])
-
         def await_battle_results():
-            return self.awaits(events=[E_VICTORY, E_DEFEAT])
+            return self.awaits(events=[E_BATTLE_START_LIVE, E_VICTORY, E_DEFEAT])
 
         start_events = await_start_events()
         opponent_found = False
         while not opponent_found and not self.terminate:
             # for "can't find opponent" cases
             if E_CANT_FIND_OPPONENT['name'] == start_events['name']:
-                self.debug.screenshot(folder=self.current_battle_time, suffix_name="E_CANT_FIND_OPPONENT")
                 x_find = cant_find_opponent_button_cancel[0]
                 y_find = cant_find_opponent_button_cancel[1]
                 click(x_find, y_find)
@@ -434,7 +439,6 @@ class ArenaLive(Location):
                 self._click_on_find_opponent()
                 start_events = await_start_events()
             else:
-                self.debug.screenshot(folder=self.current_battle_time, suffix_name="Starts battle")
                 self.log('Starts battle: ' + str(self.battles_counter))
                 opponent_found = True
 
@@ -446,42 +450,31 @@ class ArenaLive(Location):
 
         stage_1_events = await_stage_1()
         if E_STAGE_1['name'] == stage_1_events['name']:
-            self.debug.screenshot(folder=self.current_battle_time, suffix_name="E_STAGE_1")
             sleep(.5)
             for i in range(len(pattern)):
                 if self.stop:
-                    self.debug.screenshot(folder=self.current_battle_time, suffix_name="E_STAGE_1 break")
                     break
 
                 pick_process_events = await_pick()
                 if E_PICKING_PROCESS['name'] == pick_process_events['name']:
                     sleep(.2)
-                    self.debug.screenshot(
-                        folder=self.current_battle_time,
-                        suffix_name=f"E_PICKING_PROCESS {str(pattern[i])}"
-                    )
 
                     # picking heroes logic
                     for j in range(pattern[i]):
                         if self.stop:
-                            self.debug.screenshot(folder=self.current_battle_time,
-                                                  suffix_name="E_PICKING_PROCESS break")
                             break
 
                         unit = find_character()
                         if unit is not None:
                             team.append(unit['name'])
-                            self.debug.screenshot(folder=self.current_battle_time, suffix_name=f"Pick {unit['name']}")
                             sleep(.1)
                             self.log(f"Picked: {unit['name']}")
                             slots_counter += 1
 
-                    self.debug.screenshot(folder=self.current_battle_time, suffix_name="E_STAGE_1 confirm")
                     self._confirm()
 
         stage_2_events = await_stage_2()
         if E_STAGE_2['name'] == stage_2_events['name']:
-            self.debug.screenshot(folder=self.current_battle_time, suffix_name="E_STAGE_2")
             sleep(.5)
             # Banning random second slot
             random_slot = random.choice(enemy_slots)
@@ -490,17 +483,14 @@ class ArenaLive(Location):
             click(x, y)
             sleep(.5)
 
-            self.debug.screenshot(folder=self.current_battle_time, suffix_name="E_STAGE_2 confirm")
             self._confirm()
 
         stage_3_events = await_stage_3()
         if E_STAGE_3['name'] == stage_3_events['name']:
-            self.debug.screenshot(folder=self.current_battle_time, suffix_name="E_STAGE_3")
             sleep(.5)
 
             choosing_leader_events = await_choosing_leader()
             if E_CHOOSING_LEADER['name'] == choosing_leader_events['name']:
-                self.debug.screenshot(folder=self.current_battle_time, suffix_name="E_CHOOSING_LEADER")
                 leaders_indicis = find_leaders_indicis()
 
                 for i in range(len(leaders_indicis)):
@@ -511,23 +501,12 @@ class ArenaLive(Location):
                     click(x, y)
                     sleep(.5)
 
-                self.debug.screenshot(folder=self.current_battle_time, suffix_name="E_CHOOSING_LEADER confirm")
                 self._confirm()
 
-        battle_start_events = await_battle_start()
-        # Battle just started
-        if E_BATTLE_START['name'] == battle_start_events['name']:
-            self.debug.screenshot(folder=self.current_battle_time, suffix_name="E_BATTLE_START")
-            enable_auto_play()
-            battle_result_events = await_battle_results()
-            self.debug.screenshot(folder=self.current_battle_time, suffix_name="E_BATTLE_START battle_result_events")
-            apply_results(battle_result_events['name'])
-        elif battle_start_events['name'] in [E_VICTORY['name'], E_DEFEAT['name']]:
-            self.debug.screenshot(folder=self.current_battle_time, suffix_name="E_VICTORY or E_DEFEAT")
-            apply_results(battle_start_events['name'])
+        battle_start_events = await_battle_results()
+        apply_results(battle_start_events['name'])
 
-        self.debug.screenshot(folder=self.current_battle_time, suffix_name="tap_to_continue")
-        tap_to_continue(wait_after=3)
+        tap_to_continue(wait_after=2)
 
     def check_availability(self):
         # @TODO Finish

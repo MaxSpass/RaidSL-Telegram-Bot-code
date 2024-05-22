@@ -23,9 +23,11 @@ class Foundation:
     def awaits(self, events, interval=1):
         if self.stop:
             return DUMMY_RESPONSE
+
         response = None
         counter = 0
         time_tracker = {}
+        limit_tracker = {}
 
         events_names_list = list(map(lambda el: el['name'], events))
         events_names_str = str(np.array(events_names_list, dtype=object))
@@ -35,38 +37,52 @@ class Foundation:
         while response is None and not self.stop:
             name = events[counter]['name']
             expect = events[counter]['expect']
-            main_interval = events[counter]['interval'] if 'interval' in events[counter] else interval
-            callback = events[counter]['callback'] if 'callback' in events[counter] else None
-            blocking = bool(events[counter]['blocking']) \
-                if 'blocking' in events[counter] else True
+            limit = int(events[counter]['limit']) if 'limit' in events[counter] else None
+            if name not in limit_tracker:
+                limit_tracker[name] = limit
 
-            current_time = datetime.now()
-            last_call_time = time_tracker.get(name, None)
+            # Skips limited callbacks
+            if limit_tracker[name] is None or limit_tracker[name] > 0:
+                main_interval = events[counter]['interval'] if 'interval' in events[counter] else interval
+                callback = events[counter]['callback'] if 'callback' in events[counter] else None
+                blocking = bool(events[counter]['blocking']) \
+                    if 'blocking' in events[counter] else True
 
-            if last_call_time is None or current_time - last_call_time >= timedelta(seconds=main_interval):
-                # Call the function and update last call time
-                time_tracker[name] = current_time
+                current_time = datetime.now()
+                last_call_time = time_tracker.get(name, None)
 
-                res = expect()
-                if bool(res):
-                    log(f'Event occurred: {name}')
-                    if blocking:
-                        response = {"name": name, "data": res}
-                    if callback is not None:
-                        callback(res)
+                if last_call_time is None or current_time - last_call_time >= timedelta(seconds=main_interval):
+                    # Call the function and update last call time
+                    time_tracker[name] = current_time
 
-                    # @TODO No essential solution found | Temp commented
-                    # sub_items = events[counter]['children'] \
-                    #     if 'children' in events[counter] \
-                    #     else None
-                    # if sub_items:
-                    #     log('Sub-items')
-                    #     events_sub_items = self.awaits(
-                    #         events=sub_items['events'],
-                    #         interval=sub_items['interval'] if 'interval' in sub_items else interval
-                    #     )
-                    #     events_sub_items()
+                    res = expect()
+                    if bool(res):
+                        log(f'Event occurred: {name}')
 
+                        if blocking:
+                            response = {"name": name, "data": res}
+
+                        if callback is not None:
+                            callback(res)
+
+                        # Tracks limited events
+                        if limit_tracker[name] is not None:
+                            limit_tracker[name] = limit_tracker[name] - 1
+
+
+                        # @TODO No essential solution found | Temp commented
+                        # sub_items = events[counter]['children'] \
+                        #     if 'children' in events[counter] \
+                        #     else None
+                        # if sub_items:
+                        #     log('Sub-items')
+                        #     events_sub_items = self.awaits(
+                        #         events=sub_items['events'],
+                        #         interval=sub_items['interval'] if 'interval' in sub_items else interval
+                        #     )
+                        #     events_sub_items()
+
+            # Manages list index
             counter = counter + 1 if counter < len(events) - 1 else 0
 
         return response if response is not None else DUMMY_RESPONSE

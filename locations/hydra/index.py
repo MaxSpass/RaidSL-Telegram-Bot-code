@@ -21,7 +21,7 @@ BUTTON_AUTO_REGION = axis_to_region(22, 479, 76, 496)
 BUTTON_AUTO_HUE_ACTIVE = 65
 BUTTON_AUTO_HUE_DISABLED = 17
 
-# pause button (top/right corner)
+# pause button (top/right corner) @TODO duplicate
 BUTTON_PAUSE = [866, 66, [216, 206, 156]]
 BUTTON_AUTO = [50, 470, [20, 30, 37]]
 
@@ -173,9 +173,6 @@ class Hydra(Location):
     def _is_battle_finished(self):
         return pixel_check_new(battle_end)
 
-    def _is_battle_in_progress(self):
-        return pixel_check_new(BUTTON_PAUSE, mistake=10)
-
     def _sort_by_priority(self, queue):
         p1 = []
         p2 = []
@@ -207,7 +204,7 @@ class Hydra(Location):
             self.log(f'No Hydra head with name: {name}')
 
     def _reset_focus(self):
-        if not self._is_battle_in_progress():
+        if not detect_pause_button():
             self.log("Resetting focus is interrupted: no 'BUTTON_PAUSE' found")
             return
 

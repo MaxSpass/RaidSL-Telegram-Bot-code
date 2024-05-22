@@ -400,11 +400,15 @@ def enable_super_raid(pixel=None):
             sleep(.3)
 
 
-def enable_auto_play():
+def enable_auto_play(*args):
     AUTO_PLAY_BUTTON = [49, 486]
     sleep(2)
     click(AUTO_PLAY_BUTTON[0], AUTO_PLAY_BUTTON[1])
 
+
+def detect_pause_button():
+    BUTTON_PAUSE = [866, 66, [216, 206, 156]]
+    return pixel_check_new(BUTTON_PAUSE, mistake=10)
 
 def calculate_win_rate(w, l):
     t = w + l

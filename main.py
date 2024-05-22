@@ -40,12 +40,12 @@ else:
 # x_offset = 825
 # y_offset = 448
 #
-# # TEST 2
+# TEST 2
 # x = 725
 # y = 50
 # rgb_test = [16, 40, 49]
-# x_offset = 825
-# y_offset = 448
+# x_offset = 826
+# y_offset = 449
 #
 # pixel_origin = [x, y, rgb_test]
 # x_mistake = x_offset + 2
@@ -57,6 +57,121 @@ else:
 # ]
 
 def main():
+    # returns [21, 32, 39]
+    # print(pyautogui.pixel(737, 138))
+    # return
+
+    # foundation = Foundation('test')
+    # res = foundation.awaits(events=[
+    #     {
+    #         "name": 'test 1',
+    #         "expect": lambda: pixel_check_new([260, 15, [243, 243, 243]]),
+    #         "callback": lambda *args: print('Occurred: test 1'),
+    #         "blocking": False,
+    #         "limit": 1,
+    #     },
+    #     {
+    #         "name": 'test 2',
+    #         "expect": lambda: pixel_check_new([737, 138, [87, 157, 255]]),
+    #         "callback": lambda *args: print('Occurred: test 2'),
+    #     },
+    #     {
+    #         "name": 'test 3',
+    #         "expect": lambda: pixel_check_new([737, 138, [87, 157, 255]]),
+    #         "callback": lambda *args: print('Occurred: test 3'),
+    #     }
+    # ])
+    # print(res)
+    # return
+
+    #
+    # E_VICTORY_COPY = prepare_event(E_VICTORY, {
+    #     "callback": lambda *args: tap_to_continue(wait_after=2)
+    # })
+    # E_DEFEAT_COPY = prepare_event(E_DEFEAT, {
+    #     "callback": lambda *args: tap_to_continue(wait_after=2)
+    # })
+    #
+    # res = foundation.awaits(events=[E_BATTLE_START_REGULAR, E_VICTORY_COPY, E_DEFEAT_COPY])
+    # print('res', res)
+    # return
+
+
+    # hero_filter = HeroFilter()
+    #
+    # pool = ['arbiter', 'leo', 'madam', 'armanz']
+    #
+    # for i in range(len(pool)):
+    #     title = pool[i]
+    #     hero_filter.choose(title)
+    #
+    # return
+
+    # print(pyautogui.pixel(653, 104))
+    # print(pyautogui.pixel(570, 493))
+    # print(pyautogui.pixel(450, 490))
+    # print(pyautogui.pixel(660, 490))
+    # return
+
+    # offsets were taken from 'images/for_test/live_arena_issue.png'
+    # x_offset = 371
+    # y_offset = 278
+    # copy_victory = copy.copy(victory)
+    # copy_victory[0] = copy_victory[0] + x_offset
+    # copy_victory[1] = copy_victory[1] + y_offset
+    # foundation = Foundation('test')
+    #
+    # E_VICTORY_TEST = {
+    #     "name": "Victory 1",
+    #     "expect": lambda: pixel_check_new(copy_victory, mistake=30),
+    # }
+    #
+    # E_VICTORY_TEST_2 = {
+    #     "name": "Victory 2",
+    #     "expect": lambda: pixel_check_new(copy_victory),
+    # }
+    #
+    # e_victory = prepare_event(E_VICTORY_TEST, {
+    #     'interval': 5,
+    #     'callback': lambda *args: print('FOUND 1')
+    # })
+    #
+    # e_victory_2 = prepare_event(E_VICTORY_TEST_2, {
+    #     'interval': 0.5,
+    #     'callback': lambda *args: print('FOUND 2')
+    # })
+    #
+    # res = foundation.awaits([e_victory, e_victory_2])
+    # if E_VICTORY_TEST['name'] == res['name']:
+    #     print('res', res)
+    # else:
+    #     print('Another event occurred')
+    #
+    # return
+
+    # _copy = copy.copy(cant_find_opponent_button_cancel)
+    # x_offset = 828
+    # y_offset = 432
+    # _copy[0] = _copy[0] + x_offset
+    # _copy[1] = _copy[1] + y_offset
+    # res = pixels_every(same_pixels_line(_copy), lambda p: pixel_check_new(p, mistake=5))
+    # print('res', res)
+    # return
+
+    # print(pixels_every(pixels_row(_p), lambda _p: pixel_check_new(_p, mistake=1)))
+    # return
+
+    # _w = 48
+    # _h = 64
+    #
+    # for i in range(len(my_slots)):
+    #     el = my_slots[i]
+    #     x = el[0] + x_offset
+    #     y = el[1] + y_offset
+    #
+    #     show_pyautogui_image(pyautogui.screenshot(region=[x, y, _w, _h]))
+    # return
+
     # print(read_available_energy())
     # print(read_keys_bank())
     # position = find_needle_close_popup()

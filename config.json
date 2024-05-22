@@ -12,6 +12,7 @@
       "enable": 1,
       "props": {
         "refill": 1,
+        "idle_after_defeat": 45,
         "pool": [
           {
             "name": "Armanz",
@@ -65,11 +66,12 @@
           {
             "name": "Ramantu Drakesblood",
             "role": "s",
-            "priority": 1
+            "priority": 0
           },
           {
-            "name": "Candraphon",
-            "role": "a"
+            "name": "Deathknight",
+            "role": "a",
+            "priority": 2
           },
           {
             "name": "Pythion",
