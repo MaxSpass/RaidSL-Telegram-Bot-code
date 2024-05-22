@@ -20,6 +20,11 @@ class Location(Foundation):
         self.duration = Duration()
         self.debug = Debug(app=app, name=name)
         self.run_counter = 0
+        self.results = None
+
+    def save_results(self):
+        # @TODO Should implement saving results via Memory class
+        print(self.results)
 
     def report(self):
         report_list = self.report_predicate() if self.report_predicate else []
@@ -47,6 +52,7 @@ class Location(Foundation):
         self.log(message_done)
         self.event_dispatcher.publish('finish')
         self.update.message.reply_text(message_done)
+        self.save_results()
 
     def run(self, upd, ctx, *args):
         if self.completed:

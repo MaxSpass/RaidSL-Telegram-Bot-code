@@ -8,6 +8,8 @@
 
 Every package should be installed by using the following command:
 **pip install [PACKAGE_NAME] && pip freeze > requirements.txt**
+or
+**pip install [PACKAGE_NAME] && pip freeze | grep [PACKAGE_NAME] >> requirements.txt**
 
 
 # Links

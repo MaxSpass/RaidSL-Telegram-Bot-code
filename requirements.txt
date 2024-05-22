@@ -33,5 +33,6 @@ more_itertools==9.1.0
 pause==0.3
 python-telegram-bot==13.7
 keyboard==0.13.5
-pillow=23.3.2
-psutil=5.9.8
+pillow==9.5.0
+psutil==5.9.8
+tinydb==4.8.0
