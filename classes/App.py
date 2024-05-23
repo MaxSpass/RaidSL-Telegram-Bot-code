@@ -1,5 +1,6 @@
 from helpers.common import *
 from classes.TaskManager import TaskManager
+from classes.Storage import Storage
 from locations.rewards.index import *
 # from locations.live_arena.index_old import *
 from locations.live_arena.index import *
@@ -184,12 +185,14 @@ def make_title(input_string):
 
 class App:
     def __init__(self):
+        self.taskManager = TaskManager()
+        self.storage = Storage(name='storage')
+
         self.config = None
         self.window = None
         self.window_region = None
         self.entries = {}
         self.read_config()
-        self.taskManager = TaskManager()
 
     def _prepare_config(self, config_json):
         _config = {
@@ -282,7 +285,7 @@ class App:
         # primitive validation
         currentYear = datetime.now().year
         currentMonth = datetime.now().month
-        return currentYear == 2024 and (currentMonth <= 5)
+        return currentYear == 2024 and (currentMonth <= 6)
 
     def load_config(self, config):
         self.config = self._prepare_config(config)

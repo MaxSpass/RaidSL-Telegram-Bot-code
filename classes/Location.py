@@ -3,7 +3,13 @@ from classes.Duration import Duration
 from classes.Foundation import Foundation
 from classes.Debug import Debug
 from helpers.common import close_popup_recursive, log
+from datetime import datetime
 
+LOCATIONS_WITH_STORAGE = [
+    'Arena Classic',
+    'Arena Tag',
+    'Arena Live',
+]
 
 class Location(Foundation):
     def __init__(self, name, app, report_predicate=None):
@@ -22,9 +28,43 @@ class Location(Foundation):
         self.run_counter = 0
         self.results = None
 
-    def save_results(self):
-        # @TODO Should implement saving results via Memory class
-        print(self.results)
+        # @TODO Should add time
+        if self.NAME in LOCATIONS_WITH_STORAGE:
+            records = self.app.storage.get_entries(days=0, title=self.NAME)
+            self.results = []
+            for i in range(len(records)):
+                record = records[i]
+                results_record = record['data']['results_record']
+                duration_record = record['data']['duration_record']
+
+                # @TODO Refactor
+                if self.NAME in ['Arena Live']:
+                    for j in range(len(results_record)):
+                        rec = results_record[j]
+                        self.results.append(rec)
+                elif self.NAME in ['Arena Classic', 'Arena Tag']:
+                    self.results.append(results_record)
+
+                duration_record = list(map(lambda d: datetime.fromisoformat(d), duration_record))
+                self.duration.durations.append(duration_record)
+
+        self.event_dispatcher.subscribe('update_results', self.update_storage)
+
+    def update_storage(self):
+        if self.NAME in LOCATIONS_WITH_STORAGE:
+            results_record = self.results[len(self.results) - 1]
+            duration_record = list(map(
+                lambda x: x.isoformat(),
+                self.duration.durations[len(self.duration.durations) - 1]
+            ))
+
+            self.app.storage.add(
+                title=self.NAME,
+                data={
+                    'results_record': results_record,
+                    'duration_record': duration_record
+                }
+            )
 
     def report(self):
         report_list = self.report_predicate() if self.report_predicate else []
@@ -52,7 +92,8 @@ class Location(Foundation):
         self.log(message_done)
         self.event_dispatcher.publish('finish')
         self.update.message.reply_text(message_done)
-        self.save_results()
+        # @TODO Test
+        # self.results.append([True, False])
 
     def run(self, upd, ctx, *args):
         if self.completed:
@@ -71,3 +112,4 @@ class Location(Foundation):
         if not self.terminate:
             self.event_dispatcher.publish('run', *args)
         self.finish()
+        self.event_dispatcher.publish('update_results')

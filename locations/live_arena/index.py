@@ -162,9 +162,11 @@ class ArenaLive(Location):
     y_config = 175
 
     def __init__(self, app, props=None):
-        Location.__init__(self, name='Live Arena', app=app, report_predicate=self._report)
+        Location.__init__(self, name='Arena Live', app=app, report_predicate=self._report)
 
-        self.results = []
+        if self.results is None:
+            self.results = []
+
         self.team = []
         self.pool = []
         self.leaders = []
@@ -284,6 +286,7 @@ class ArenaLive(Location):
 
     def _save_result(self, result):
         self.results.append(result)
+        self.event_dispatcher.publish('update_results')
         s = ''
 
         if result:

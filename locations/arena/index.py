@@ -39,6 +39,9 @@ class ArenaFactory(Location):
     ):
         Location.__init__(self, name=name, app=app, report_predicate=self._report)
 
+        if self.results is None:
+            self.results = []
+
         self.name = name
         self.x_axis_info = x_axis_info
         self.item_height = item_height
@@ -50,7 +53,6 @@ class ArenaFactory(Location):
         self.refill = PAID_REFILL_LIMIT
         self.initial_refresh = False
         self.max_swipe = 0
-        self.results = []
 
         self._apply_props(props=props)
 
@@ -215,9 +217,6 @@ class ArenaFactory(Location):
             is_not_attacked = len(results_local) - 1 < i
             if pixel_check_new([x, y, [187, 130, 5]]) and is_not_attacked:
                 self.log(self.name + ' | Attack')
-                # pyautogui.moveTo(x, y, 1)
-                # self.log(pyautogui.pixel(x, y))
-                # continue
                 click_on_battle()
 
                 if self._refill():
@@ -241,14 +240,10 @@ class ArenaFactory(Location):
                 # tells to skip several teams by swiping
                 should_use_multi_swipe = True
 
-                # if i == 0:
-                #     self.terminate = True
-                #     break
-
         # appends result from attack series into the global results list
         if len(results_local):
             self.results.append(results_local)
-        # return results_local
+            self.event_dispatcher.publish('update_results')
 
 
 class ArenaClassic(ArenaFactory):
@@ -256,7 +251,7 @@ class ArenaClassic(ArenaFactory):
         ArenaFactory.__init__(
             self,
             app=app,
-            name='Classic Arena',
+            name='Arena Classic',
             x_axis_info=95,
             item_height=CLASSIC_ITEM_HEIGHT,
             button_locations=CLASSIC_BUTTON_LOCATIONS,
@@ -272,7 +267,7 @@ class ArenaTag(ArenaFactory):
         ArenaFactory.__init__(
             self,
             app=app,
-            name='Tag Arena',
+            name='Arena Tag',
             x_axis_info=135,
             item_height=TAG_ITEM_HEIGHT,
             button_locations=TAG_BUTTON_LOCATIONS,
