@@ -74,8 +74,8 @@ DEFAULT_PRIORITY = {'head_of_decay': 2, 'head_of_blight': 1}
 DEFAULT_RUNS_LIMIT = 2
 DEFAULT_RUNS_LIMIT_MAX = 10
 
-button_battle = [855, 455, [165, 113, 8]]
-button_start = [855, 455, [212, 155, 5]]
+button_battle = [860, 460, [187, 130, 5]]
+button_start = [860, 460, [187, 130, 5]]
 button_free_regroup = [680, 480, [22, 124, 156]]
 button_keep_result = [860, 480, [187, 130, 5]]
 
