@@ -224,6 +224,8 @@ class ArenaLive(Location):
                     self.attack()
 
                 self.obtain()
+                # @TODO Temp commented
+                # self.event_dispatcher.publish('update_results')
 
             else:
                 self.log("Terminated | The 'pool' property is NOT specified")
@@ -237,13 +239,6 @@ class ArenaLive(Location):
             self.pool = sorted(pool_copy, key=lambda x: (-x.get('priority', 0), x.get('priority', 0)))
             if 'leaders' in props:
                 self.leaders = props['leaders']
-            # self.pool = props['pool']
-            # random.shuffle(self.pool)
-            # if 'leaders' in props:
-            #     self.leaders = props['leaders']
-            #     self.leaders.reverse()
-            # else:
-            #     self.leaders = self.pool[0:2]
 
         if 'refill' in props:
             self.refill = int(props['refill'])
@@ -260,12 +255,12 @@ class ArenaLive(Location):
         if pixel_check_new(claim_chest):
             x = claim_chest[0]
             y = claim_chest[1]
-            click(x, y)
-            sleep(1)
-            tap_to_continue(wait_after=1)
-            # click on get rewards text
-            # click(450, 450)
-            # sleep(.5)
+            # @TODO Temp commented
+            # click(x, y)
+            # sleep(1)
+            # tap_to_continue(wait_after=1)
+            # @TODO Test
+            claim_rewards(x, y)
 
     def _claim_free_refill_coins(self):
         if pixel_check_new(claim_refill):
@@ -286,7 +281,6 @@ class ArenaLive(Location):
 
     def _save_result(self, result):
         self.results.append(result)
-        self.event_dispatcher.publish('update_results')
         s = ''
 
         if result:

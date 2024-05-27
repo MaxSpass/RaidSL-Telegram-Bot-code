@@ -77,17 +77,18 @@ class DemonLord(Location):
             sleep(0.5)
             stage = str(lvl)
             if pixel_check_new([870, 457, [246, 2, 0]], mistake=10):
-                # click on the "Claim reward button"
-                click(870, 457)
-                sleep(5)
-
-                click(460, 444)
-                sleep(5)
-
-                # click on the "Obtain reward button" second time if needed
-                if not pixel_check_new(corner_right_top, mistake=5):
-                    click(460, 444)
-                    sleep(5)
+                claim_rewards(x=870, y=457, y_tap=444)
+                # @TODO Temp commented
+                # # click on the "Claim reward button"
+                # click(870, 457)
+                # sleep(5)
+                # click(460, 444)
+                # sleep(5)
+                #
+                # # click on the "Obtain reward button" second time if needed
+                # if not pixel_check_new(corner_right_top, mistake=5):
+                #     click(460, 444)
+                #     sleep(5)
 
                 self.log('Obtained reward from Demon Lord ' + stage)
                 self.results['obtained'].append(stage)
@@ -119,7 +120,10 @@ class DemonLord(Location):
 
             # click on start
             click(860, 480)
-            if pixel_wait('End of the battle with Demon Lord: ' + str(stage) + ' level', 20, 112, [255, 255, 255], 3):
+
+            # @TODO Finalize
+            # self.waiting_battle_end_regular(f"Demon Lord: {str(stage)}", x=20, y=112)
+            if pixel_wait(f"Demon Lord: {str(stage)}", 20, 112, [255, 255, 255], 3):
                 sleep(.5)
                 # return to the demon lord menu
                 click(420, 490)

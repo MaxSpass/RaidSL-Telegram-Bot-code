@@ -302,14 +302,38 @@ def waiting_battle_end_regular(msg, timeout=5, x=20, y=46):
     return pixel_wait(msg, x, y, [255, 255, 255], timeout, mistake=10)
 
 
-def tap_to_continue(times=1, wait_after=None):
+def tap_to_continue(times=1, wait_after=None, x=420, y=490):
     sleep(2)
     for i in range(times):
-        click(420, 490)
+        click(x, y)
         sleep(1)
 
     if type(wait_after) is int:
         sleep(wait_after)
+
+
+# @TODO Should implement
+def claim_rewards(x, y, fixed_pixel=None, limit=5, x_fixed=50, y_fixed=50, y_tap=490):
+    if fixed_pixel is None:
+        rgb_fixed = pyautogui.pixel(x_fixed, y_fixed)
+        pixel_fixed = [x_fixed, y_fixed, rgb_fixed]
+
+        # @Todo Test
+        debug_save_screenshot(suffix_name='claim_rewards_click_before')
+
+        # click on the claim reward area
+        click(x, y)
+
+        # @Todo Test
+        debug_save_screenshot(suffix_name='claim_rewards_click_after')
+
+        # doing 'tap_to_continue' until 'pixel_fixed' is not exists
+        while not pixel_check_new(pixel_fixed, mistake=0) and limit > 0:
+            tap_to_continue(wait_after=2, y=y_tap)
+            limit -= 1
+
+        # @Todo Test
+        debug_save_screenshot(suffix_name='claim_rewards_done')
 
 
 def dungeons_scroll(direction='bottom', times=2):
@@ -409,6 +433,7 @@ def enable_auto_play(*args):
 def detect_pause_button():
     BUTTON_PAUSE = [866, 66, [216, 206, 156]]
     return pixel_check_new(BUTTON_PAUSE, mistake=10)
+
 
 def calculate_win_rate(w, l):
     t = w + l
@@ -1145,6 +1170,7 @@ def merge_dicts(dict1, dict2):
 def prepare_event(event, props):
     event_copy = copy.copy(event)
     return merge_dicts(event_copy, props)
+
 
 def get_result(rgb):
     REGION_BATTLE_RESULT = [
