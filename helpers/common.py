@@ -302,14 +302,14 @@ def waiting_battle_end_regular(msg, timeout=5, x=20, y=46):
     return pixel_wait(msg, x, y, [255, 255, 255], timeout, mistake=10)
 
 
-def tap_to_continue(times=1, wait_after=None, x=420, y=490):
-    sleep(2)
+def tap_to_continue(times=1, wait_before=2, wait_after=2, x=420, y=490):
+    sleep(wait_before)
+
     for i in range(times):
         click(x, y)
         sleep(1)
 
-    if type(wait_after) is int:
-        sleep(wait_after)
+    sleep(wait_after)
 
 
 # @TODO Should implement
