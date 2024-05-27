@@ -98,7 +98,7 @@ def resize_window():
     return win
 
 
-def calibrate_window():
+def calibrate_window(window_axis=None):
     log('Preparing the window')
     BURGER_POSITION = [15, 282]
     is_prepared = False
@@ -110,21 +110,30 @@ def calibrate_window():
         # going back to the index page
         close_popup_recursive()
 
-        burger = find_needle_burger()
-        if burger is not None:
-            if burger[0] != BURGER_POSITION[0] or burger[1] != BURGER_POSITION[1]:
-                x_burger = burger[0] - BURGER_POSITION[0]
-                y_burger = burger[1] - BURGER_POSITION[1]
-                x -= x_burger
-                y -= y_burger
-                win.move(int(x), int(y))
-            is_prepared = True
+        if window_axis is not None:
+            x = window_axis['x']
+            y = window_axis['y']
+        else:
+            burger = find_needle_burger()
+            if burger is not None:
+                if burger[0] != BURGER_POSITION[0] or burger[1] != BURGER_POSITION[1]:
+                    x_burger = burger[0] - BURGER_POSITION[0]
+                    y_burger = burger[1] - BURGER_POSITION[1]
+                    x -= x_burger
+                    y -= y_burger
 
-            # waiting and closing sudden popups
-            sleep(3)
-            close_popup_recursive()
+        win.move(int(x), int(y))
+
+        is_prepared = True
+
+        # waiting and closing sudden popups
+        sleep(3)
+        close_popup_recursive()
+
     if not is_prepared:
         raise Exception("Game windows is NOT prepared")
+
+    return {'x': x, 'y': y}
 
 
 def prepare_window():
@@ -186,11 +195,13 @@ def make_title(input_string):
 class App:
     def __init__(self):
         self.taskManager = TaskManager()
-        self.storage = Storage(name='storage')
+        # @TODO Temp commented
+        # self.storage = Storage(name='storage', folder='temp')
 
         self.config = None
         self.window = None
         self.window_region = None
+        self.window_axis = None
         self.entries = {}
         self.read_config()
 
@@ -507,7 +518,7 @@ class App:
         self.window_region = None
         if predicate is not None:
             predicate()
-        calibrate_window()
+        self.window_axis = calibrate_window(self.window_axis)
 
     def get_entry(self, command_name):
         return self.entries[command_name] \
