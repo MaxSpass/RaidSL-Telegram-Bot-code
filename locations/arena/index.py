@@ -153,7 +153,7 @@ class ArenaFactory(Location):
     def _get_last_results(self):
         length = len(self.results)
         if length:
-            return [self.results[len(self.results) - 1]]
+            return self.results[len(self.results) - 1]
         else:
             return self.results
 
@@ -243,7 +243,8 @@ class ArenaFactory(Location):
         # appends result from attack series into the global results list
         if len(results_local):
             self.results.append(results_local)
-            self.event_dispatcher.publish('update_results')
+            # @TODO Temp commented
+            # self.event_dispatcher.publish('update_results')
 
 
 class ArenaClassic(ArenaFactory):
