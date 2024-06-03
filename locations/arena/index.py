@@ -233,7 +233,6 @@ class ArenaFactory(Location):
                 results_local.append(res)
                 result_name = 'VICTORY' if res else 'DEFEAT'
                 self.log(result_name)
-                self.debug.screenshot(suffix_name=result_name, quality=50)
 
                 tap_to_continue(times=2)
                 sleep(1)

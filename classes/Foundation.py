@@ -1,21 +1,58 @@
-from helpers.common import sleep, pixel_check_new, click, log, prepare_event
+from helpers.common import *
 from datetime import datetime, timedelta
 import numpy as np
+
+RGB_PRIMARY = [187, 130, 5]
+RGB_SECONDARY = [22, 124, 156]
+P_BUTTON_BATTLE_START = [850, 475, RGB_PRIMARY]
+P_POPUP_BUTTON_SECONDARY_LEFT = [270, 310, RGB_SECONDARY]
+P_POPUP_BUTTON_SECONDARY_RIGHT = [480, 310, RGB_SECONDARY]
 
 NOT_FOUND_EVENT = 'EVENT_NOT_FOUND'
 DUMMY_RESPONSE = {"name": NOT_FOUND_EVENT, "data": None}
 
 
 class Foundation:
-    E_BATTLE_END = {"name": "Battle end", "interval": 2}
-    E_CONNECTION_ERROR = {"name": "No connection", "interval": 300, "blocking": False}
+    E_BATTLE_END = {
+        "name": "Battle end",
+        "interval": 2
+    }
+    E_CONNECTION_ERROR = {
+        "name": "No connection",
+        "interval": 300,
+        "blocking": False
+    }
+    E_BUTTON_BATTLE_START = {
+        "name": "Button battle start",
+        "interval": 1,
+        "limit": 1,
+        "blocking": False,
+        "expect": lambda: pixel_check_new(P_BUTTON_BATTLE_START, mistake=10),
+        "callback": lambda *args: click(
+            x=P_BUTTON_BATTLE_START[0],
+            y=P_BUTTON_BATTLE_START[1],
+        ),
+    }
+    E_NO_AURA_SKILL = {
+        "name": "No aura skill",
+        "interval": 1,
+        "limit": 1,
+        "wait_limit": 3,
+        "expect": lambda: same_pixels_line_list([
+            P_POPUP_BUTTON_SECONDARY_LEFT,
+            P_POPUP_BUTTON_SECONDARY_RIGHT,
+        ]),
+        "callback": lambda *args: click(
+            x=P_POPUP_BUTTON_SECONDARY_RIGHT[0],
+            y=P_POPUP_BUTTON_SECONDARY_RIGHT[1],
+            smart=True
+        ),
+        # "callback": lambda *args: print("Detected: No aura skill"),
+    }
 
     def __init__(self, name, events=None):
         self.name = name
         self.stop = False
-        #
-        # if events is not None and type(events) is list:
-        #     self.events = events
 
     def log(self, msg):
         log(f'{self.name} | {msg}')
@@ -33,62 +70,80 @@ class Foundation:
         events_names_str = str(np.array(events_names_list, dtype=object))
         log(f"Events checking: {events_names_str}")
 
-        # events = self._extend_by_core_events(events)
-        while response is None and not self.stop:
-            name = events[counter]['name']
-            expect = events[counter]['expect']
-            limit = int(events[counter]['limit']) if 'limit' in events[counter] else None
+        start_call_time = datetime.now()
+        current_time = None
+
+        def _check_limit(e):
+            name = e['name']
+            limit = int(e['limit']) if 'limit' in e else None
+
             if name not in limit_tracker:
                 limit_tracker[name] = limit
 
-            # Skips limited callbacks
-            if limit_tracker[name] is None or limit_tracker[name] > 0:
-                main_interval = events[counter]['interval'] if 'interval' in events[counter] else interval
-                callback = events[counter]['callback'] if 'callback' in events[counter] else None
-                blocking = bool(events[counter]['blocking']) \
-                    if 'blocking' in events[counter] else True
+            return limit_tracker[name] is None or limit_tracker[name] > 0
 
-                current_time = datetime.now()
-                last_call_time = time_tracker.get(name, None)
+        def _check_wait_limit(e):
+            wait_limit = int(e['wait_limit']) if 'wait_limit' in e else None
+            return datetime.now() <= start_call_time + timedelta(seconds=wait_limit) if wait_limit else True
 
-                if last_call_time is None or current_time - last_call_time >= timedelta(seconds=main_interval):
+        def _check_interval(e):
+            name = e['name']
+            last_call_time = time_tracker.get(name, None)
+            main_interval = e['interval'] if 'interval' in e else interval
+            return last_call_time is None or datetime.now() - last_call_time >= timedelta(seconds=main_interval)
+
+        while response is None and not self.stop:
+            _e = events[counter]
+
+            # Skips limited callbacks and Skips wait_limit exceeded
+            if _check_limit(_e) and _check_wait_limit(_e):
+
+                # Interval iterator
+                if _check_interval(_e):
+                    _name = _e['name']
+                    _expect = _e['expect']
+                    _blocking = bool(_e['blocking']) if 'blocking' in _e else True
+                    _callback = _e['callback'] if 'callback' in _e else None
+
+                    # current_time = datetime.now()
+                    # print(f"{current_time.second} - {_name}")
+
                     # Call the function and update last call time
-                    time_tracker[name] = current_time
+                    time_tracker[_name] = datetime.now()
+                    # print(_name)
 
-                    res = expect()
+                    res = _expect()
                     if bool(res):
-                        log(f'Event occurred: {name}')
+                        log(f'Event occurred: {_name}')
 
-                        if blocking:
-                            response = {"name": name, "data": res}
+                        if _blocking:
+                            response = {"name": _name, "data": res}
 
-                        if callback is not None:
-                            callback(res)
+                        if _callback is not None:
+                            _callback(res)
 
                         # Tracks limited events
-                        if limit_tracker[name] is not None:
-                            limit_tracker[name] = limit_tracker[name] - 1
+                        if limit_tracker[_name] is not None:
+                            limit_tracker[_name] = limit_tracker[_name] - 1
 
-
-                        # @TODO No essential solution found | Temp commented
-                        # sub_items = events[counter]['children'] \
-                        #     if 'children' in events[counter] \
-                        #     else None
-                        # if sub_items:
-                        #     log('Sub-items')
-                        #     events_sub_items = self.awaits(
-                        #         events=sub_items['events'],
-                        #         interval=sub_items['interval'] if 'interval' in sub_items else interval
-                        #     )
-                        #     events_sub_items()
+            # breaks the main loop, when no active events found (checks 'limit' and 'wait_limit')
+            should_break = list(filter(lambda e: _check_limit(e) and _check_wait_limit(e), events))
+            if not len(should_break):
+                break
 
             # Manages list index
             counter = counter + 1 if counter < len(events) - 1 else 0
 
         return response if response is not None else DUMMY_RESPONSE
 
-    # def _extend_by_core_events(self, events):
-    #     return self.events + events if len(self.events) else events
+    def dungeons_start_battle(self):
+        # @TODO Duplication
+        STAGE_ENTER = [890, 200, [93, 25, 27]]
+
+        if pixel_check_new(STAGE_ENTER, mistake=10):
+            self.awaits([self.E_BUTTON_BATTLE_START, self.E_NO_AURA_SKILL])
+        else:
+            dungeons_replay()
 
     def waiting_battle_end_regular(self, msg, timeout=5, x=20, y=46):
         # @TODO rename 'timeout' into 'interval'

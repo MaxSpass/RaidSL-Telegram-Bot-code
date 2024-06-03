@@ -13,7 +13,7 @@ DOOM_TOWER_DATA = [
 
 # @TODO
 DOOM_TOWER_LOCATIONS = {}
-DOOM_TOWER_BOSS_ROOMS_REGION = [640, 70, 190, 460]
+DOOM_TOWER_BOSS_ROOMS_REGION = [420, 70, 400, 460]
 
 
 class DoomTower(Location):
@@ -55,29 +55,34 @@ class DoomTower(Location):
 
     def _run(self, props=None):
         self._read_keys()
+        position = None
 
-        # attack bosses
-        position = self._find_boss_position()
-        counter = 0
+        for i in range(len(self.bosses)):
+            id_boss = self.bosses[i]
+            counter = 0
+            if i == 0:
+                position = self.find_boss_position_by_id(id_boss)
 
-        if position is None:
-            # go higher floor
-            for i in range(15):
-                swipe('top', 450, 80, 450, speed=.1, sleep_after_end=.2, instant_move=True)
+            if position is None:
+                # go higher floor
+                for j in range(15):
+                    swipe('top', 300, 80, 450, speed=.1, sleep_after_end=.2, instant_move=True)
 
-            sleep(1)
+                sleep(1)
 
-        while position is None and counter < 15:
-            for j in range(2):
-                swipe('bottom', 450, 390, 250, speed=.5, sleep_after_end=.3, instant_move=True)
-                position = self._find_boss_position()
+            while position is None and counter < 15:
+                for k in range(2):
+                    position = self.find_boss_position_by_id(id_boss)
+                    if position is None:
+                        swipe('bottom', 300, 390, 250, speed=.5, sleep_after_end=.3, instant_move=True)
 
-            counter += 1
+                counter += 1
 
-        if position:
-            x = position[0]
-            y = position[1]
-            self.attack(x, y)
+            if position:
+                x = position[0]
+                y = position[1]
+                self.attack(x, y)
+                break
 
     def apply_props(self, props=None):
         if props:
@@ -96,7 +101,7 @@ class DoomTower(Location):
         self.log(f"Golden keys: {str(self.keys_golden)}")
         self.log(f"Silver keys: {str(self.keys_silver)}")
 
-    def _find_boss_position(self):
+    def find_boss_position(self):
         position = None
         for i in range(len(self.bosses)):
             id_boss = self.bosses[i]
@@ -106,6 +111,14 @@ class DoomTower(Location):
                 position = find_needle(needle, confidence=.5, region=DOOM_TOWER_BOSS_ROOMS_REGION)
                 if position:
                     break
+        return position
+
+    def find_boss_position_by_id(self, id_boss):
+        position = None
+        i, boss = find(DOOM_TOWER_DATA, lambda x: x['id'] == id_boss)
+        if boss:
+            needle = boss['needle']
+            position = find_needle(needle, confidence=.5, region=DOOM_TOWER_BOSS_ROOMS_REGION)
         return position
 
     def attack(self, x, y):

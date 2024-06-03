@@ -243,7 +243,7 @@ class Dungeons(Location):
     def _start_battle(self):
         if FAKE_BATTLE:
             return
-        dungeons_start_battle()
+        self.dungeons_start_battle()
 
     def attack(self):
         skip = False

@@ -77,7 +77,7 @@ class DemonLord(Location):
             sleep(0.5)
             stage = str(lvl)
             if pixel_check_new([870, 457, [246, 2, 0]], mistake=10):
-                claim_rewards(x=870, y=457, y_tap=444)
+                claim_rewards(x=870, y=457)
                 # @TODO Temp commented
                 # # click on the "Claim reward button"
                 # click(870, 457)

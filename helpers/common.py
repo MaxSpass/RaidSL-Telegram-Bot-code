@@ -313,27 +313,20 @@ def tap_to_continue(times=1, wait_before=2, wait_after=2, x=420, y=490):
 
 
 # @TODO Should implement
-def claim_rewards(x, y, fixed_pixel=None, limit=5, x_fixed=50, y_fixed=50, y_tap=490):
+def claim_rewards(x, y, fixed_pixel=None, limit=5, x_fixed=50, y_fixed=50, y_tap=444):
+    # y_tap: 490 ???
     if fixed_pixel is None:
         rgb_fixed = pyautogui.pixel(x_fixed, y_fixed)
         pixel_fixed = [x_fixed, y_fixed, rgb_fixed]
 
-        # @Todo Test
-        debug_save_screenshot(suffix_name='claim_rewards_click_before')
-
         # click on the claim reward area
         click(x, y)
-
-        # @Todo Test
-        debug_save_screenshot(suffix_name='claim_rewards_click_after')
+        sleep(1)
 
         # doing 'tap_to_continue' until 'pixel_fixed' is not exists
         while not pixel_check_new(pixel_fixed, mistake=0) and limit > 0:
-            tap_to_continue(wait_after=2, y=y_tap)
+            tap_to_continue(wait_before=1, wait_after=1, y=y_tap)
             limit -= 1
-
-        # @Todo Test
-        debug_save_screenshot(suffix_name='claim_rewards_done')
 
 
 def dungeons_scroll(direction='bottom', times=2):
@@ -543,12 +536,16 @@ def find_needle(
         scale=None,
         retries=0,
         retry_interval=1,
-        return_dimensions=True
+        return_dimensions=True,
+        should_move_out_cursor=False
 ):
     if region is None:
         region = [0, 0, 900, 530]
     if confidence is None:
         confidence = .8
+
+    if should_move_out_cursor:
+        move_out_cursor()
 
     path_image = os.path.join(os.getcwd(), 'images/needles/' + image_name)
     # width = None
@@ -1217,3 +1214,13 @@ def same_pixels_line(pixel, long=3, axis='x'):
         elif axis == 'y':
             _el[1] += 1
     return acc
+
+
+def same_pixels_line_list(pixels, long=3, axis='x'):
+    return list(map(lambda el: pixels_every(
+        same_pixels_line(el, long=long, axis=axis), lambda p: pixel_check_new(p, mistake=5)
+    ), pixels)).count(True) == len(pixels)
+
+
+def get_time_future(**kwargs):
+    return datetime.now() + timedelta(**kwargs)

@@ -5,10 +5,10 @@ from bot import TelegramBOT
 from classes.App import *
 from classes.Debug import *
 from classes.Foundation import *
+# from classes.Storage import *
 from constants.index import IS_DEV
 from locations.hero_filter.index import *
 # from locations.quests.index import QUEST_DAILY_DATA
-
 # from telegram.ext import CommandHandler
 # import pyautogui
 # import os.path
@@ -23,6 +23,10 @@ from locations.hero_filter.index import *
 # from locations.doom_tower.index import *
 # from in_progress import *
 
+# from apscheduler.schedulers.background import BackgroundScheduler
+# from datetime import datetime
+# import pytz
+
 pyautogui.FAILSAFE = False
 is_prod = is_production()
 
@@ -32,6 +36,7 @@ if not IS_DEV and is_prod:
 else:
     # @TODO Should be in the env file
     pytesseract.pytesseract.tesseract_cmd = os.path.normpath(r'C:\Program Files (x86)\Tesseract-OCR\tesseract.exe')
+
 
 # # TEST 1
 # x = 633
@@ -56,7 +61,124 @@ else:
 #     rgb_test
 # ]
 
+def schedule(seconds, predicate=None):
+    def my_function(s=0):
+        print(f"Function is running: {str(s)}")
+
+    if predicate is None:
+        predicate = my_function
+
+    # Create a background scheduler
+    scheduler = BackgroundScheduler()
+
+    # Define the time you want the function to run in UTC
+    # For example, June 1, 2024, at 14:00:00 UTC
+    # utc_time = datetime(2024, 6, 1, 11, 41, 0, tzinfo=pytz.timezone('utc'))
+
+    # utc_time = datetime(2024, 6, 1, 11, 41, 0, tzinfo=pytz.utc)
+    # print('utc_time', utc_time)
+
+    # Schedule the function to run at the specified UTC time
+    # scheduler.add_job(my_function, 'date', run_date=utc_time)
+
+    tf = get_time_future(seconds=seconds)
+    scheduler.add_job(predicate, 'cron', hour=tf.hour, minute=tf.minute, second=tf.second)
+    # scheduler.add_job(predicate, 'cron', hour=hour, minute=minute)
+
+    # Start the scheduler
+    scheduler.start()
+
+    # try:
+    #     print("Runs")
+    #     while True:
+    #         pass
+    # except (KeyboardInterrupt, SystemExit):
+    #     # Shut down the scheduler
+    #     scheduler.shutdown()
+
 def main():
+    # time_future = get_time_future(minutes=1)
+    # print('time_future', time_future)
+    # return
+
+    # def check_availability():
+    #     # @TODO Finish
+    #     # res = {
+    #     #     'is_active': False,
+    #     #     'open_hour': None
+    #     # }
+    #     # live_arena_open_hours = [[6, 8], [14, 16], [20, 22]]
+    #     utc_timestamp = datetime.utcnow().timestamp()
+    #     utc_datetime = datetime.fromtimestamp(utc_timestamp)
+    #     parsed_time = time_mgr.timestamp_to_datetime(utc_datetime)
+    #
+    #     year = parsed_time['year']
+    #     month = parsed_time['month']
+    #     day = parsed_time['day']
+    #     # @TODO
+    #     hour = parsed_time['hour']
+    #     print(parsed_time)
+    #
+    #     # hour = 14
+    #     pause.until(datetime(year, month, day, hour, 1, 30, tzinfo=timezone.utc))
+
+    # check_availability()
+    # print('test')
+
+
+
+    # return
+
+
+
+    # s = '2024-05-23T21:44:45.770613'
+    # print(datetime.fromisoformat(s))
+    # return
+
+    # def timelens(*args, **kwargs):
+    #     return format_date(datetime.now() - timedelta(**kwargs))
+    #
+    # s = Storage(name='storage')
+    #
+    # s.add(
+    #     title='Arena Live',
+    #     data={'results_record': [True], 'duration_record': [timelens(minutes=10), timelens(minutes=5)]},
+    # )
+    # s.add(
+    #     title='Arena Tag',
+    #     data={'results_record': [True, False], 'duration_record': [timelens(minutes=4), timelens(minutes=2)]},
+    #     date=timelens(minutes=60)
+    # )
+    # s.add(
+    #     title='Arena Tag',
+    #     data={'results_record': [True, True, False], 'duration_record': [timelens(minutes=20), timelens(minutes=5)]},
+    #     date=timelens(minutes=55)
+    # )
+    # s.add(
+    #     title='Arena Classic',
+    #     data={'results_record': [True, True, True], 'duration_record': [timelens(minutes=20), timelens(minutes=5)]},
+    #     date=timelens(minutes=45)
+    # )
+    # s.add(
+    #     title='Arena Live',
+    #     data={'results_record': [True], 'duration_record': [timelens(minutes=10), timelens(minutes=5)]},
+    #     date=timelens(minutes=35)
+    # )
+    # s.add(
+    #     title='Arena Live',
+    #     data={'results_record': [True], 'duration_record': [timelens(minutes=10), timelens(minutes=5)]},
+    #     date=timelens(minutes=15)
+    # )
+    #
+    # # entries = s.get_entries(days=0, title='Arena Live')
+    # entries = s.get_entries(days=0)
+    # print('entries len', len(entries))
+    #
+    # for i in range(len(entries)):
+    #     print(entries[i])
+    #
+    # return
+
     # returns [21, 32, 39]
     # print(pyautogui.pixel(737, 138))
     # return
@@ -96,7 +218,6 @@ def main():
     # print('res', res)
     # return
 
-
     # hero_filter = HeroFilter()
     #
     # pool = ['arbiter', 'leo', 'madam', 'armanz']
@@ -114,6 +235,7 @@ def main():
     # return
 
     # offsets were taken from 'images/for_test/live_arena_issue.png'
+
     # x_offset = 371
     # y_offset = 278
     # copy_victory = copy.copy(victory)
@@ -121,13 +243,16 @@ def main():
     # copy_victory[1] = copy_victory[1] + y_offset
     # foundation = Foundation('test')
     #
+    # foundation.dungeons_start_battle()
+    # return
+    #
     # E_VICTORY_TEST = {
-    #     "name": "Victory 1",
+    #     "name": "1",
     #     "expect": lambda: pixel_check_new(copy_victory, mistake=30),
     # }
     #
     # E_VICTORY_TEST_2 = {
-    #     "name": "Victory 2",
+    #     "name": "2",
     #     "expect": lambda: pixel_check_new(copy_victory),
     # }
     #
@@ -138,15 +263,11 @@ def main():
     #
     # e_victory_2 = prepare_event(E_VICTORY_TEST_2, {
     #     'interval': 0.5,
-    #     'callback': lambda *args: print('FOUND 2')
+    #     'callback': lambda *args: print('FOUND 2'),
+    #     'wait_limit': 2,
     # })
     #
-    # res = foundation.awaits([e_victory, e_victory_2])
-    # if E_VICTORY_TEST['name'] == res['name']:
-    #     print('res', res)
-    # else:
-    #     print('Another event occurred')
-    #
+    # res = foundation.awaits([e_victory_2, foundation.E_NO_AURA_SKILL])
     # return
 
     # _copy = copy.copy(cant_find_opponent_button_cancel)
@@ -247,24 +368,54 @@ def main():
     # quests.get_not_completed_ids()
     # return
 
+    def scheduled(app, seconds=20):
+        print('BackgroundScheduler')
+        # p = lambda: print('Scheduled callback')
+        p = app.commands['report']['cb']
+        tf = get_time_future(seconds=seconds)
+        print(f"Time future: {str(tf)}")
+        app.scheduler.add_job(p, 'cron', hour=tf.hour, minute=tf.minute, second=tf.second)
+        app.scheduler.start()
+
     if is_prod:
         log("The App is starting, don't touch the mouse and keyboard")
         sleep(10)
 
     app = App()
 
+    # doom_tower = app.get_instance('doom_tower')
+    # boss = doom_tower.find_boss_position_by_id(1)
+    # print('boss', boss)
+    # return
+
+
     if IS_DEV or app.validation():
-        game_path = app.get_game_path()
+        game_path = app.config['game_path']
         has_telegram_token = 'telegram_token' in app.config
         telegram_bot = None
 
         try:
             if app.config['start_immediate']:
                 app.start()
-                # debug_save_screenshot(region=app.get_window_region(), quality=100, ext='png')
+
+                # print('BackgroundScheduler')
+                # scheduler = BackgroundScheduler()
+                # schedule_predicate = app.commands['report']['cb']
+                # date_now = datetime.now()
+                # scheduler.add_job(schedule_predicate, 'cron', hour=date_now.hour, minute=date_now.minute, second=date_now.second+30)
+                # scheduler.start()
+
                 # debug = Debug(app=app, name='arena_live')
+                # time_for_log = get_time_for_log(s='_')
+                # date_for_log = get_date_for_log()
+                # print('time_for_log', time_for_log)
+                # print('date_for_log', date_for_log)
+                # debug.screenshot(folder=time_for_log, suffix_name='opponent_left')
+
+                # debug_save_screenshot(region=app.get_window_region(), quality=100, ext='png')
                 # debug.screenshot(suffix_name="Custom prefix name")
                 # app.get_instance('daily_quests').daily_quest_1()
+
 
             if has_telegram_token:
                 telegram_bot = TelegramBOT({
@@ -272,62 +423,17 @@ def main():
                 })
                 telegram_bot.start()
 
-                # 'game_path' dependant commands
-                if game_path:
-                    telegram_bot.add({
-                        'command': 'restart',
-                        'description': 'Re-Start the Game',
-                        'handler': app.task(name='restart', cb=app.restart),
-                    })
-                    telegram_bot.add({
-                        'command': 'launch',
-                        'description': 'Re-Launch the Game',
-                        'handler': app.task(name='launch', cb=app.launch),
-                    })
-                    telegram_bot.add({
-                        'command': 'relogin',
-                        'description': 'Re-log in',
-                        'handler': app.task(name='relogin', cb=app.relogin),
-                    })
-                    telegram_bot.add({
-                        'command': 'prepare',
-                        'description': 'Prepares the Game window',
-                        'handler': app.task(name='prepare', cb=app.prepare),
-                    })
+                commands_to_apply = copy.copy(app.COMMANDS_GAME_PATH_DEPENDANT) if game_path else []
+                commands_to_apply += app.COMMANDS_COMMON
 
-                # Sync
-                telegram_bot.add({
-                    'command': 'report',
-                    'description': 'Report',
-                    'handler': app.task(
-                        name='report',
-                        cb=app.report,
-                        task_type='sync'
-                    ),
-                })
-                # Sync
-                telegram_bot.add({
-                    'command': 'screen',
-                    'description': 'Capture and send a screenshot',
-                    'handler': app.task(
-                        name='screen',
-                        cb=lambda upd, ctx: ctx.bot.send_photo(
-                            chat_id=upd.message.chat_id,
-                            photo=app.screen()
-                        ) if bool(app.window) else upd.message.reply_text("No Game window found"),
-                        task_type='sync'
-                    ),
-                })
-                # Sync
-                telegram_bot.add({
-                    'command': 'click',
-                    'description': 'Click by provided coordinates: x, y',
-                    'handler': app.task(
-                        name='click',
-                        cb=app.click,
-                        task_type='sync'
-                    ),
-                })
+                for i in range(len(commands_to_apply)):
+                    command_name = commands_to_apply[i]
+                    command_data = app.commands[command_name]
+                    telegram_bot.add({
+                        'command': command_name,
+                        'description': command_data['description'],
+                        'handler': command_data['handler'],
+                    })
 
                 # register main commands according to 'tasks'
                 regular_command = []
@@ -347,12 +453,10 @@ def main():
                     def process_preset_commands(upd, ctx, preset):
                         for i in range(len(preset['commands'])):
                             command = preset['commands'][i]
-                            cb = app.get_entry(command_name=command)['instance'].run
                             app.task(
                                 name=command,
-                                cb=cb
+                                cb=app.get_entry(command_name=command)['instance'].run
                             )(upd, ctx)
-                        return None
 
                     presets_commands = list(map(lambda preset: {
                         'command': make_command_key(f"preset {preset['name']}"),
@@ -370,8 +474,13 @@ def main():
                 # doom_tower = app.get_instance('doom_tower')
                 # daily_quests.daily_quest_2()
 
+                # @TODO
+                # app.schedule(predicate=lambda: print('Scheduled callback'))
+
                 telegram_bot.listen()
                 telegram_bot.updater.idle()
+
+
 
         except KeyboardInterrupt:
             error = traceback.format_exc()

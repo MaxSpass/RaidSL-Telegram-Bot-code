@@ -255,11 +255,6 @@ class ArenaLive(Location):
         if pixel_check_new(claim_chest):
             x = claim_chest[0]
             y = claim_chest[1]
-            # @TODO Temp commented
-            # click(x, y)
-            # sleep(1)
-            # tap_to_continue(wait_after=1)
-            # @TODO Test
             claim_rewards(x, y)
 
     def _claim_free_refill_coins(self):

@@ -205,6 +205,12 @@
     },
     {
       "task": "dungeon",
+      "title": "Fire Knight",
+      "enable": 1,
+      "props": {"locations": [{"id": 5}], "refill": 0}
+    },
+    {
+      "task": "dungeon",
       "title": "Sand Devil",
       "enable": 1,
       "props": {"locations": [{"id": 6}], "refill": 0}
@@ -220,12 +226,6 @@
       "title": "Ice Golem Normal",
       "enable": 1,
       "props": {"locations": [{"id": 2, "difficulty": "normal"}], "refill": 0}
-    },
-    {
-      "task": "dungeon",
-      "title": "Fire Knight Normal",
-      "enable": 1,
-      "props": {"locations": [{"id": 5, "difficulty": "normal"}], "refill": 0}
     },
     {
       "task": "demon_lord",
@@ -273,12 +273,11 @@
   ],
   "presets": [
     {
-      "name": "noon with minotaur",
+      "name": "noon",
       "commands": [
         "demon_lord",
         "rewards",
         "doom_tower",
-        "dungeon_minotaur",
         "arena_classic"
       ]
     },
