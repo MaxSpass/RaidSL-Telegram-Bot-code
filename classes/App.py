@@ -26,6 +26,9 @@ import cv2
 import numpy as np
 from PIL import Image
 from io import BytesIO
+from apscheduler.schedulers.background import BackgroundScheduler
+from datetime import datetime
+import pytz
 
 # from telegram.error import NetworkError
 
@@ -193,17 +196,60 @@ def make_title(input_string):
 
 
 class App:
-    def __init__(self):
-        self.taskManager = TaskManager()
-        # @TODO Temp commented
-        # self.storage = Storage(name='storage', folder='temp')
 
+    COMMANDS_GAME_PATH_DEPENDANT = ['restart', 'launch', 'relogin', 'prepare']
+    COMMANDS_COMMON = ['report', 'screen', 'click']
+
+    def __init__(self):
         self.config = None
         self.window = None
         self.window_region = None
         self.window_axis = None
         self.entries = {}
+        self.taskManager = TaskManager()
+        self.scheduler = None
+        # @TODO Temp commented
+        # self.storage = Storage(name='storage', folder='temp')
         self.read_config()
+        self.commands = self.get_commands()
+
+    def get_commands(self):
+        return {
+            'restart': {
+                'description': 'Re-Start the Game',
+                'handler': self.task('restart', self.restart, task_type='aside'),
+            },
+            'launch': {
+                'description': 'Re-Launch the Game',
+                'handler': self.task('launch', self.launch, task_type='aside'),
+            },
+            'relogin': {
+                'description': 'Re-log in',
+                'handler': self.task('relogin', self.relogin, task_type='aside'),
+            },
+            'prepare': {
+                'description': 'Prepares the Game window',
+                'handler': self.task('prepare', self.prepare, task_type='aside'),
+            },
+            'screen': {
+                'description': 'Capture and send a screenshot',
+                'handler': self.task('screen', self._screenshot, task_type='sync'),
+            },
+            'click': {
+                'description': 'Click by provided coordinates: x, y',
+                'handler': self.task('click', self._click, task_type='sync'),
+            },
+            'report': {
+                'description': 'Report',
+                'handler': self.task('report', self.report, task_type='sync'),
+            },
+        }
+
+    def _screenshot(self, upd, ctx):
+        if not bool(self.window):
+            self.prepare()
+
+        return ctx.bot.send_photo(chat_id=upd.message.chat_id, photo=self.screen())
 
     def _prepare_config(self, config_json):
         _config = {
@@ -289,14 +335,10 @@ class App:
 
         return _config
 
-    def get_game_path(self):
-        return self.config['game_path']
-
     def validation(self):
         # primitive validation
-        currentYear = datetime.now().year
-        currentMonth = datetime.now().month
-        return currentYear == 2024 and (currentMonth <= 6)
+        date_now = datetime.now()
+        return date_now.year == 2024 and (date_now.month <= 12)
 
     def load_config(self, config):
         self.config = self._prepare_config(config)
@@ -312,10 +354,8 @@ class App:
         except SystemError:
             log('An error occurred while reading ' + CONFIG_PATH + ' file')
 
-    def exit(self):
-        self.report()
-
     def report(self, *args):
+        print('App -> Report')
         res = None
         instances = list(map(lambda x: x['instance'], self.entries.values()))
         reports = list(map(lambda x: x.report(), instances))
@@ -330,6 +370,9 @@ class App:
         return res or "No reports yet"
 
     def kill(self, *args):
+        if self.scheduler is not None:
+            self.scheduler.shutdown()
+        self.report()
         log('App is terminated')
         input('Confirm by pressing any key')
         sys.exit(0)
@@ -382,6 +425,7 @@ class App:
         ]
 
         self.window_region = region
+        log(f"Window region: {str(region)}")
 
         return region
 
@@ -396,7 +440,7 @@ class App:
 
         return image_bytes
 
-    def click(self, upd, ctx):
+    def _click(self, upd, ctx):
         response = []
 
         def _get_grid_screenshot():
@@ -478,8 +522,7 @@ class App:
         signal.signal(signal.SIGINT, self.kill)
         signal.signal(signal.SIGTERM, self.kill)
 
-        game_path = self.get_game_path()
-
+        game_path = self.config['game_path']
         if find_process_by_name(GAME_PROCESS_NAME):
             self.prepare(predicate=self.relogin)
         elif game_path:
@@ -488,7 +531,7 @@ class App:
             raise "No 'game_path' provided field in the config"
 
     def launch(self, *args):
-        game_path = self.get_game_path()
+        game_path = self.config['game_path']
         if game_path:
             subprocess.run(f"{game_path} -gameid=101 -tray-start")
             sleep(3)
@@ -504,7 +547,7 @@ class App:
             return "No 'game_path' provided field in the config"
 
     def restart(self, *args):
-        game_path = self.get_game_path()
+        game_path = self.config['game_path']
         if game_path:
             terminate_process_by_name(GAME_PROCESS_NAME)
             sleep(2)
@@ -515,7 +558,7 @@ class App:
 
     def prepare(self, *args, predicate=None):
         self.window = resize_window()
-        self.window_region = None
+        # self.window_region = None
         if predicate is not None:
             predicate()
         self.window_axis = calibrate_window(self.window_axis)
@@ -544,6 +587,8 @@ class App:
     #         pass
 
     def task(self, name, cb, task_type="aside"):
+        # @TODO
+        # self.tasks[name] =
         return lambda upd, ctx: self.taskManager.add(name, lambda: cb(upd, ctx), props={
             # 'onDone': lambda text: self.on_message(upd, text),
             # 'onError': lambda text: self.on_message(upd, text),
@@ -551,6 +596,16 @@ class App:
             'onError': upd.message.reply_text,
             'type': task_type,
         })
+
+    def schedule(self, predicate=None):
+        if self.scheduler is None:
+            self.scheduler = BackgroundScheduler()
+
+        if predicate is not None:
+            tf = get_time_future(seconds=20)
+            self.scheduler.add_job(predicate, 'cron', hour=tf.hour, minute=tf.minute, second=tf.second)
+
+        self.scheduler.start()
 
     # def run(self):
     #     self.prepare()

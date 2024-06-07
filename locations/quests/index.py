@@ -238,7 +238,7 @@ class Quests(Location):
                     if dungeons_is_able():
                         for k in range(times):
                             dungeons_start_battle()
-                            waiting_battle_end_regular(f'{msg_stage} | Battle end', x=28, y=88)
+                            waiting_battle_end_regular(f'{msg_stage} | Battle end')
                             counter += 1
 
                         # click in the "Stage Selection"
@@ -651,7 +651,7 @@ class Quests(Location):
         if dungeon_sand_devil:
             dungeon_sand_devil.run(self.update, self.context, props={"locations": [{"id": 6}], "bank": 40})
         else:
-            self.update.message.reply_text(no_task_text)
+            self.send_message(no_task_text)
             self.daily_quest_8()
 
         self.results.append(quest_id)
@@ -665,7 +665,7 @@ class Quests(Location):
             arena_classic.run(self.update, self.context)
             self.results.append(quest_id)
         else:
-            self.update.message.reply_text(no_task_text)
+            self.send_message(no_task_text)
 
     def daily_quest_6(self, quest_id='6'):
         global MARKET_SHARDS_REGION

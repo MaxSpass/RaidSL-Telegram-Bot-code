@@ -12,15 +12,26 @@ NOT_FOUND_EVENT = 'EVENT_NOT_FOUND'
 DUMMY_RESPONSE = {"name": NOT_FOUND_EVENT, "data": None}
 
 
+def callback_retry(*args):
+    log('Trying to reconnect...')
+    button = find_button(variant='primary')
+    if button is not None:
+        click(button.x, button.y, random_click=True)
+        move_out_cursor()
+
+
 class Foundation:
     E_BATTLE_END = {
         "name": "Battle end",
-        "interval": 2
+        "interval": 2,
+        "expect": lambda: pixel_check_new([28, 88, [255, 255, 255]], mistake=3),
     }
     E_CONNECTION_ERROR = {
         "name": "No connection",
         "interval": 300,
-        "blocking": False
+        "blocking": False,
+        "expect": lambda: bool(find_popup_detector()),
+        "callback": callback_retry,
     }
     E_BUTTON_BATTLE_START = {
         "name": "Button battle start",
@@ -47,7 +58,6 @@ class Foundation:
             y=P_POPUP_BUTTON_SECONDARY_RIGHT[1],
             smart=True
         ),
-        # "callback": lambda *args: print("Detected: No aura skill"),
     }
 
     def __init__(self, name, events=None):
@@ -145,40 +155,11 @@ class Foundation:
         else:
             dungeons_replay()
 
-    def waiting_battle_end_regular(self, msg, timeout=5, x=20, y=46):
+    def waiting_battle_end_regular(self, msg, timeout=5):
         # @TODO rename 'timeout' into 'interval'
         log(f"Waiting battle End: {msg}")
 
-        # for reading the text
-        width = 174
-
-        # SHOULD TEST
-        x_1 = 268
-        y_1 = 278
-        rgb_1 = [17, 122, 156]
-
-        x_2 = 472
-        y_2 = 278
-        rgb_2 = [181, 130, 5]
-
-        def retry_callback(*args):
-            log('Establishing connection...')
-            click(x_2, y_2)
-
-        e_battle_end = prepare_event(self.E_BATTLE_END, {
-            "expect": lambda: pixel_check_new([x, y, [255, 255, 255]], mistake=3),
-        })
-
-        e_connection_error = prepare_event(self.E_CONNECTION_ERROR, {
-            "callback": retry_callback,
-            "expect": lambda: bool(
-                pixel_check_new([x_1, y_1, rgb_1], mistake=10) and pixel_check_new([x_2, y_2, rgb_2], mistake=10)
-            ),
-        })
-
-        battle_end_events = self.awaits(
-            events=[e_battle_end, e_connection_error],
+        return self.awaits(
+            events=[self.E_BATTLE_END, self.E_CONNECTION_ERROR],
             interval=timeout
         )
-
-        return battle_end_events

@@ -75,7 +75,7 @@ class IronTwins(Location):
                 self.log('Terminated')
                 break
 
-            self.waiting_battle_end_regular(self.NAME, x=28, y=88)
+            self.waiting_battle_end_regular(self.NAME)
 
             res = not pixel_check_new(self.RESULT_DEFEAT, mistake=10)
             self.results.append(res)

@@ -18,6 +18,7 @@ import PIL
 import sys
 import copy
 import traceback
+import random
 
 time_mgr = TimeMgr()
 
@@ -102,13 +103,53 @@ def track_mouse_position():
         print('\n')
 
 
-def capture_by_source(src, region, confidence=.9, grayscale=False):
-    return pyautogui.locateCenterOnScreen(src, region=region, confidence=confidence, grayscale=grayscale)
+# def is_close(box1, box2, threshold=5):
+#     """Check if two boxes are close to each other within a certain threshold."""
+#     return (abs(box1.left - box2.left) < threshold and
+#             abs(box1.top - box2.top) < threshold and
+#             abs(box1.width - box2.width) < threshold and
+#             abs(box1.height - box2.height) < threshold)
 
 
-def click(x, y, smart=False, timeout=0.5, interval=2):
+# Function to filter close boxes
+def is_close(box1, box2, threshold=5):
+    """Check if two boxes are close to each other within a certain threshold."""
+    return (abs(box1.left - box2.left) < threshold and
+            abs(box1.top - box2.top) < threshold)
+
+
+def filter_close_boxes(boxes, threshold=5):
+    """Filter out boxes that are very close to each other."""
+    filtered_boxes = []
+    for box in boxes:
+        if all(not is_close(box, filtered_box, threshold) for filtered_box in filtered_boxes):
+            filtered_boxes.append(box)
+    return filtered_boxes
+
+
+def capture_by_source(src, region, confidence=.8, grayscale=False, return_boxes=False):
+    if return_boxes:
+        instances = list(pyautogui.locateAllOnScreen(src, region=region, confidence=confidence, grayscale=grayscale))
+        # Get the center points of all instances
+        # center_points = [pyautogui.center(instance) for instance in instances]
+
+        # Filter out close instances (Boxes)
+        filtered_instances = filter_close_boxes(instances)
+
+        return filtered_instances
+    else:
+        return pyautogui.locateCenterOnScreen(src, region=region, confidence=confidence, grayscale=grayscale)
+
+
+def click(x, y, smart=False, timeout=0.5, interval=2, random_click=None):
     rgb = pyautogui.pixel(x, y) if smart else None
 
+    if random_click is not None:
+        max_random = random_click if type(random_click) is int else 5
+        x += random.randint(1, max_random)
+        y += random.randint(1, max_random)
+
+    print(x, y)
     pyautogui.click(x, y)
 
     if smart and rgb:
@@ -138,9 +179,25 @@ def random_easying():
     ])
 
 
-def debug_save_screenshot(region=None, suffix_name=None, output=None, quality=75, ext='jpg'):
+def debug_save_screenshot(
+        region=None,
+        suffix_name=None,
+        output=None,
+        quality=75,
+        ext='jpg',
+        x_center=False,
+        y=222
+):
+    R_WINDOW_DEFAULT = [0, 0, 906, 533]
     if not region:
-        region = [0, 0, 906, 533]
+        # game window height includes top-bar height: 32px
+        region = R_WINDOW_DEFAULT
+
+    # for capturing small needles
+    if x_center:
+        region[0] = int(R_WINDOW_DEFAULT[2] / 2 - region[2] / 2)
+        region[1] = y
+
     output_debug = 'debug'
     if output is not None:
         output_debug = os.path.normpath(f"{output_debug}/{output}")
@@ -536,8 +593,8 @@ def find_needle(
         scale=None,
         retries=0,
         retry_interval=1,
-        return_dimensions=True,
-        should_move_out_cursor=False
+        should_move_out_cursor=False,
+        return_boxes=False
 ):
     if region is None:
         region = [0, 0, 900, 530]
@@ -548,8 +605,6 @@ def find_needle(
         move_out_cursor()
 
     path_image = os.path.join(os.getcwd(), 'images/needles/' + image_name)
-    # width = None
-    # height = None
 
     if scale:
         physical_image = cv2.imread(path_image)
@@ -561,29 +616,24 @@ def find_needle(
         # Resize the image with Lanczos interpolation
         # scaled_image = image.resize((new_width, new_height), Image.LANCZOS)
         scaled_image = cv2.resize(physical_image, (width, height))
-
         path_image = scaled_image
 
-        # show_pyautogui_image(path_image)
+    # show_pyautogui_image(path_image)
+    def _find_needles():
+        return capture_by_source(path_image, region, confidence=confidence, return_boxes=return_boxes)
 
-    position = capture_by_source(path_image, region, confidence=confidence)
-    while retries > 0 and position is None:
-        position = capture_by_source(path_image, region, confidence=confidence)
+    position = _find_needles()
+    while retries > 0 \
+            and (position is None or type(position) is list and not len(position)):
+        position = _find_needles()
         retries -= 1
         sleep(retry_interval)
-
-    # if return_dimensions:
-    #     if width and height:
-    #         return position, width, height
-    #     else:
-    #         _height, _width = cv2.imread(path_image).shape
-    #         return position + (_width, _height)
 
     return position
 
 
 def find_needle_refill_ruby():
-    return find_needle('refill_ruby.jpg', axis_to_region(320, 320, 640, 440))
+    return find_needle('refill/refill_ruby.jpg', axis_to_region(320, 320, 640, 440))
 
 
 def find_needle_refill_button(region):
@@ -660,6 +710,26 @@ def find_hero_filter_small(region=None, confidence=.7, retries=None):
 
 def find_hero_slot_active(region):
     return find_needle('hero_slot_active.jpg', region=region, confidence=.65, retries=2)
+
+
+def find_popup_detector():
+    return find_needle('popups/error_detector.jpg', region=[425, 110, 60, 150])
+
+
+def find_button(variant, region=None, return_boxes=False):
+    if region is None:
+        region = [130, 110, 640, 350]
+    src = None
+
+    if variant == 'primary':
+        src = 'popups/button_primary_big.jpg'
+    elif variant == 'secondary':
+        src = 'popups/button_secondary_big.jpg'
+
+    if src is not None:
+        return find_needle(src, region=region, return_boxes=return_boxes)
+
+    return src
 
 
 def battles_click():

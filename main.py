@@ -6,8 +6,10 @@ from classes.App import *
 from classes.Debug import *
 from classes.Foundation import *
 # from classes.Storage import *
+# from classes.Refill import *
 from constants.index import IS_DEV
 from locations.hero_filter.index import *
+
 # from locations.quests.index import QUEST_DAILY_DATA
 # from telegram.ext import CommandHandler
 # import pyautogui
@@ -96,7 +98,34 @@ def schedule(seconds, predicate=None):
     #     # Shut down the scheduler
     #     scheduler.shutdown()
 
+
 def main():
+    # f = Foundation(name='test')
+    # f.dungeons_start_battle()
+    # res = f.waiting_battle_end_regular('Test battle')
+    # print('res', res)
+    # return
+
+    # debug_save_screenshot(region=[258, 272, 10, 56], quality=100)
+    # debug_save_screenshot(region=[0, 0, 900, 530], quality=100, suffix_name='arena_classic')
+
+    # res_arena_classic = find_refill_arena_classic()
+    # res_arena_tag = find_refill_arena_tag()
+    # res_arena_live = find_refill_arena_live()
+    # res_iron_twins_keys = find_refill_iron_twins_keys()
+    # res_energy = find_refill_energy()
+    #
+    # print('classic', res_arena_classic)
+    # print('tag', res_arena_tag)
+    # print('live', res_arena_live)
+    # print('iron_twins_keys', res_iron_twins_keys)
+    # print('energy', res_energy)
+
+
+    # refill = Refill()
+    # refill.check()
+    # return
+
     # time_future = get_time_future(minutes=1)
     # print('time_future', time_future)
     # return
@@ -125,11 +154,7 @@ def main():
     # check_availability()
     # print('test')
 
-
-
     # return
-
-
 
     # s = '2024-05-23T21:44:45.770613'
     # print(datetime.fromisoformat(s))
@@ -388,7 +413,6 @@ def main():
     # print('boss', boss)
     # return
 
-
     if IS_DEV or app.validation():
         game_path = app.config['game_path']
         has_telegram_token = 'telegram_token' in app.config
@@ -415,7 +439,6 @@ def main():
                 # debug_save_screenshot(region=app.get_window_region(), quality=100, ext='png')
                 # debug.screenshot(suffix_name="Custom prefix name")
                 # app.get_instance('daily_quests').daily_quest_1()
-
 
             if has_telegram_token:
                 telegram_bot = TelegramBOT({
