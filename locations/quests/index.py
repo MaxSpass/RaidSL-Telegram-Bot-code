@@ -81,6 +81,16 @@ ARTIFACT_STORAGE_SLOTS_MATRIX = [
     (0, 3), (1, 3), (2, 3), (3, 3), (4, 3), (5, 3),
     (0, 4), (1, 4), (2, 4), (3, 4), (4, 4), (5, 4),
 ]
+# Left Artifacts slots
+ARTIFACT_RGB_LEFT_SLOT = [3, 16, 32]
+ARTIFACT_LEFT_SLOTS = [
+    [44 + (66 * 0), 82, ARTIFACT_RGB_LEFT_SLOT],
+    [44 + (66 * 1), 82, ARTIFACT_RGB_LEFT_SLOT],
+    [44 + (66 * 2), 82, ARTIFACT_RGB_LEFT_SLOT],
+    [44 + (66 * 0), 82 + 66, ARTIFACT_RGB_LEFT_SLOT],
+    [44 + (66 * 1), 82 + 66, ARTIFACT_RGB_LEFT_SLOT],
+    [44 + (66 * 2), 82 + 66, ARTIFACT_RGB_LEFT_SLOT],
+]
 # Quest 2 End
 
 # Quest 6 Start
@@ -485,8 +495,12 @@ class Quests(Location):
                     wait_limit=60
             )[0]:
 
-                # Swipe 'Artifacts sidebar' 60px down
-                swipe('bottom', 110, 490, 60, speed=.5, instant_move=True)
+                # Reducing the artifact output
+                random_slot = random.choice(ARTIFACT_LEFT_SLOTS)
+                await_click([random_slot], mistake=5, wait_limit=2)
+
+                # Swipe 'Artifacts sidebar' down
+                swipe('bottom', 110, 490, 105, speed=.5, instant_move=True)
 
                 # Checked -> 'Hide Set Filters'
                 click(190, 498)

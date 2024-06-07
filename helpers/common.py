@@ -149,7 +149,6 @@ def click(x, y, smart=False, timeout=0.5, interval=2, random_click=None):
         x += random.randint(1, max_random)
         y += random.randint(1, max_random)
 
-    print(x, y)
     pyautogui.click(x, y)
 
     if smart and rgb:
