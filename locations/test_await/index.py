@@ -1,6 +1,6 @@
 from classes.Location import Location
 from helpers.common import *
-from locations.live_arena.index import E_VICTORY, E_DEFEAT
+from locations.live_arena.index import ArenaLive
 
 rgb_grey = [127, 127, 127]
 rgb_light_blue = [0, 162, 232]
@@ -37,8 +37,8 @@ class TestAwait(Location):
 
         res = self.awaits(
             events=[
-                E_VICTORY,
-                E_DEFEAT,
+                ArenaLive.E_VICTORY,
+                ArenaLive.E_DEFEAT,
                 event_grey,
                 event_blue,
                 event_needle],
