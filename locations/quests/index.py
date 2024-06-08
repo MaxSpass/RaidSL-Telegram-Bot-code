@@ -247,8 +247,8 @@ class Quests(Location):
                     sleep(2)
                     if dungeons_is_able():
                         for k in range(times):
-                            dungeons_start_battle()
-                            waiting_battle_end_regular(f'{msg_stage} | Battle end')
+                            self.dungeons_start_battle()
+                            self.waiting_battle_end_regular(f'{msg_stage} | Battle end')
                             counter += 1
 
                         # click in the "Stage Selection"

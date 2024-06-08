@@ -213,7 +213,6 @@ def pixel_check_new(pixel, mistake=10):
     y = pixel[1]
     rgb = pixel[2]
     p = pyautogui.pixel(x, y)
-
     return rgb_check(p, rgb, mistake=mistake)
 
 
@@ -473,6 +472,11 @@ def enable_super_raid(pixel=None):
             sleep(.3)
 
 
+def enable_start_on_auto():
+    P_START_ON_AUTO_CHECKBOX = [710, 406, [13, 58, 81]]
+    await_click([P_START_ON_AUTO_CHECKBOX], mistake=10, wait_limit=1)
+
+
 def enable_auto_play(*args):
     AUTO_PLAY_BUTTON = [49, 486]
     sleep(2)
@@ -729,6 +733,17 @@ def find_button(variant, region=None, return_boxes=False):
         return find_needle(src, region=region, return_boxes=return_boxes)
 
     return src
+
+
+def find_indicator_active():
+    region = [260, 390, 120, 60]
+    return find_needle('live_arena/indicator_active.jpg', confidence=.6, region=region)
+
+
+def find_victory_opponent_left(region=None):
+    if region is None:
+        region = [390, 32, 160, 50]
+    return find_needle('live_arena/victory_opponent_left.jpg', confidence=.7, region=region)
 
 
 def battles_click():

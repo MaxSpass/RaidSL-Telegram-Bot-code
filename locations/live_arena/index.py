@@ -87,77 +87,70 @@ rewards_pixels = [
     [875, 272, rgb_reward],
 ]
 
-# E_CANT_FIND_OPPONENT = {
-#     "name": "Can't find an opponent",
-#     "expect": lambda: pixel_check_new(cant_find_opponent_button_find, mistake=5),
-#     "interval": 3,
-# }
-E_CANT_FIND_OPPONENT = {
-    "name": "Can't find an opponent",
-    "expect": lambda: pixels_every(
-        same_pixels_line(cant_find_opponent_button_cancel), lambda p: pixel_check_new(p, mistake=5)
-    ),
-    "interval": 3,
-}
-E_PICK_FIRST = {
-    "name": "Pick first",
-    "expect": lambda: pixel_check_new(first, mistake=5),
-}
-E_PICK_SECOND = {
-    "name": "Pick second",
-    "expect": lambda: pixel_check_new(second, mistake=5),
-}
-E_VICTORY = {
-    "name": "Victory",
-    "expect": lambda: pixel_check_new(victory, mistake=30),
-}
-E_DEFEAT = {
-    "name": "Defeat",
-    "expect": lambda: pixel_check_new(defeat, mistake=30),
-}
 
-E_STAGE_1 = {
-    "name": "Stage 1 | Picking characters",
-    "expect": lambda: pixel_check_new(stage_1, mistake=10),
-    "interval": 2,
-}
-E_PICKING_PROCESS = {
-    "name": "Picking characters process",
-    "expect": lambda: pixel_check_new(first, mistake=10),
-    "interval": 2,
-}
-E_STAGE_2 = {
-    "name": "Stage 2 | Ban hero",
-    "expect": lambda: pixel_check_new(stage_2, mistake=10),
-    "interval": 2,
-}
-E_STAGE_3 = {
-    "name": "Stage 3 | Choosing leader",
-    "expect": lambda: pixel_check_new(stage_3, mistake=10),
-    "interval": 2,
-}
-E_CHOOSING_LEADER = {
-    "name": "Choosing leader process",
-    "expect": lambda: pixel_check_new(first, mistake=10),
-    "interval": 2,
-}
-E_BATTLE_START_LIVE = {
-    "name": "Battle start Live",
-    "expect": lambda: pixel_check_new(battle_start_turn, mistake=20),
-    "callback": enable_auto_play,
-    "blocking": False,
-    "limit": 1,
-}
-
-
-def find_indicator_active():
-    # @TODO Should Test and rework
-    region = [260, 390, 120, 60]
-    return find_needle('live_arena/indicator_active.jpg', confidence=.6, region=region)
-
-
-# Requires: checking amount of keys
 class ArenaLive(Location):
+    E_CANT_FIND_OPPONENT = {
+        "name": "Can't find an opponent",
+        "expect": lambda: pixels_every(
+            same_pixels_line(cant_find_opponent_button_cancel), lambda p: pixel_check_new(p, mistake=5)
+        ),
+        "interval": 3,
+    }
+    E_OPPONENT_LEFT = {
+        "name": "Opponent left the battle",
+        "interval": .5,
+        "expect": lambda: bool(find_victory_opponent_left()),
+    }
+    E_PICK_FIRST = {
+        "name": "Pick first",
+        "expect": lambda: pixel_check_new(first, mistake=5),
+    }
+    E_PICK_SECOND = {
+        "name": "Pick second",
+        "expect": lambda: pixel_check_new(second, mistake=5),
+    }
+    E_VICTORY = {
+        "name": "Victory",
+        "expect": lambda: pixel_check_new(victory, mistake=30),
+    }
+    E_DEFEAT = {
+        "name": "Defeat",
+        "expect": lambda: pixel_check_new(defeat, mistake=30),
+    }
+
+    E_STAGE_1 = {
+        "name": "Stage 1 | Picking characters",
+        "expect": lambda: pixel_check_new(stage_1, mistake=10),
+        "interval": 2,
+    }
+    E_PICKING_PROCESS = {
+        "name": "Picking characters process",
+        "expect": lambda: pixel_check_new(first, mistake=10),
+        "interval": 2,
+    }
+    E_STAGE_2 = {
+        "name": "Stage 2 | Ban hero",
+        "expect": lambda: pixel_check_new(stage_2, mistake=10),
+        "interval": 2,
+    }
+    E_STAGE_3 = {
+        "name": "Stage 3 | Choosing leader",
+        "expect": lambda: pixel_check_new(stage_3, mistake=10),
+        "interval": 2,
+    }
+    E_CHOOSING_LEADER = {
+        "name": "Choosing leader process",
+        "expect": lambda: pixel_check_new(first, mistake=10),
+        "interval": 2,
+    }
+    E_BATTLE_START_LIVE = {
+        "name": "Battle start Live",
+        "expect": lambda: pixel_check_new(battle_start_turn, mistake=20),
+        "callback": enable_auto_play,
+        "blocking": False,
+        "limit": 1,
+    }
+
     x_config = 600
     y_config = 175
 
@@ -329,7 +322,6 @@ class ArenaLive(Location):
         slots_counter = 0
 
         def find_character(role=None):
-            # @TODO Refactor due to E_OPPONENT_LEFT_BATTLE
             self.log(f'Current pool length: {len(sorted_pool)}')
             if role is None:
                 role = sorted_pool[0]['role']
@@ -378,52 +370,49 @@ class ArenaLive(Location):
             self.debug.screenshot(folder=self.current_battle_time, suffix_name='opponent_left')
             self.log("OPPONENT LEFT THE BATTLE")
             self.stop = True
-
             self._save_result(True)
 
         def apply_results(name):
-            if E_VICTORY['name'] == name:
+            if self.E_VICTORY['name'] == name:
                 self._save_result(True)
-            elif E_DEFEAT['name'] == name:
+            elif self.E_DEFEAT['name'] == name:
                 self._save_result(False)
                 if self.idle_after_defeat:
                     sleep(self.idle_after_defeat)
 
-        E_OPPONENT_LEFT_BATTLE = prepare_event(E_VICTORY, {
-            "name": "Opponent left the battle",
-            "interval": .5,
+        E_OPPONENT_LEFT_WITH_CALLBACK = prepare_event(self.E_OPPONENT_LEFT, {
             "callback": force_stop,
         })
 
         def await_start_events():
             return self.awaits(
-                events=[E_PICK_FIRST, E_PICK_SECOND, E_CANT_FIND_OPPONENT],
+                events=[self.E_PICK_FIRST, self.E_PICK_SECOND, self.E_CANT_FIND_OPPONENT],
                 interval=.1
             )
 
         def await_stage_1():
-            return self.awaits(events=[E_STAGE_1, E_OPPONENT_LEFT_BATTLE])
+            return self.awaits(events=[self.E_STAGE_1, E_OPPONENT_LEFT_WITH_CALLBACK])
 
         def await_pick():
-            return self.awaits(events=[E_PICKING_PROCESS, E_OPPONENT_LEFT_BATTLE])
+            return self.awaits(events=[self.E_PICKING_PROCESS, E_OPPONENT_LEFT_WITH_CALLBACK])
 
         def await_stage_2():
-            return self.awaits(events=[E_STAGE_2, E_OPPONENT_LEFT_BATTLE])
+            return self.awaits(events=[self.E_STAGE_2, E_OPPONENT_LEFT_WITH_CALLBACK])
 
         def await_stage_3():
-            return self.awaits(events=[E_STAGE_3, E_OPPONENT_LEFT_BATTLE])
+            return self.awaits(events=[self.E_STAGE_3, E_OPPONENT_LEFT_WITH_CALLBACK])
 
         def await_choosing_leader():
-            return self.awaits(events=[E_CHOOSING_LEADER, E_OPPONENT_LEFT_BATTLE])
+            return self.awaits(events=[self.E_CHOOSING_LEADER, E_OPPONENT_LEFT_WITH_CALLBACK])
 
         def await_battle_results():
-            return self.awaits(events=[E_BATTLE_START_LIVE, E_VICTORY, E_DEFEAT])
+            return self.awaits(events=[self.E_BATTLE_START_LIVE, self.E_VICTORY, self.E_DEFEAT])
 
         start_events = await_start_events()
         opponent_found = False
         while not opponent_found and not self.terminate:
             # for "can't find opponent" cases
-            if E_CANT_FIND_OPPONENT['name'] == start_events['name']:
+            if self.E_CANT_FIND_OPPONENT['name'] == start_events['name']:
                 x_find = cant_find_opponent_button_cancel[0]
                 y_find = cant_find_opponent_button_cancel[1]
                 click(x_find, y_find)
@@ -437,18 +426,18 @@ class ArenaLive(Location):
         self.log(start_events['name'])
 
         pattern = ARCHIVE_PATTERN_FIRST[:]
-        if start_events['name'] == E_PICK_SECOND['name']:
+        if start_events['name'] == self.E_PICK_SECOND['name']:
             pattern.reverse()
 
         stage_1_events = await_stage_1()
-        if E_STAGE_1['name'] == stage_1_events['name']:
+        if self.E_STAGE_1['name'] == stage_1_events['name']:
             sleep(.5)
             for i in range(len(pattern)):
                 if self.stop:
                     break
 
                 pick_process_events = await_pick()
-                if E_PICKING_PROCESS['name'] == pick_process_events['name']:
+                if self.E_PICKING_PROCESS['name'] == pick_process_events['name']:
                     sleep(.2)
 
                     # picking heroes logic
@@ -466,7 +455,7 @@ class ArenaLive(Location):
                     self._confirm()
 
         stage_2_events = await_stage_2()
-        if E_STAGE_2['name'] == stage_2_events['name']:
+        if self.E_STAGE_2['name'] == stage_2_events['name']:
             sleep(.5)
             # Banning random second slot
             random_slot = random.choice(enemy_slots)
@@ -478,11 +467,11 @@ class ArenaLive(Location):
             self._confirm()
 
         stage_3_events = await_stage_3()
-        if E_STAGE_3['name'] == stage_3_events['name']:
+        if self.E_STAGE_3['name'] == stage_3_events['name']:
             sleep(.5)
 
             choosing_leader_events = await_choosing_leader()
-            if E_CHOOSING_LEADER['name'] == choosing_leader_events['name']:
+            if self.E_CHOOSING_LEADER['name'] == choosing_leader_events['name']:
                 leaders_indicis = find_leaders_indicis()
 
                 for i in range(len(leaders_indicis)):

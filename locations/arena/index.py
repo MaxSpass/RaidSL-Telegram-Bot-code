@@ -39,7 +39,9 @@ class ArenaFactory(Location):
     ):
         Location.__init__(self, name=name, app=app, report_predicate=self._report)
 
-        self.E_BATTLE_END['expect'] = lambda: pixel_check_new([20, 46, [255, 255, 255]], mistake=3)
+        self.E_BATTLE_END = prepare_event(self.E_BATTLE_END, {
+            "expect": lambda: pixel_check_new([20, 46, [255, 255, 255]], mistake=3)
+        })
 
         if self.results is None:
             self.results = []
@@ -227,6 +229,9 @@ class ArenaFactory(Location):
                 if self.terminate:
                     self.log('Terminated')
                     break
+
+                # Enables AutoPlay if it's disabled
+                enable_start_on_auto()
 
                 click_on_start()
 
