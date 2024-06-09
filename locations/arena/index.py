@@ -56,6 +56,7 @@ class ArenaFactory(Location):
 
         self.refill = PAID_REFILL_LIMIT
         self.initial_refresh = False
+        self.battle_time_limit = None
         self.max_swipe = 0
 
         self._apply_props(props=props)
@@ -115,6 +116,8 @@ class ArenaFactory(Location):
                 self.refill = int(props['refill'])
             if 'initial_refresh' in props:
                 self.initial_refresh = bool(props['initial_refresh'])
+            if 'battle_time_limit' in props:
+                self.battle_time_limit = int(props['battle_time_limit'])
 
     def _refresh_arena(self):
         self.log('Refreshing...')
@@ -235,7 +238,7 @@ class ArenaFactory(Location):
 
                 click_on_start()
 
-                self.waiting_battle_end_regular(self.name)
+                self.waiting_battle_end_regular(self.name, battle_time_limit=self.battle_time_limit)
                 res = not pixel_check_new(defeat, 20)
                 results_local.append(res)
                 result_name = 'VICTORY' if res else 'DEFEAT'

@@ -104,7 +104,8 @@
       "enable": 1,
       "props": {
         "refill": 0,
-        "initial_refresh": 1
+        "initial_refresh": 1,
+        "battle_time_limit": 300
       }
     },
     {
@@ -112,7 +113,8 @@
       "enable": 1,
       "props": {
         "refill": 0,
-        "initial_refresh":  1
+        "initial_refresh":  1,
+        "battle_time_limit": 900
       }
     },
     {

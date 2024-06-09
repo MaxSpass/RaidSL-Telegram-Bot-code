@@ -118,7 +118,7 @@ def is_close(box1, box2, threshold=5):
             abs(box1.top - box2.top) < threshold)
 
 
-def filter_close_boxes(boxes, threshold=5):
+def filter_close_boxes(boxes, threshold=10):
     """Filter out boxes that are very close to each other."""
     filtered_boxes = []
     for box in boxes:
@@ -484,8 +484,9 @@ def enable_auto_play(*args):
 
 
 def detect_pause_button():
-    BUTTON_PAUSE = [866, 66, [216, 206, 156]]
-    return pixel_check_new(BUTTON_PAUSE, mistake=10)
+    # @TODO Duplicate
+    BUTTON_PAUSE_ICON = [866, 66, [216, 206, 156]]
+    return pixel_check_new(BUTTON_PAUSE_ICON, mistake=10)
 
 
 def calculate_win_rate(w, l):
@@ -719,15 +720,17 @@ def find_popup_detector():
     return find_needle('popups/error_detector.jpg', region=[425, 110, 60, 150])
 
 
-def find_button(variant, region=None, return_boxes=False):
+def find_button(variant, size='big', region=None, return_boxes=False):
     if region is None:
-        region = [130, 110, 640, 350]
-    src = None
+        region = [0, 0, 906, 533]
 
-    if variant == 'primary':
-        src = 'popups/button_primary_big.jpg'
-    elif variant == 'secondary':
-        src = 'popups/button_secondary_big.jpg'
+    BTN_VARIANT_PRIMARY = 'primary'
+    BTN_VARIANT_SECONDARY = 'secondary'
+    BTN_SIZE_BIG = 'big'
+    BTN_SIZE_LARGE = 'large'
+
+    # Should handle right 'variant' and 'size'
+    src = f"popups/button_{variant}_{size}.jpg"
 
     if src is not None:
         return find_needle(src, region=region, return_boxes=return_boxes)

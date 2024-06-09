@@ -22,7 +22,7 @@ BUTTON_AUTO_HUE_ACTIVE = 65
 BUTTON_AUTO_HUE_DISABLED = 17
 
 # pause button (top/right corner) @TODO duplicate
-BUTTON_PAUSE = [866, 66, [216, 206, 156]]
+BUTTON_PAUSE_ICON = [866, 66, [216, 206, 156]]
 BUTTON_AUTO = [50, 470, [20, 30, 37]]
 
 HYDRA_HEADS = [
@@ -205,7 +205,7 @@ class Hydra(Location):
 
     def _reset_focus(self):
         if not detect_pause_button():
-            self.log("Resetting focus is interrupted: no 'BUTTON_PAUSE' found")
+            self.log("Resetting focus is interrupted: no 'BUTTON_PAUSE_ICON' found")
             return
 
         # works with critically low FPS
@@ -457,7 +457,7 @@ class Hydra(Location):
 
                         await_click([button_start], timeout=1, mistake=10)
 
-                        if pixels_wait([BUTTON_PAUSE], timeout=2, mistake=10, msg='Pause icon', wait_limit=100)[0]:
+                        if pixels_wait([BUTTON_PAUSE_ICON], timeout=2, mistake=10, msg='Pause icon', wait_limit=100)[0]:
                             self.log('Battle just started')
                             self.scan()
 
