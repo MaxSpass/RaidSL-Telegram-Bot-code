@@ -21,6 +21,8 @@ def callback_retry(*args):
 
 
 def skip_battle_arena(*args):
+    log('Long battle detected')
+    debug_save_screenshot(suffix_name='Long battle detected')
     # @TODO Duplicate
     BUTTON_PAUSE_ICON = [866, 66, [216, 206, 156]]
     if await_click([BUTTON_PAUSE_ICON], mistake=5)[0]:
@@ -193,12 +195,13 @@ class Foundation:
         _events = [self.E_BATTLE_END, self.E_CONNECTION_ERROR]
 
         if battle_time_limit is not None:
-            props = {
-                'delay': battle_time_limit,
-                'interval': battle_time_limit,
-            } if type(battle_time_limit) is int else {}
-
-            _events.append(prepare_event(self.E_SKIP_BATTLE, props))
+            if type(battle_time_limit) is int:
+                _events.append(prepare_event(self.E_SKIP_BATTLE, {
+                    'delay': battle_time_limit,
+                    'interval': battle_time_limit,
+                }))
+            elif type(battle_time_limit) is bool:
+                _events.append(self.E_SKIP_BATTLE)
 
         return self.awaits(
             events=_events,

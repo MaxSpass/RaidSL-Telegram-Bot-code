@@ -498,6 +498,7 @@ class Quests(Location):
                 # Reducing the artifact output
                 random_slot = random.choice(ARTIFACT_LEFT_SLOTS)
                 await_click([random_slot], mistake=5, wait_limit=2)
+                sleep(.5)
 
                 # Swipe 'Artifacts sidebar' down
                 swipe('bottom', 110, 490, 105, speed=.5, instant_move=True)

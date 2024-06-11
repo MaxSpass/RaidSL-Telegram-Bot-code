@@ -39,10 +39,6 @@ class ArenaFactory(Location):
     ):
         Location.__init__(self, name=name, app=app, report_predicate=self._report)
 
-        self.E_BATTLE_END = prepare_event(self.E_BATTLE_END, {
-            "expect": lambda: pixel_check_new([20, 46, [255, 255, 255]], mistake=3)
-        })
-
         if self.results is None:
             self.results = []
 
@@ -56,10 +52,14 @@ class ArenaFactory(Location):
 
         self.refill = PAID_REFILL_LIMIT
         self.initial_refresh = False
-        self.battle_time_limit = None
+        self.battle_time_limit = True
         self.max_swipe = 0
 
         self._apply_props(props=props)
+
+        self.E_BATTLE_END = prepare_event(self.E_BATTLE_END, {
+            "expect": lambda: pixel_check_new([20, 46, [255, 255, 255]], mistake=3)
+        })
 
         for i in range(len(self.item_locations)):
             item = self.item_locations[i]
