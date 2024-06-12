@@ -1,5 +1,6 @@
 import math
 import pyautogui
+from pyautogui import ImageNotFoundException
 import time
 import random
 import os
@@ -128,17 +129,25 @@ def filter_close_boxes(boxes, threshold=10):
 
 
 def capture_by_source(src, region, confidence=.8, grayscale=False, return_boxes=False):
-    if return_boxes:
-        instances = list(pyautogui.locateAllOnScreen(src, region=region, confidence=confidence, grayscale=grayscale))
-        # Get the center points of all instances
-        # center_points = [pyautogui.center(instance) for instance in instances]
+    src = os.path.normpath(src)
 
-        # Filter out close instances (Boxes)
-        filtered_instances = filter_close_boxes(instances)
+    try:
+        if return_boxes:
+            instances = list(
+                pyautogui.locateAllOnScreen(src, region=region, confidence=confidence, grayscale=grayscale))
+            # Get the center points of all instances
+            # center_points = [pyautogui.center(instance) for instance in instances]
 
-        return filtered_instances
-    else:
-        return pyautogui.locateCenterOnScreen(src, region=region, confidence=confidence, grayscale=grayscale)
+            # Filter out close instances (Boxes)
+            filtered_instances = filter_close_boxes(instances)
+
+            return filtered_instances
+        else:
+            return pyautogui.locateCenterOnScreen(src, region=region, confidence=confidence, grayscale=grayscale)
+    except ImageNotFoundException:
+        pass
+
+    return None
 
 
 def click(x, y, smart=False, timeout=0.5, interval=2, random_click=None):
@@ -604,7 +613,6 @@ def find_needle(
         region = [0, 0, 900, 530]
     if confidence is None:
         confidence = .8
-
     if should_move_out_cursor:
         move_out_cursor()
 
@@ -849,8 +857,23 @@ def get_higher_occurrence(arr):
     return max(arr, key=arr.count)
 
 
+def transform_image_dealt_damage(img):
+    thresh = cv2.threshold(img, 175, 255, cv2.THRESH_BINARY_INV)[1]
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+    return cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
+
+
 def parse_dealt_damage(variants):
     # only digits
+
+    # img = cv2.imread(filename)
+    # gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    # scaled_image = cv2.resize(gray, None, fx=7.0, fy=7.0)
+    # thresh = cv2.threshold(scaled_image, 175, 255, cv2.THRESH_BINARY_INV)[1]
+    # kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+    # opening = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
+    # text = pytesseract.image_to_string(opening, lang='eng')
+
     def _parse(s):
         arr = re.split(r'\D+', s)
         # removing empty lines
@@ -952,9 +975,11 @@ def read_text(
         timeout=0.1,
         parser=None,
         update_screenshot=False,
-        scale=2,
         debug=False,
-        title='match'
+        title='match',
+        grayscale=True,
+        scale=2,
+        transform_predicate=None
 ):
     # debug = True
     res = []
@@ -983,40 +1008,38 @@ def read_text(
         if update_screenshot:
             screenshot = pyautogui.screenshot(region=region)
 
-        config = configs[i]
-        # image = scale_up(screenshot=screenshot, factor=scale)
-
-        # @TODO Should be well tested
         img = screenshot_to_image(screenshot)
-        image = cv2.resize(img, None, fx=scale, fy=scale, interpolation=cv2.INTER_LANCZOS4)
-        # thresh = cv2.threshold(image, 175, 255, cv2.THRESH_BINARY_INV)[1]
-        # kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
-        # opening = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
+        if grayscale:
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-        # greyscale
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        if type(scale) is int or type(scale) is float:
+            img = cv2.resize(img, None, fx=int(scale), fy=int(scale))
+
+        if transform_predicate is not None:
+            img = transform_predicate(img)
 
         # @TODO Debug
         if debug and i == 0:
-            cv2.imshow(title, image)
+            cv2.imshow(title, img)
             cv2.waitKey()
 
-        text = pytesseract.image_to_string(image, config=config)
+        text = pytesseract.image_to_string(img, config=configs[i])
         res.append(text.strip())
         sleep(timeout)
 
-    # log(res)
+    log(res)
     if parser:
         res = parser(res)
-    # log(res)
+    log(res)
 
     return get_higher_occurrence(res)
 
 
-def read_dealt_damage():
+def read_dealt_damage(region=None):
     log('Computing dealt damage...')
-    # returns the damage in millions
-    region = [190, 156, 550, 50]
+    if region is None:
+        region = [190, 150, 550, 50]
+
     configs = [
         '--psm 1 --oem 3',
         '--psm 3 --oem 3',
@@ -1024,16 +1047,24 @@ def read_dealt_damage():
         '--psm 7 --oem 3',
         '--psm 8 --oem 3',
         '--psm 10 --oem 3',
-        '--psm 1 --oem 3',
-        '--psm 3 --oem 3',
-        '--psm 4 --oem 3',
-        '--psm 7 --oem 3',
-        '--psm 8 --oem 3',
-        '--psm 10 --oem 3',
+        # '--psm 1 --oem 3',
+        # '--psm 3 --oem 3',
+        # '--psm 4 --oem 3',
+        # '--psm 7 --oem 3',
+        # '--psm 8 --oem 3',
+        # '--psm 10 --oem 3',
     ]
 
     move_out_cursor()
-    return read_text(configs=configs, region=region, timeout=.5, update_screenshot=True, parser=parse_dealt_damage)
+    return read_text(
+        configs=configs,
+        region=region,
+        timeout=.5,
+        update_screenshot=True,
+        parser=parse_dealt_damage,
+        scale=7,
+        transform_predicate=transform_image_dealt_damage
+    )
 
 
 def read_run_cost(region=None, scale=4):
@@ -1083,7 +1114,7 @@ def get_resource_region(needle_predicate, needle_width, predicted_offset_x=150):
             x2 = position_energy[0] - needle_width / 2
             region = axis_to_region(x1, 38, x2, 56)
 
-    return region
+    return tuple(round(num) for num in region) if region is not None else region
 
 
 def read_available_energy(region=None):
@@ -1115,20 +1146,24 @@ def read_keys_bank(region=None, scale=8, key=None):
         region = get_resource_region(needle_predicate=find_faction_keys_bank, needle_width=24)
         # show_pyautogui_image(pyautogui.screenshot(region=region))
 
-    configs = [
-        '--psm 1 --oem 3',
-        '--psm 3 --oem 3',
-        '--psm 4 --oem 3',
-        '--psm 6 --oem 3',
-        '--psm 7 --oem 3',
-        '--psm 8 --oem 3',
-        '--psm 9 --oem 3',
-        '--psm 10 --oem 3',
-        '--psm 11 --oem 3',
-        '--psm 12 --oem 3',
-    ]
-
-    return read_text(configs=configs, region=region, parser=parse_energy_bank, scale=scale, debug=False)
+    return read_text(
+        configs=[
+            '--psm 1 --oem 3',
+            '--psm 3 --oem 3',
+            '--psm 4 --oem 3',
+            '--psm 6 --oem 3',
+            '--psm 7 --oem 3',
+            '--psm 8 --oem 3',
+            '--psm 9 --oem 3',
+            '--psm 10 --oem 3',
+            '--psm 11 --oem 3',
+            '--psm 12 --oem 3',
+        ],
+        region=region,
+        parser=parse_energy_bank,
+        scale=scale,
+        debug=False
+    )
 
 
 def read_doom_tower_keys(key_type='golden'):

@@ -72,7 +72,9 @@ def schedule(seconds, predicate=None):
         predicate = my_function
 
     # Create a background scheduler
-    scheduler = BackgroundScheduler()
+    # @TODO Temp commented
+    # scheduler = BackgroundScheduler()
+    scheduler = None
 
     # Define the time you want the function to run in UTC
     # For example, June 1, 2024, at 14:00:00 UTC
@@ -101,8 +103,47 @@ def schedule(seconds, predicate=None):
 
 
 def main():
-    # f = Foundation(name='test')
+    # _w = 828
+    # _h = 452 - 32
+    # _region = [190, 150, 550, 50]
+    # _region[0] = _region[0] + _w
+    # _region[1] = _region[1] + _h
+
+    # show_pyautogui_image(pyautogui.screenshot(region=_region))
+
+    # energy = read_available_energy()
+    # print('energy', energy)
+
+    # keys = read_keys_bank()
+    # print('keys', keys)
+    # return
+
+    # burger = find_needle_burger()
+    # print('burger', burger)
+
+    # close = find_needle_close_popup()
+    # print('close', close)
+    # return
+
+    # debug_save_screenshot(region=[591, 247, 10, 69], quality=100)
+
+    # f = Foundation(name='Test')
+    #
+    # E_SKIP_BATTLE = {
+    #     'name': 'Skip battle',
+    #     'interval': 10,
+    #     'delay': 10,
+    #     'blocking': False,
+    #     'expect': lambda: bool(detect_pause_button()),
+    #     'callback': lambda *args: skip_battle_arena()
+    # }
+    #
+    # f.awaits(
+    #     [ArenaClassic.E_BATTLE_END, E_SKIP_BATTLE],
+    # )
+    # return
     # f.dungeons_start_battle()
+    # dungeons_start_battle()
     # res = f.waiting_battle_end_regular('Test battle')
     # print('res', res)
     # return
@@ -121,7 +162,6 @@ def main():
     # print('live', res_arena_live)
     # print('iron_twins_keys', res_iron_twins_keys)
     # print('energy', res_energy)
-
 
     # refill = Refill()
     # refill.check()

@@ -1,3 +1,27 @@
-/locations/order_manager/
+# Build output
 /dist/
-.idea
+
+# Ignore the virtual environment directory
+botenv/
+venv/
+.env/
+
+# Ignore Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Ignore macOS system files
+.DS_Store
+
+# Ignore Windows system files
+Thumbs.db
+desktop.ini
+
+# Ignore IDE/editor files
+.idea/
+.vscode/
+*.swp
+
+# Ignore Jupyter Notebook checkpoints
+.ipynb_checkpoints/

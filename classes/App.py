@@ -26,9 +26,10 @@ import cv2
 import numpy as np
 from PIL import Image
 from io import BytesIO
-from apscheduler.schedulers.background import BackgroundScheduler
+# @TODO Temp commented
+# from apscheduler.schedulers.background import BackgroundScheduler
+# import pytz
 from datetime import datetime
-import pytz
 
 # from telegram.error import NetworkError
 
@@ -598,8 +599,9 @@ class App:
         })
 
     def schedule(self, predicate=None):
-        if self.scheduler is None:
-            self.scheduler = BackgroundScheduler()
+        # @TODO Temp commented
+        # if self.scheduler is None:
+        #     self.scheduler = BackgroundScheduler()
 
         if predicate is not None:
             tf = get_time_future(seconds=20)

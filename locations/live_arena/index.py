@@ -332,7 +332,7 @@ class ArenaLive(Location):
                 index_to_remove = 0
 
                 if char and not self.stop:
-                    hero_filter.choose(title=char['name'], wait_after=1.5)
+                    hero_filter.choose(title=char['name'], wait_after=.5)
 
                     _slot = my_slots[slots_counter]
                     _region = [_slot[0], _slot[1], width_empty_slot, height_empty_slot]

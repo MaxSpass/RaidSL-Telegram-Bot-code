@@ -1,18 +1,21 @@
-# Installation for Windows
-
-- install [Python](https://docs.opencv.org/4.x/d5/de5/tutorial_py_setup_in_windows.html)
-- install [OpenCV](https://github.com/opencv/opencv/releases)
+# Prepare your Windows
+- install [Python 3.7](https://www.python.org/downloads/release/python-370/)
+- install [OpenCV](https://github.com/opencv/opencv/releases), ([Install OpenCV-Python in Windows](https://docs.opencv.org/4.x/d5/de5/tutorial_py_setup_in_windows.html))
 - install [Tesseract](https://tesseract-ocr.github.io/tessdoc/Downloads.html)
+
+# Setting up the project
 - clone the repository
-- run inside the project: **pip install -r requirements.txt**
+- run `python -m venv venv`
+- run `venv\Scripts\activate` (on Windows only)
+- run `pip install -r requirements.txt`
 
-Every package should be installed by using the following command:
-**pip install [PACKAGE_NAME] && pip freeze > requirements.txt**
-or
-**pip install [PACKAGE_NAME] && pip freeze | grep [PACKAGE_NAME] >> requirements.txt**
+# Dev Tips
+- new package installation `pip install [PACKAGE_NAME] | pip freeze > requirements.txt`
+- make sure that your IDEA is already configured for using interpreter form the venv
+- [pyenv](https://github.com/pyenv-win/pyenv-win/blob/master/docs/installation.md#add-system-settings) is a handy package for managing different python versions
 
 
-# Links
+# Useful Links
 
 [Tasks](https://trello.com/b/qdmlcWUO/main-board)
 
