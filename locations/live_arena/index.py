@@ -366,8 +366,6 @@ class ArenaLive(Location):
             return res
 
         def force_stop(*args):
-            # @TODO Test
-            self.debug.screenshot(folder=self.current_battle_time, suffix_name='opponent_left')
             self.log("OPPONENT LEFT THE BATTLE")
             self.stop = True
             self._save_result(True)

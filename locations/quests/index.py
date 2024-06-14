@@ -477,133 +477,132 @@ class Quests(Location):
         close_popup_recursive()
 
         # Await click on a 'Champions' icon
-        await_click([[690, 500, [28, 49, 61]]], msg='Champions icon', mistake=10)
-
-        if await_needle('close.png', region=[820, 24, 80, 80]):
-            # Click on a boots artifact
-            click(856, 226)
-
-            # Await click on a small 'Filter' button
-            await_click([[555, 88, [19, 48, 67]]], msg='Filter button', mistake=10)
-
-            # Wait expanded 'Artifacts sidebar'
-            if pixels_wait(
-                    [[215, 78, [0, 15, 33]]],
-                    msg='Artifacts sidebar',
-                    mistake=10,
-                    timeout=1,
-                    wait_limit=60
-            )[0]:
-
-                # Reducing the artifact output
-                random_slot = random.choice(ARTIFACT_LEFT_SLOTS)
-                await_click([random_slot], mistake=5, wait_limit=2)
+        if await_click([[690, 500, [28, 49, 61]]], msg='Champions icon', mistake=10)[0]:
+            if await_needle('close.png', region=[820, 24, 80, 80]):
+                # Click on a boots artifact
+                click(856, 226)
                 sleep(.5)
 
-                # Swipe 'Artifacts sidebar' down
-                swipe('bottom', 110, 490, 105, speed=.5, instant_move=True)
+                # Await click on a small 'Filter' button
+                if await_click([[555, 88, [19, 48, 67]]], msg='Filter button', mistake=10)[0]:
+                    # Wait expanded 'Artifacts sidebar'
+                    if pixels_wait(
+                            [[215, 78, [0, 15, 33]]],
+                            msg='Artifacts sidebar',
+                            mistake=10,
+                            timeout=1,
+                            wait_limit=60
+                    )[0]:
 
-                # Checked -> 'Hide Set Filters'
-                click(190, 498)
-                sleep(2)
+                        # Reducing the artifact output
+                        random_slot = random.choice(ARTIFACT_LEFT_SLOTS)
+                        if await_click([random_slot], mistake=5, wait_limit=2)[0]:
+                            sleep(.5)
 
-                running = True
-                swipes = 0
+                            # Swipe 'Artifacts sidebar' down
+                            swipe('bottom', 110, 490, 105, speed=.5, instant_move=True)
 
-                while running:
+                            # Checked -> 'Hide Set Filters'
+                            click(190, 498)
+                            sleep(2)
 
-                    for i in range(swipes):
-                        swipe('bottom', 450, 490, 340, speed=3)
+                            running = True
+                            swipes = 0
 
-                    # All artifact
-                    for i in range(len(ARTIFACT_STORAGE_SLOTS_MATRIX)):
-                        if upgrade_attempts <= 0:
-                            self.log('Upgrade attempts reached')
-                            self.results.append(quest_id)
-                            running = False
-                            break
-                        else:
-                            x_steps, y_steps = ARTIFACT_STORAGE_SLOTS_MATRIX[i]
-                            x_initial = x_steps * ARTIFACT_STORAGE_SLOT_WIDTH + ARTIFACT_STORAGE_OFFSET['x']
-                            y_initial = y_steps * ARTIFACT_STORAGE_SLOT_HEIGHT + ARTIFACT_STORAGE_OFFSET['y']
+                            while running:
 
-                            x = int(x_initial + ARTIFACT_STORAGE_SLOT_WIDTH / 2)
-                            y = int(y_initial + ARTIFACT_STORAGE_SLOT_HEIGHT / 2)
-                            pixel_empty_artifact = [x, y, [15, 44, 68]]
+                                for i in range(swipes):
+                                    swipe('bottom', 450, 490, 340, speed=3)
 
-                            # if an empty slot
-                            if pixel_check_new(pixel_empty_artifact):
-                                running = False
-                                self.log('Found an empty slot - breaks the loop')
-                                break
-                            else:
+                                # All artifact
+                                for i in range(len(ARTIFACT_STORAGE_SLOTS_MATRIX)):
+                                    if upgrade_attempts <= 0:
+                                        self.log('Upgrade attempts reached')
+                                        self.results.append(quest_id)
+                                        running = False
+                                        break
+                                    else:
+                                        x_steps, y_steps = ARTIFACT_STORAGE_SLOTS_MATRIX[i]
+                                        x_initial = x_steps * ARTIFACT_STORAGE_SLOT_WIDTH + ARTIFACT_STORAGE_OFFSET['x']
+                                        y_initial = y_steps * ARTIFACT_STORAGE_SLOT_HEIGHT + ARTIFACT_STORAGE_OFFSET['y']
 
-                                click(x, y)
-                                # sleep(1)
+                                        x = int(x_initial + ARTIFACT_STORAGE_SLOT_WIDTH / 2)
+                                        y = int(y_initial + ARTIFACT_STORAGE_SLOT_HEIGHT / 2)
+                                        pixel_empty_artifact = [x, y, [15, 44, 68]]
 
-                                if pixels_wait(
-                                        [[240, 325, [16, 78, 110]]],
-                                        msg='Artifact info popover',
-                                        mistake=10,
-                                        timeout=1
-                                )[0]:
-                                    # Await click
-                                    await_click(
-                                        [[108, 500, [20, 123, 156]]],
-                                        msg='Upgrade button in popover', timeout=1, mistake=10
-                                    )
-
-                                    # Check pixel on the top of the frame. Full-screen artifact screen
-                                    if pixels_wait(
-                                            [[444, 77, [5, 32, 47]]],
-                                            msg='Top frame in full-screen',
-                                            timeout=1,
-                                            wait_limit=2
-                                    ):
-                                        # if the main 'Upgrade' button is active
-                                        if pixel_check_new([430, 466, [187, 130, 5]], mistake=10):
-                                            self.log('Able to upgrade')
-
-                                            # Disable 'Instant Upgrade'
-                                            if pixel_check_new([264, 435, [108, 237, 255]], mistake=10):
-                                                click(264, 435)
-                                                sleep(.3)
-
-                                            while upgrade_attempts > 0 and pixels_wait(
-                                                    [[430, 466, [187, 130, 5]]],
-                                                    msg="Upgrade button in full-screen",
-                                                    mistake=10,
-                                                    timeout=1,
-                                                    wait_limit=5,
-                                            )[0]:
-                                                # Click on 'Upgrade' button
-                                                await_click(
-                                                    [[430, 466, [187, 130, 5]]],
-                                                    msg='Upgrade button',
-                                                    mistake=10, timeout=1, wait_limit=3
-                                                )
-                                                upgrade_attempts -= 1
-                                                self.log(f'Upgrade attempts left: {upgrade_attempts}')
-
-                                            # Delay is needed for properly closing the popup
-                                            sleep(5)
+                                        # if an empty slot
+                                        if pixel_check_new(pixel_empty_artifact):
+                                            running = False
+                                            self.log('Found an empty slot - breaks the loop')
+                                            break
                                         else:
-                                            self.log('Unable to upgrade')
 
-                                    close_popup()
-                                    # Waiting popover right after pop-up closed
-                                    pixels_wait(
-                                        [[240, 325, [16, 78, 110]]],
-                                        msg='Artifact info popover',
-                                        mistake=10,
-                                        timeout=1
-                                    )
+                                            click(x, y)
+                                            # sleep(1)
 
-                                else:
-                                    self.log("Have not found 'Artifact info popover'")
+                                            if pixels_wait(
+                                                    [[240, 325, [16, 78, 110]]],
+                                                    msg='Artifact info popover',
+                                                    mistake=10,
+                                                    timeout=1
+                                            )[0]:
+                                                # Await click
+                                                await_click(
+                                                    [[108, 500, [20, 123, 156]]],
+                                                    msg='Upgrade button in popover', timeout=1, mistake=10
+                                                )
 
-                    if upgrade_attempts > 0:
-                        swipes += 1
+                                                # Check pixel on the top of the frame. Full-screen artifact screen
+                                                if pixels_wait(
+                                                        [[444, 77, [5, 32, 47]]],
+                                                        msg='Top frame in full-screen',
+                                                        timeout=1,
+                                                        wait_limit=2
+                                                ):
+                                                    # if the main 'Upgrade' button is active
+                                                    if pixel_check_new([430, 466, [187, 130, 5]], mistake=10):
+                                                        self.log('Able to upgrade')
+
+                                                        # Disable 'Instant Upgrade'
+                                                        if pixel_check_new([264, 435, [108, 237, 255]], mistake=10):
+                                                            click(264, 435)
+                                                            sleep(.3)
+
+                                                        while upgrade_attempts > 0 and pixels_wait(
+                                                                [[430, 466, [187, 130, 5]]],
+                                                                msg="Upgrade button in full-screen",
+                                                                mistake=10,
+                                                                timeout=1,
+                                                                wait_limit=5,
+                                                        )[0]:
+                                                            # Click on 'Upgrade' button
+                                                            await_click(
+                                                                [[430, 466, [187, 130, 5]]],
+                                                                msg='Upgrade button',
+                                                                mistake=10, timeout=1, wait_limit=3
+                                                            )
+                                                            upgrade_attempts -= 1
+                                                            self.log(f'Upgrade attempts left: {upgrade_attempts}')
+
+                                                        # Delay is needed for properly closing the popup
+                                                        sleep(5)
+                                                    else:
+                                                        self.log('Unable to upgrade')
+
+                                                close_popup()
+                                                # Waiting popover right after pop-up closed
+                                                pixels_wait(
+                                                    [[240, 325, [16, 78, 110]]],
+                                                    msg='Artifact info popover',
+                                                    mistake=10,
+                                                    timeout=1
+                                                )
+
+                                            else:
+                                                self.log("Have not found 'Artifact info popover'")
+
+                                if upgrade_attempts > 0:
+                                    swipes += 1
 
 
             else:
