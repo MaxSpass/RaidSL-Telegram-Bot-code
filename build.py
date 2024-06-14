@@ -3,10 +3,8 @@ import shutil
 import subprocess
 import win32com.client
 
-dist = os.path.normpath(r'E:\Main\BACKEND\core\dist')
-root_dir = os.path.join(os.getcwd(), 'dist')
+root_dir = os.path.normpath(os.path.normpath(os.path.join(os.getcwd(), 'dist')))
 name = 'RaidSL-Telegram-Bot'
-# files_dist = 'files'
 bot_path = root_dir
 
 
@@ -95,9 +93,8 @@ def copy_files():
     shutil.copy('config.json', 'dist/main')
 
 def create_symlink():
-    dist = os.path.normpath(r'E:\Main\BACKEND\core\dist')
     file = f'{name}.lnk'
-    original_file_path = os.path.join(dist, file)
+    original_file_path = os.path.join(root_dir, file)
     symlink_path = os.path.join(bot_path, 'main', 'bot.exe')
 
     # Create a shortcut object
