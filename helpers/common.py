@@ -1145,7 +1145,6 @@ def read_keys_bank(region=None, scale=8, key=None):
     if not region:
         region = get_resource_region(needle_predicate=find_faction_keys_bank, needle_width=24)
         # show_pyautogui_image(pyautogui.screenshot(region=region))
-
     return read_text(
         configs=[
             '--psm 1 --oem 3',
@@ -1179,8 +1178,8 @@ def read_doom_tower_keys(key_type='golden'):
         x1 = 730
 
     if position:
-        x1 = position[0] - 68
-        x2 = position[0] - 12
+        x1 = int(position[0] - 68)
+        x2 = int(position[0] - 12)
 
     region = axis_to_region(x1, 38, x2, 56)
 
