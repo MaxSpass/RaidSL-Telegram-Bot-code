@@ -857,10 +857,22 @@ def get_higher_occurrence(arr):
     return max(arr, key=arr.count)
 
 
-def transform_image_dealt_damage(img):
-    thresh = cv2.threshold(img, 175, 255, cv2.THRESH_BINARY_INV)[1]
+def transform_image_accurate(img, value1, value2):
+    thresh = cv2.threshold(img, value1, value2, cv2.THRESH_BINARY_INV)[1]
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
     return cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
+
+
+def transform_image_resource(img):
+    return transform_image_accurate(img, 100, 220)
+
+
+def transform_image_damage_dealt(img):
+    return transform_image_accurate(img, 175, 255)
+
+
+def transform_image_run_cost(img):
+    return transform_image_accurate(img, 150, 255)
 
 
 def parse_dealt_damage(variants):
@@ -1018,7 +1030,7 @@ def read_text(
         if transform_predicate is not None:
             img = transform_predicate(img)
 
-        # @TODO Debug
+        # Debug
         if debug and i == 0:
             cv2.imshow(title, img)
             cv2.waitKey()
@@ -1027,7 +1039,7 @@ def read_text(
         res.append(text.strip())
         sleep(timeout)
 
-    # log(res)
+    log(res)
     if parser:
         res = parser(res)
     # log(res)
@@ -1062,8 +1074,8 @@ def read_dealt_damage(region=None):
         timeout=.5,
         update_screenshot=True,
         parser=parse_dealt_damage,
+        transform_predicate=transform_image_damage_dealt,
         scale=7,
-        transform_predicate=transform_image_dealt_damage
     )
 
 
@@ -1097,7 +1109,14 @@ def read_run_cost(region=None, scale=4):
         '--psm 13 --oem 3',
     ]
 
-    return read_text(configs=configs, region=region, parser=parse_energy_cost, scale=scale)
+    return read_text(
+        configs=configs,
+        region=region,
+        parser=parse_energy_cost,
+        transform_predicate=transform_image_run_cost,
+        scale=scale,
+        debug=False,
+    )
 
 
 def get_resource_region(needle_predicate, needle_width, predicted_offset_x=150):
@@ -1136,10 +1155,17 @@ def read_available_energy(region=None):
         '--psm 12 --oem 3',
     ]
 
-    return read_text(configs=configs, region=region, parser=parse_energy_bank, scale=4)
+    return read_text(
+        configs=configs,
+        region=region,
+        parser=parse_energy_bank,
+        transform_predicate=transform_image_resource,
+        scale=4,
+        debug=False
+    )
 
 
-def read_keys_bank(region=None, scale=8, key=None):
+def read_keys_bank(region=None, key=None):
     log(f"Computing{' ' + key if bool(key) else ''} keys bank...")
 
     if not region:
@@ -1160,7 +1186,8 @@ def read_keys_bank(region=None, scale=8, key=None):
         ],
         region=region,
         parser=parse_energy_bank,
-        scale=scale,
+        transform_predicate=transform_image_resource,
+        scale=4,
         debug=False
     )
 
@@ -1186,7 +1213,7 @@ def read_doom_tower_keys(key_type='golden'):
     # screenshot = pyautogui.screenshot(region=region)
     # show_pyautogui_image(screenshot)
 
-    return read_keys_bank(region=region, scale=4, key=key_type)
+    return read_keys_bank(region=region, key=key_type)
 
 
 def dominant_color_hue(region, rank=1):
