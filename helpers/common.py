@@ -923,6 +923,10 @@ def transform_image_run_cost(img):
     return transform_image_accurate(img, 150, 255)
 
 
+def transform_image_levels(img):
+    return transform_image_accurate(img, 80, 230)
+
+
 def parse_dealt_damage(variants):
     # only digits
 

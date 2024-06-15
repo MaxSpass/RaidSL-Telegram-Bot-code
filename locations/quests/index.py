@@ -49,13 +49,6 @@ AFFINITIES = [
     {'name': 'magic', 'needle': 'affinity/beer_magic.png'},
     {'name': 'void', 'needle': 'affinity/beer_void.png'},
 ]
-# TAVERN_AFFINITY_REGIONS = {
-#     'magic': [164, 38, 52, 18],
-#     'spirit': [250, 38, 52, 18],
-#     'force': [340, 38, 52, 18],
-#     'void': [428, 38, 52, 18],
-# }
-# @TODO Should test
 TAVERN_BREW_STORE_WIDTH = 34
 # ~66px step along x axis
 TAVERN_AFFINITY_REGIONS = {
@@ -329,10 +322,11 @@ class Quests(Location):
                         if rgb_check(color_dominant_lvl_bar_end, XP_BAR_DOMINANT_RGB_NOT_FULL):
                             self.log('Hero is ready for lvl-up')
 
-                            # @TODO Checking lvl before up
+                            # Checking lvl before up
                             lvl_current_info = read_text(
                                 region=XP_BAR_REGION_CURRENT_LVL_CHAMPIONS_SCREEN,
-                                parser=parse_levels
+                                parser=parse_levels,
+                                transform_predicate=transform_image_levels
                             )
                             if lvl_current_info is not None:
                                 lvl_current_info_split = lvl_current_info.split('/')
@@ -402,18 +396,17 @@ class Quests(Location):
 
                                         beer_region = TAVERN_AFFINITY_REGIONS[brew['name']]
 
-                                        # @TODO Parser 'parse_energy_cost' is not intended to be used here
                                         beer_total_float = read_text(
                                             region=beer_region,
-                                            scale=6,
-                                            parser=parse_energy_cost
+                                            parser=parse_energy_cost,
+                                            transform_predicate=transform_image_resource,
+                                            scale=4,
                                         )
                                         if type(beer_total_float) is float:
                                             self.log(f"Brew {brew['name']}: {str(beer_total_float)}")
                                             beer_total = int(beer_total_float)
 
                                             # @TODO Total brew amount calculation
-
                                             x_beer = brew['x']
                                             y_beer = brew['y']
                                             click(x_beer, y_beer)
@@ -422,7 +415,6 @@ class Quests(Location):
                                             lvl_desired = int(self._get_level_tavern_screen())
 
                                             # @TODO Up the lvl | Calculating brew amount is required
-
                                             while beer_total > 0 \
                                                     and levels > 0 \
                                                     and lvl_desired < lvl_max \
