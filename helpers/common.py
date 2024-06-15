@@ -25,6 +25,54 @@ time_mgr = TimeMgr()
 
 special_offer_popup = [300, 370, [22, 124, 156]]
 
+TESSERACT_CONFIGS_DEFAULT = ['--psm 6 --oem 3']
+TESSERACT_CONFIGS_DEALT_DAMAGE = [
+    '--psm 1 --oem 3',
+    '--psm 3 --oem 3',
+    '--psm 4 --oem 3',
+    '--psm 7 --oem 3',
+    '--psm 8 --oem 3',
+    '--psm 10 --oem 3',
+]
+TESSERACT_CONFIGS_RUN_COST = [
+    '--psm 1 --oem 3',
+    '--psm 3 --oem 3',
+    '--psm 4 --oem 3',
+    '--psm 5 --oem 3',
+    '--psm 6 --oem 3',
+    '--psm 7 --oem 3',
+    '--psm 8 --oem 3',
+    '--psm 9 --oem 3',
+    '--psm 10 --oem 3',
+    '--psm 11 --oem 3',
+    '--psm 12 --oem 3',
+    '--psm 13 --oem 3',
+]
+TESSERACT_CONFIGS_AVAILABLE_ENERGY = [
+    '--psm 1 --oem 3',
+    '--psm 3 --oem 3',
+    '--psm 4 --oem 3',
+    '--psm 6 --oem 3',
+    '--psm 7 --oem 3',
+    '--psm 8 --oem 3',
+    '--psm 9 --oem 3',
+    '--psm 10 --oem 3',
+    '--psm 11 --oem 3',
+    '--psm 12 --oem 3',
+]
+TESSERACT_CONFIGS_KEYS_BANK = [
+    '--psm 1 --oem 3',
+    '--psm 3 --oem 3',
+    '--psm 4 --oem 3',
+    '--psm 6 --oem 3',
+    '--psm 7 --oem 3',
+    '--psm 8 --oem 3',
+    '--psm 9 --oem 3',
+    '--psm 10 --oem 3',
+    '--psm 11 --oem 3',
+    '--psm 12 --oem 3',
+]
+
 
 def get_date_for_log():
     return datetime.now().strftime('%Y_%m_%d')
@@ -998,20 +1046,7 @@ def read_text(
     screenshot = None
 
     if configs is None:
-        configs = [
-            '--psm 1 --oem 3',
-            '--psm 3 --oem 3',
-            '--psm 4 --oem 3',
-            '--psm 5 --oem 3',
-            '--psm 6 --oem 3',
-            '--psm 7 --oem 3',
-            '--psm 8 --oem 3',
-            '--psm 9 --oem 3',
-            '--psm 10 --oem 3',
-            '--psm 11 --oem 3',
-            '--psm 12 --oem 3',
-            '--psm 13 --oem 3',
-        ]
+        configs = TESSERACT_CONFIGS_DEFAULT
 
     if not update_screenshot:
         screenshot = pyautogui.screenshot(region=region)
@@ -1052,24 +1087,9 @@ def read_dealt_damage(region=None):
     if region is None:
         region = [190, 150, 550, 50]
 
-    configs = [
-        '--psm 1 --oem 3',
-        '--psm 3 --oem 3',
-        '--psm 4 --oem 3',
-        '--psm 7 --oem 3',
-        '--psm 8 --oem 3',
-        '--psm 10 --oem 3',
-        # '--psm 1 --oem 3',
-        # '--psm 3 --oem 3',
-        # '--psm 4 --oem 3',
-        # '--psm 7 --oem 3',
-        # '--psm 8 --oem 3',
-        # '--psm 10 --oem 3',
-    ]
-
     move_out_cursor()
     return read_text(
-        configs=configs,
+        configs=TESSERACT_CONFIGS_DEALT_DAMAGE,
         region=region,
         timeout=.5,
         update_screenshot=True,
@@ -1082,35 +1102,15 @@ def read_dealt_damage(region=None):
 def read_run_cost(region=None, scale=4):
     log('Computing run cost...')
 
-    # x1 = 820
     x1 = 740
     y1 = 477
     x2 = 852
     y2 = 494
 
     if not region:
-        # index page
         region = axis_to_region(x1, y1, x2, y2)
-        # show_pyautogui_image(pyautogui.screenshot(region=region))
-
-    # region = axis_to_region(720, 460, 860, 505)
-    configs = [
-        '--psm 1 --oem 3',
-        '--psm 3 --oem 3',
-        '--psm 4 --oem 3',
-        '--psm 5 --oem 3',
-        '--psm 6 --oem 3',
-        '--psm 7 --oem 3',
-        '--psm 8 --oem 3',
-        '--psm 9 --oem 3',
-        '--psm 10 --oem 3',
-        '--psm 11 --oem 3',
-        '--psm 12 --oem 3',
-        '--psm 13 --oem 3',
-    ]
 
     return read_text(
-        configs=configs,
         region=region,
         parser=parse_energy_cost,
         transform_predicate=transform_image_run_cost,
@@ -1140,23 +1140,8 @@ def read_available_energy(region=None):
     log('Computing available energy...')
     if not region:
         region = get_resource_region(needle_predicate=find_needle_energy_bank, needle_width=17)
-        # show_pyautogui_image(pyautogui.screenshot(region=region))
-
-    configs = [
-        '--psm 1 --oem 3',
-        '--psm 3 --oem 3',
-        '--psm 4 --oem 3',
-        '--psm 6 --oem 3',
-        '--psm 7 --oem 3',
-        '--psm 8 --oem 3',
-        '--psm 9 --oem 3',
-        '--psm 10 --oem 3',
-        '--psm 11 --oem 3',
-        '--psm 12 --oem 3',
-    ]
 
     return read_text(
-        configs=configs,
         region=region,
         parser=parse_energy_bank,
         transform_predicate=transform_image_resource,
@@ -1170,20 +1155,8 @@ def read_keys_bank(region=None, key=None):
 
     if not region:
         region = get_resource_region(needle_predicate=find_faction_keys_bank, needle_width=24)
-        # show_pyautogui_image(pyautogui.screenshot(region=region))
+
     return read_text(
-        configs=[
-            '--psm 1 --oem 3',
-            '--psm 3 --oem 3',
-            '--psm 4 --oem 3',
-            '--psm 6 --oem 3',
-            '--psm 7 --oem 3',
-            '--psm 8 --oem 3',
-            '--psm 9 --oem 3',
-            '--psm 10 --oem 3',
-            '--psm 11 --oem 3',
-            '--psm 12 --oem 3',
-        ],
         region=region,
         parser=parse_energy_bank,
         transform_predicate=transform_image_resource,
@@ -1209,9 +1182,6 @@ def read_doom_tower_keys(key_type='golden'):
         x2 = int(position[0] - 12)
 
     region = axis_to_region(x1, 38, x2, 56)
-
-    # screenshot = pyautogui.screenshot(region=region)
-    # show_pyautogui_image(screenshot)
 
     return read_keys_bank(region=region, key=key_type)
 
