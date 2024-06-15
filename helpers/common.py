@@ -1027,10 +1027,10 @@ def read_text(
         res.append(text.strip())
         sleep(timeout)
 
-    log(res)
+    # log(res)
     if parser:
         res = parser(res)
-    log(res)
+    # log(res)
 
     return get_higher_occurrence(res)
 
