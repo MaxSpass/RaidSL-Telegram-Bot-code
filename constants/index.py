@@ -7,10 +7,10 @@ IS_DEV = False
 # @TODO Test
 CLASSIC_ITEM_HEIGHT = 96
 CLASSIC_BUTTON_LOCATIONS = {
-    1: [855, 200],
+    1: [855, 205],
     2: [855, 295],
     3: [855, 380],
-    4: [855, 465],
+    4: [855, 470],
 }
 CLASSIC_ITEM_LOCATIONS = [
     {
