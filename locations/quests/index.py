@@ -504,7 +504,9 @@ class Quests(Location):
                             while running:
 
                                 for i in range(swipes):
-                                    swipe('bottom', 450, 490, 340, speed=3)
+                                    # swipe('bottom', 450, 490, 340, speed=3)
+                                    # @TODO Test
+                                    swipe_new('bottom', 450, 490, 343, speed=2)
 
                                 # All artifact
                                 for i in range(len(ARTIFACT_STORAGE_SLOTS_MATRIX)):

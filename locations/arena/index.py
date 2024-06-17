@@ -198,10 +198,10 @@ class ArenaFactory(Location):
             if should_use_multi_swipe:
                 for j in range(swipes_amount):
                     sleep(1)
-                    swipe('bottom', 580, 254, self.item_height)
+                    swipe_new('bottom', 580, 254, self.item_height, speed=.5)
             # @TODO Tag-arena does not work well because of 'max_swipe' value
             elif 0 < i <= self.max_swipe:
-                swipe('bottom', 580, 254, self.item_height)
+                swipe_new('bottom', 580, 254, self.item_height, speed=.5)
 
         for i in range(len(self.item_locations)):
             el = self.item_locations[i]

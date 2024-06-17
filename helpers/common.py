@@ -576,16 +576,34 @@ def swipe(direction, x1, y1, distance, speed=2, sleep_after_end=1.5, instant_mov
 
     sleep(1)
     pyautogui.mouseUp()
-    # pyautogui.moveTo(x1, y1, 1)
-    # x2 = x1
-    # y2 = y1
-    #
-    # if direction == 'bottom':
-    #     y2 = y1 - distance
-    #
-    # pyautogui.drag(45, 180, 1)
     sleep(sleep_after_end)
 
+
+def swipe_new(direction, x1, y1, distance, speed=2, sleep_after_end=0, instant_move=False):
+    # @TODO The function does not work perfect
+    if instant_move:
+        pyautogui.moveTo(x1, y1)
+    else:
+        sleep(1)
+        click(x1, y1)
+        sleep(0.5)
+
+    pyautogui.mouseDown()
+    sleep(0.5)
+
+    if direction == 'top':
+        pyautogui.moveTo(x1, y1 + distance, speed)
+    elif direction == 'bottom':
+        pyautogui.moveTo(x1, y1 - distance, speed)
+    elif direction == 'right':
+        pyautogui.moveTo(x1 - distance, y1, speed)
+    elif direction == 'left':
+        pyautogui.moveTo(x1 + distance, y1, speed)
+
+    sleep(0.5)
+    pyautogui.mouseUp()
+    if sleep_after_end > 0:
+        sleep(sleep_after_end)
 
 # @TODO It's in used in outdated features only (classic_arena, tag_arena)
 def refresh_arena():
