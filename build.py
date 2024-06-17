@@ -16,9 +16,9 @@ def find_occurrences(string, substrings):
     return occurrences
 
 
-def remove_files_and_folders(folder_path, ignore_folders=None):
-    if ignore_folders is None:
-        ignore_folders = []
+def remove_files_and_folders(folder_path, ignore=None):
+    if ignore is None:
+        ignore = []
 
     files_removed = 0
     folders_removed = 0
@@ -26,14 +26,14 @@ def remove_files_and_folders(folder_path, ignore_folders=None):
     for root, dirs, files in os.walk(folder_path, topdown=False):
         for file_name in files:
             file_path = os.path.join(root, file_name)
-            if not len(find_occurrences(file_path, ignore_folders)):
+            if not len(find_occurrences(file_path, ignore)):
                 os.remove(file_path)
                 files_removed += 1
 
         for dir_name in dirs[:]:
             dir_path = os.path.join(root, dir_name)
-            if not len(find_occurrences(dir_path, ignore_folders)):
-                remove_files_and_folders(dir_path, ignore_folders)  # Recursively remove files and folders
+            if not len(find_occurrences(dir_path, ignore)):
+                remove_files_and_folders(dir_path, ignore)  # Recursively remove files and folders
                 os.rmdir(dir_path)
                 folders_removed += 1
 
@@ -92,6 +92,7 @@ def copy_files():
     shutil.copytree('images/needles', 'dist/main/images/needles')
     shutil.copy('config.json', 'dist/main')
 
+
 def create_symlink():
     file = f'{name}.lnk'
     original_file_path = os.path.join(root_dir, file)
@@ -107,12 +108,8 @@ def create_symlink():
     # Save the shortcut
     shortcut.Save()
 
-# clear_dist()
-# copy_images()
-# copy_config()
-# zipper()
 
-remove_files_and_folders(folder_path=root_dir, ignore_folders=['.git', 'README.md'])
+remove_files_and_folders(folder_path=root_dir, ignore=['.git', 'README.md', 'version.json'])
 build()
 copy_files()
 # create_symlink()
