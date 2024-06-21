@@ -67,7 +67,6 @@ class Dungeons(Location):
 
     def _report(self):
         res_list = []
-
         for _id, value in self.results.items():
             j, dungeon = find(DUNGEON_DATA, lambda x: x['id'] == _id)
             key = dungeon['name'] if dungeon else _id
@@ -75,8 +74,9 @@ class Dungeons(Location):
 
             if has_battles:
                 res_list.append(f"Location: {key}")
-                res_list.append(f"Battles: {value['victory'] + value['defeat']}")
-                res_list.append(f"Win rate: {calculate_win_rate(value['victory'], value['defeat'])}")
+                str_battles = f"Battles: {value['victory'] + value['defeat']}"
+                str_wr = f"(WR: {calculate_win_rate(value['victory'], value['defeat'])})"
+                res_list.append(f"{str_battles} {str_wr}")
 
         return res_list
 

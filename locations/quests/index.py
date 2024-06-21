@@ -127,15 +127,17 @@ class Quests(Location):
         Location.__init__(self, name='Quests', app=app, report_predicate=self._report)
 
         self.results = []
+        self.quests_ids = []
         self.event_dispatcher.subscribe('enter', self._enter)
         self.event_dispatcher.subscribe('finish', self._finish)
         self.event_dispatcher.subscribe('run', self._run)
 
     def _report(self):
-        res_list = []
+        res_list = [f"Daily quests status: {'OK' if self.completed else 'NOT OK'}"]
 
-        if len(self.results):
-            res_list.append(f"Completed Daily quest IDs: {str(np.array(self.results, dtype=object))}")
+        # Old
+        # if len(self.results):
+        #     res_list.append(f"Completed Daily quest IDs: {str(np.array(self.results, dtype=object))}")
 
         return res_list
 
@@ -154,13 +156,15 @@ class Quests(Location):
             rewards.run(self.update, self.context)
 
     def _run(self, props=None):
-        quests_ids = self.get_not_completed_ids()
+        self.quests_ids = self.get_not_completed_ids()
 
-        if len(quests_ids):
-            for quest_id in quests_ids:
+        if len(self.quests_ids):
+            for quest_id in self.quests_ids:
                 self.handle_quest(quest_id)
         else:
             self.log("All daily quests are already done")
+
+        self.completed = all(element in self.results for element in self.quests_ids)
 
     def _get_daily_quest_id_by_text(self, text):
         ACCEPT_WEIGHT_MIN = 50

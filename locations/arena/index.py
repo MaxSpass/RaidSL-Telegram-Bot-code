@@ -19,6 +19,7 @@ class ArenaFactory(Location):
     button_locations = None
     item_locations = None
     x_axis_info = None
+    read_coins_predicate = None
 
     max_swipe = None
     refill = None
@@ -30,6 +31,7 @@ class ArenaFactory(Location):
             app,
             name,
             x_axis_info,
+            read_coins_predicate,
             item_height,
             button_locations,
             item_locations,
@@ -44,6 +46,7 @@ class ArenaFactory(Location):
 
         self.name = name
         self.x_axis_info = x_axis_info
+        self.read_coins_predicate = read_coins_predicate
         self.item_height = item_height
         self.button_locations = button_locations
         self.item_locations = item_locations
@@ -76,8 +79,9 @@ class ArenaFactory(Location):
             flatten_list = flatten(self.results)
             w = flatten_list.count(True)
             l = flatten_list.count(False)
-            res_list.append(f"Battles: {str(len(flatten_list))}")
-            res_list.append(f"Win rate: {calculate_win_rate(w, l)}")
+            str_battles = f"Battles: {str(len(flatten_list))}"
+            str_wr = f"(WR: {calculate_win_rate(w, l)})"
+            res_list.append(f"{str_battles} {str_wr}")
 
         return res_list
 
@@ -120,14 +124,22 @@ class ArenaFactory(Location):
                 self.battle_time_limit = int(props['battle_time_limit'])
 
     def _refresh_arena(self):
-        self.log('Refreshing...')
-        await_click([button_refresh], msg='Refresh button', mistake=10)
-        sleep(1)
-        for index in range(2):
-            pyautogui.moveTo(560, 185, .5, random_easying())
-            pyautogui.dragTo(560, 510, duration=.4)
-            sleep(1.5)
-        sleep(3)
+        _coins, _region = self.read_coins_predicate()
+        if _coins == 0:
+            _x = _region[0] - 5
+            _y = _region[1] + 5
+            click(_x, _y)
+            self._refill()
+
+        if not self.terminate:
+            self.log('Refreshing...')
+            await_click([button_refresh], msg='Refresh button', mistake=10)
+            sleep(3)
+
+            for index in range(2):
+                swipe_new('top', 560, 200, 300, speed=.2, instant_move=True)
+
+            sleep(2)
 
     def _refill(self):
         refilled = False
@@ -263,6 +275,7 @@ class ArenaClassic(ArenaFactory):
             app=app,
             name='Arena Classic',
             x_axis_info=95,
+            read_coins_predicate=read_bank_arena_classic,
             item_height=CLASSIC_ITEM_HEIGHT,
             button_locations=CLASSIC_BUTTON_LOCATIONS,
             item_locations=CLASSIC_ITEM_LOCATIONS,
@@ -279,6 +292,7 @@ class ArenaTag(ArenaFactory):
             app=app,
             name='Arena Tag',
             x_axis_info=135,
+            read_coins_predicate=read_bank_arena_tag,
             item_height=TAG_ITEM_HEIGHT,
             button_locations=TAG_BUTTON_LOCATIONS,
             item_locations=TAG_ITEM_LOCATIONS,

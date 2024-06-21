@@ -81,8 +81,9 @@ class Location(Foundation):
         if len(self.duration.durations):
             report_list.append(f"Duration: {self.duration.get_total()}")
 
-        if self.run_counter:
-            report_list.append(f"Runs counter: {str(self.run_counter)}")
+        # Old
+        # if self.run_counter:
+        #     report_list.append(f"Runs counter: {str(self.run_counter)}")
 
         if len(report_list):
             report_list = [f"***{self.NAME}***"] + report_list

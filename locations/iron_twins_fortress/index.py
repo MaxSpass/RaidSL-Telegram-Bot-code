@@ -22,8 +22,11 @@ class IronTwins(Location):
         res_list = []
 
         if len(self.results):
-            res_list.append(f"Used: {str(self.results.count(True))} keys")
-            res_list.append(f"Attempts: {str(len(self.results))} keys")
+            used = self.results.count(True)
+            attempts = len(self.results)
+            str_used = f"Used: {str(used)}"
+            str_attempts = f"(WR: {calculate_win_rate(used, attempts-used)})"
+            res_list.append(f"{str_used} {str_attempts}")
 
         return res_list
 

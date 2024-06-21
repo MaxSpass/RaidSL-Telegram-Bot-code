@@ -180,8 +180,9 @@ class ArenaLive(Location):
         if t:
             v = self.results.count(True)
             d = t - v
-            res_list.append('Battles: ' + str(t))
-            res_list.append('Win rate: ' + calculate_win_rate(v, d))
+            str_battles = f"Battles: {str(t)}"
+            str_wr = f"(WR: {calculate_win_rate(v, d)})"
+            res_list.append(f"{str_battles} {str_wr}")
 
         return res_list
 

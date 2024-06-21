@@ -744,6 +744,20 @@ def find_faction_keys_bank(region=None):
     return find_needle('bank_faction_keys.jpg', region, confidence=.6)
 
 
+def find_bank_arena_classic(region=None):
+    if not region:
+        region = [0, 30, 906, 50]
+
+    return find_needle('bank_arena_classic.jpg', region=region)
+
+
+def find_bank_arena_tag(region=None):
+    if not region:
+        region = [0, 30, 906, 50]
+
+    return find_needle('bank_arena_tag.jpg', region=region)
+
+
 def find_needle_refill_plus(region):
     return find_needle('refill_plus.jpg', region=region)
 
@@ -795,13 +809,9 @@ def find_popup_detector():
 
 
 def find_button(variant, size='big', region=None, return_boxes=False):
+    # variants: primary | secondary | big | large
     if region is None:
         region = [0, 0, 906, 533]
-
-    BTN_VARIANT_PRIMARY = 'primary'
-    BTN_VARIANT_SECONDARY = 'secondary'
-    BTN_SIZE_BIG = 'big'
-    BTN_SIZE_LARGE = 'large'
 
     # Should handle right 'variant' and 'size'
     src = f"popups/button_{variant}_{size}.jpg"
@@ -1185,6 +1195,36 @@ def read_keys_bank(region=None, key=None):
         scale=4,
         debug=False
     )
+
+
+def read_bank_arena_classic(region=None):
+    log("Computing arena_classic coins...")
+
+    if not region:
+        region = get_resource_region(needle_predicate=find_bank_arena_classic, needle_width=22)
+
+    return read_text(
+        region=region,
+        parser=parse_energy_bank,
+        transform_predicate=transform_image_resource,
+        scale=4,
+        debug=False
+    ), region
+
+
+def read_bank_arena_tag(region=None):
+    log("Computing 'arena_tag' coins...")
+
+    if not region:
+        region = get_resource_region(needle_predicate=find_bank_arena_tag, needle_width=22)
+
+    return read_text(
+        region=region,
+        parser=parse_energy_bank,
+        transform_predicate=transform_image_resource,
+        scale=4,
+        debug=False
+    ), region
 
 
 def read_doom_tower_keys(key_type='golden'):
