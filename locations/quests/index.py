@@ -133,11 +133,14 @@ class Quests(Location):
         self.event_dispatcher.subscribe('run', self._run)
 
     def _report(self):
-        res_list = [f"Daily quests status: {'OK' if self.completed else 'NOT OK'}"]
+        res_list = []
 
         # Old
         # if len(self.results):
         #     res_list.append(f"Completed Daily quest IDs: {str(np.array(self.results, dtype=object))}")
+
+        if len(self.results) or self.completed:
+            res_list.append(f"Daily quests status: {'OK' if self.completed else 'NOT OK'}")
 
         return res_list
 
