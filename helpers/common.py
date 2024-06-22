@@ -1161,8 +1161,8 @@ def get_resource_region(needle_predicate, needle_width, predicted_offset_x=150):
         region_refill_button = [x1_refill_button, 38, 100, 18]
         position_refill_button = find_needle_refill_plus(region=region_refill_button)
         if position_refill_button:
-            x1 = position_refill_button[0] + IMG_REFILL_SIDE
-            x2 = position_energy[0] - needle_width / 2
+            x1 = int(position_refill_button[0] + IMG_REFILL_SIDE)
+            x2 = int(position_energy[0] - needle_width / 2)
             region = axis_to_region(x1, 38, x2, 56)
 
     return tuple(round(num) for num in region) if region is not None else region

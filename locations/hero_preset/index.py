@@ -28,9 +28,11 @@ PRESET_CHECKBOX_UNCHECKED_HUE = 73
 PRESET_CHECKBOX_LOCKED_SIZE = 28
 PRESET_CHECKBOX_OFFSET = PRESET_CHECKBOX_LOCKED_SIZE / 2
 
+
 def get_presets(x2, y2):
     return capture_by_source('images/needles/presets.jpg', axis_to_region(0, 0, x2, y2),
                              confidence=.7, grayscale=True)
+
 
 class HeroPreset():
     def __init__(self):
@@ -40,8 +42,8 @@ class HeroPreset():
         x = preset_position['x']
         y = preset_position['y']
         region = [
-            x - PRESET_CHECKBOX_OFFSET,
-            y - PRESET_CHECKBOX_OFFSET,
+            int(x - PRESET_CHECKBOX_OFFSET),
+            int(y - PRESET_CHECKBOX_OFFSET),
             PRESET_CHECKBOX_LOCKED_SIZE,
             PRESET_CHECKBOX_LOCKED_SIZE
         ]
@@ -108,4 +110,3 @@ class HeroPreset():
             self.close()
         sleep(.5)
         return res
-

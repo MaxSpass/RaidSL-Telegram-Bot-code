@@ -419,10 +419,10 @@ class App:
 
         # calculates region
         region = [
-            x + BORDER_WIDTH,
-            y + BORDER_WIDTH + WINDOW_TOP_BAR_HEIGHT,
-            width - BORDER_WIDTH * 2,
-            height - BORDER_WIDTH * 2 - WINDOW_TOP_BAR_HEIGHT,
+            int(x + BORDER_WIDTH),
+            int(y + BORDER_WIDTH + WINDOW_TOP_BAR_HEIGHT),
+            int(width - BORDER_WIDTH * 2),
+            int(height - BORDER_WIDTH * 2 - WINDOW_TOP_BAR_HEIGHT),
         ]
 
         self.window_region = region

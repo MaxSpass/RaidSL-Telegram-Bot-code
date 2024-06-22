@@ -794,7 +794,7 @@ class Quests(Location):
             is_completed = pixel_check_new([860, y, [20, 58, 75]], mistake=20)
 
             if is_in_progress:
-                region = [198, 182 + position * 90, 284, 42]
+                region = [198, int(182 + position * 90), 284, 42]
                 text = read_text(region=region, scale=4)
                 print(text)
                 quests_texts.append(text)
