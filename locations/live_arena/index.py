@@ -98,8 +98,8 @@ class ArenaLive(Location):
     }
     E_OPPONENT_LEFT = {
         "name": "Opponent left the battle",
-        "interval": .5,
         "expect": lambda: bool(find_victory_opponent_left()),
+        "interval": .5,
     }
     E_PICK_FIRST = {
         "name": "Pick first",

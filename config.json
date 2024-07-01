@@ -280,7 +280,8 @@
         "demon_lord",
         "rewards",
         "doom_tower",
-        "arena_classic"
+        "arena_classic",
+        "daily_quests"
       ]
     },
     {
@@ -289,8 +290,9 @@
         "demon_lord",
         "rewards",
         "doom_tower",
-        "dungeon_sand_devil",
-        "arena_classic"
+        "arena_classic",
+        "daily_quests",
+        "dungeon_sand_devil"
       ]
     },
     {
@@ -347,26 +349,6 @@
         "rewards",
         "dungeon_minotaur",
         "doom_tower"
-      ]
-    },
-    {
-      "name": "test 6sec",
-      "commands": [
-        "test_feature_3sec",
-        "test_feature_3sec"
-      ]
-    },
-    {
-      "name": "test 120min",
-      "commands": [
-        "test_feature_15min",
-        "test_feature_15min",
-        "test_feature_15min",
-        "test_feature_15min",
-        "test_feature_15min",
-        "test_feature_15min",
-        "test_feature_15min",
-        "test_feature_15min"
       ]
     }
   ],

@@ -29,9 +29,11 @@ PRESET_CHECKBOX_LOCKED_SIZE = 28
 PRESET_CHECKBOX_OFFSET = PRESET_CHECKBOX_LOCKED_SIZE / 2
 
 
-def get_presets(x2, y2):
-    return capture_by_source('images/needles/presets.jpg', axis_to_region(0, 0, x2, y2),
-                             confidence=.7, grayscale=True)
+def get_presets(region=None):
+    if not region:
+        region = [0, 32, 906, 501]
+
+    return capture_by_source('images/needles/presets.jpg', region, confidence=.7, grayscale=True)
 
 
 class HeroPreset():
@@ -50,11 +52,11 @@ class HeroPreset():
 
         return dominant_color_hue(region=region, rank=1)
 
-    def open(self, x2=900, y2=520):
+    def open(self):
         # avoid sudden notification in this area
         sleep(7)
         # clan boss = x2:150, y2:350
-        presets_position = get_presets(x2, y2)
+        presets_position = get_presets()
         if presets_position is not None:
             # Offset is needed for avoiding calculating hue color bug
             offset = 6

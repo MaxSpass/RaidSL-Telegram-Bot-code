@@ -512,35 +512,46 @@ def dungeon_select_difficulty(difficulty, mistake=5):
         await_click([DIFFICULTIES[difficulty]], mistake=mistake)
 
 
-def enable_super_raid(pixel=None):
-    log('Function: enable_super_raid')
+def checkbox_toggle(x, y, state=True):
     # @TODO Duplication
     STAGE_ENTER = [890, 200, [93, 25, 27]]
-    SUPER_RAID_PIXEL = [655, 336, [108, 237, 255]]
+    RGB_CHECK_ICON = [108, 237, 255]
 
-    if not pixel:
-        pixel = SUPER_RAID_PIXEL
-
+    pixel = [x, y, RGB_CHECK_ICON]
     if pixels_wait([STAGE_ENTER], msg="Waiting for entering the stage", mistake=10)[0]:
-        if not pixel_check_new(pixel, mistake=10):
+        is_checked = pixel_check_new(pixel, mistake=10)
+        if state and not is_checked or not state and is_checked:
             x = pixel[0]
             y = pixel[1]
             click(x, y)
             sleep(.3)
 
 
+def enable_super_raid():
+    log('Function: enable_super_raid')
+    checkbox_toggle(655, 336, state=True)
+
+
+def disable_auto_climb():
+    log('Function: disable_auto_climb')
+    checkbox_toggle(710, 410, state=False)
+
+
 def enable_start_on_auto():
+    log('Function: enable_start_on_auto')
     P_START_ON_AUTO_CHECKBOX = [710, 406, [13, 58, 81]]
     await_click([P_START_ON_AUTO_CHECKBOX], mistake=10, wait_limit=1)
 
 
 def enable_auto_play(*args):
+    log('Function: enable_auto_play')
     AUTO_PLAY_BUTTON = [49, 486]
     sleep(2)
     click(AUTO_PLAY_BUTTON[0], AUTO_PLAY_BUTTON[1])
 
 
 def detect_pause_button():
+    log('Function: detect_pause_button')
     # @TODO Duplicate
     BUTTON_PAUSE_ICON = [866, 66, [216, 206, 156]]
     return pixel_check_new(BUTTON_PAUSE_ICON, mistake=10)
@@ -605,18 +616,6 @@ def swipe_new(direction, x1, y1, distance, speed=2, sleep_after_end=0, instant_m
     if sleep_after_end > 0:
         sleep(sleep_after_end)
 
-# @TODO It's in used in outdated features only (classic_arena, tag_arena)
-def refresh_arena():
-    if pixel_wait('Refresh button', 817, 133, [22, 124, 156], 10):
-        log('Refreshing...')
-        click(817, 133)
-        sleep(1)
-        for index in range(2):
-            pyautogui.moveTo(560, 185, .5, random_easying())
-            pyautogui.dragTo(560, 510, duration=.4)
-            sleep(1.5)
-        sleep(3)
-
 
 def axis_to_region(x1, y1, x2, y2):
     return x1, y1, x2 - x1, y2 - y1
@@ -652,8 +651,12 @@ def show_image(path=None, image=None, title='Image'):
 
 def click_on_progress_info(delay=0.5):
     # keys/coins info
-    click(760, 46)
-    sleep(delay)
+    all_resources = await_needle('all_resources.jpg', region=[0, 0, 900, 100])
+    if all_resources:
+        x = all_resources[0]
+        y = all_resources[1]
+        click(x, y)
+        sleep(delay)
 
 
 def make_lambda(predicate, *args):
@@ -790,6 +793,12 @@ def find_doom_tower_golden_keys():
 
 def find_doom_tower_silver_keys():
     return find_needle('bank_keys_silver.jpg', confidence=.65)
+
+
+def find_doom_tower_next_floor_regular(region=None):
+    if region is None:
+        region = [130, 70, 700, 460]
+    return find_needle('doom_tower/next_floor_regular.jpg', confidence=.7, region=region)
 
 
 def find_hero_filter_default(region=None, confidence=.7, retries=None):

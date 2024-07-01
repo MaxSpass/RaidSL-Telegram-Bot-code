@@ -116,7 +116,9 @@ TAG_TIERS_COORDINATE = [152, 304]
 
 # Settings related
 GAME_WINDOW = 'Raid: Shadow Legends'
-GAME_PROCESS_NAME = 'Raid.exe'
+PROCESS_GAME_NAME = 'Raid.exe'
+PROCESS_PLARIUM_SERVICE_NAME = 'PlariumPlayClientService.exe'
+PROCESS_PLARIUM_PLAY_NAME = 'PlariumPlay.exe'
 WINDOW_TOP_BAR_HEIGHT = 25
 BORDER_WIDTH = 7
 CONFIG_PATH = "config.json"

@@ -135,7 +135,7 @@ class HeroFilter:
             log('Filter is not opened')
 
     def choose(self, title, x2=900, slot='1', wait_after=.5):
-        self.open(x2=x2)
+        self.open()
         self.input(title=title)
         self.pick(slot=slot)
         self.clear()

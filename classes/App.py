@@ -1,6 +1,7 @@
 from helpers.common import *
 from classes.TaskManager import TaskManager
 from classes.Storage import Storage
+from classes.Foundation import *
 from locations.rewards.index import *
 # from locations.live_arena.index_old import *
 from locations.live_arena.index import *
@@ -34,7 +35,7 @@ from datetime import datetime
 # from telegram.error import NetworkError
 
 # GAME_WINDOW = 'Raid: Shadow Legends'
-# GAME_PROCESS_NAME = 'Raid.exe'
+# PROCESS_GAME_NAME = 'Raid.exe'
 # WINDOW_TOP_BAR_HEIGHT = 25
 # BORDER_WIDTH = 7
 # CONFIG_PATH = "config.json"
@@ -61,6 +62,7 @@ INSTANCES_MAP = {
 
 def find_process_by_name(name):
     for proc in psutil.process_iter(['pid', 'name']):
+        # print(proc.info['name'])
         if proc.info['name'] == name:
             return proc
 
@@ -196,12 +198,14 @@ def make_title(input_string):
     return input_string.replace('_', ' ').title()
 
 
-class App:
+class App(Foundation):
 
     COMMANDS_GAME_PATH_DEPENDANT = ['restart', 'launch', 'relogin', 'prepare']
     COMMANDS_COMMON = ['report', 'screen', 'click']
 
     def __init__(self):
+        Foundation.__init__(self, name='App')
+
         self.config = None
         self.window = None
         self.window_region = None
@@ -384,24 +388,47 @@ class App:
 
         log('Re-logging into the app')
 
-        # limit in seconds
-        limit = 60
-        timeout = 3
-        counter = 0
-
         click(350, 294)
-        time.sleep(2)
 
-        burger = find_needle_burger()
-        while burger is None and counter < limit:
-            time.sleep(timeout)
-            counter += timeout
-            burger = find_needle_burger()
+        E_INDEX_PAGE = {
+            'name': "Index page",
+            'interval': 2,
+            'expect': lambda: bool(find_needle_burger()),
+        }
 
-        if burger:
-            sleep(3)
-        else:
-            self.restart()
+        E_TERMINATE_GAME = {
+            'name': "Terminate Game",
+            'interval': 60,
+            'delay': 60,
+            'limit': 1,
+            'blocking': False,
+            "expect": lambda: True,
+            'callback': lambda *args: self.restart(terminate_list=[PROCESS_GAME_NAME]),
+        }
+
+        E_TERMINATE_ALL = {
+            'name': "Terminate All",
+            'interval': 300,
+            'delay': 300,
+            'limit': 1,
+            'blocking': False,
+            'expect': lambda: True,
+            'callback': self.restart,
+        }
+
+        self.awaits(events=[E_INDEX_PAGE, E_TERMINATE_GAME, E_TERMINATE_ALL])
+        sleep(3)
+
+        # burger = find_needle_burger()
+        # while burger is None and counter < limit:
+        #     time.sleep(timeout)
+        #     counter += timeout
+        #     burger = find_needle_burger()
+        #
+        # if burger:
+        #     sleep(3)
+        # else:
+        #     self.restart()
 
         return True
 
@@ -524,7 +551,7 @@ class App:
         signal.signal(signal.SIGTERM, self.kill)
 
         game_path = self.config['game_path']
-        if find_process_by_name(GAME_PROCESS_NAME):
+        if find_process_by_name(PROCESS_GAME_NAME):
             self.prepare(predicate=self.relogin)
         elif game_path:
             self.launch()
@@ -547,10 +574,15 @@ class App:
         else:
             return "No 'game_path' provided field in the config"
 
-    def restart(self, *args):
+    def restart(self, *args, terminate_list=None):
+        if terminate_list is None:
+            terminate_list = [PROCESS_GAME_NAME, PROCESS_PLARIUM_SERVICE_NAME, PROCESS_PLARIUM_PLAY_NAME]
+
         game_path = self.config['game_path']
         if game_path:
-            terminate_process_by_name(GAME_PROCESS_NAME)
+            if type(terminate_list) is list and len(terminate_list):
+                for t in range(len(terminate_list)):
+                    terminate_process_by_name(terminate_list[t])
             sleep(2)
             self.launch()
             sleep(2)
