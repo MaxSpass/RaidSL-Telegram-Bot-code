@@ -179,7 +179,7 @@ class Foundation:
 
         return response if response is not None else DUMMY_RESPONSE
 
-    def dungeons_start_battle(self):
+    def dungeons_continue_battle(self):
         # @TODO Duplication
         STAGE_ENTER = [890, 200, [93, 25, 27]]
 

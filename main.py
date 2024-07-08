@@ -1,17 +1,12 @@
-import random
-import traceback
-import pyautogui
-import copy
 from bot import TelegramBOT
 from classes.App import *
-from classes.Debug import *
-from classes.Foundation import *
 # from classes.Storage import *
 # from classes.Refill import *
-from constants.index import IS_DEV
-from locations.hero_filter.index import *
-
+from classes.Foundation import *
+from locations.dungeons.index import *
+# from locations.hero_filter.index import *
 # from locations.quests.index import QUEST_DAILY_DATA
+# from locations.test.index import *
 # from telegram.ext import CommandHandler
 # import pyautogui
 # import os.path
@@ -103,6 +98,59 @@ def schedule(seconds, predicate=None):
 
 
 def main():
+    # debug_save_screenshot(region=[615, 390, 26, 50], quality=100)
+    # print(not find_checkbox_locked())
+    # return
+
+    # app = App()
+    #
+    # doom_tower = DoomTower(app=app, props={
+    #     "bosses": [4, 2],
+    #     # "bosses": [6, 2]
+    #   })
+    #
+    # pos = doom_tower.swipe_bottom(limit=60, long=125, needle_predicate=find_doom_tower_next_floor_regular)
+    # if pos:
+    #     click(pos[0], pos[1])
+    #
+    # return
+
+    # print('Go to the Amius')
+    # sleep(10)
+    #
+    # foundation = Foundation(name='Amius')
+    #
+    # while not pixel_check_new(Dungeons.RESULT_VICTORY, mistake=10):
+    #     foundation.dungeons_continue_battle()
+    #     foundation.waiting_battle_end_regular(msg='Amius battle')
+    #
+    # print('Amius is defeated')
+    #
+    # return
+
+    # print(find_doom_tower_next_floor_regular())
+    # disable_auto_climb()
+
+    # debug_save_screenshot(region=[698, 37, 22, 22], quality=100)
+
+    # for i in range(6):
+    #     # Arena classic
+    #     # swipe_new('bottom', 580, 254, 96, speed=.5)
+    #
+    #     # Arena  tag
+    #     swipe_new('bottom', 580, 254, 105, speed=.5)
+    #
+    #     print(pyautogui.pixel(TAG_BUTTON_LOCATIONS[1][0], TAG_BUTTON_LOCATIONS[1][1]))
+    #
+    # for k, v in TAG_BUTTON_LOCATIONS.items():
+    #     print(pyautogui.pixel(v[0], v[1]))
+    #
+    # return
+
+    # Filter in artifacts
+    # swipe_new('bottom', 450, 490, 343, speed=2)
+    # return
+
     # _w = 828
     # _h = 452 - 32
     # _region = [190, 150, 550, 50]
@@ -126,27 +174,7 @@ def main():
     # return
 
     # debug_save_screenshot(region=[591, 247, 10, 69], quality=100)
-
     # f = Foundation(name='Test')
-    #
-    # E_SKIP_BATTLE = {
-    #     'name': 'Skip battle',
-    #     'interval': 10,
-    #     'delay': 10,
-    #     'blocking': False,
-    #     'expect': lambda: bool(detect_pause_button()),
-    #     'callback': lambda *args: skip_battle_arena()
-    # }
-    #
-    # f.awaits(
-    #     [ArenaClassic.E_BATTLE_END, E_SKIP_BATTLE],
-    # )
-    # return
-    # f.dungeons_start_battle()
-    # dungeons_start_battle()
-    # res = f.waiting_battle_end_regular('Test battle')
-    # print('res', res)
-    # return
 
     # debug_save_screenshot(region=[258, 272, 10, 56], quality=100)
     # debug_save_screenshot(region=[0, 0, 900, 530], quality=100, suffix_name='arena_classic')
@@ -212,11 +240,6 @@ def main():
 
     app = App()
 
-    # doom_tower = app.get_instance('doom_tower')
-    # boss = doom_tower.find_boss_position_by_id(1)
-    # print('boss', boss)
-    # return
-
     if IS_DEV or app.validation():
         game_path = app.config['game_path']
         has_telegram_token = 'telegram_token' in app.config
@@ -225,7 +248,7 @@ def main():
         try:
             if app.config['start_immediate']:
                 app.start()
-                # app.get_instance('daily_quests').daily_quest_2()
+                # app.get_instance('daily_quests').daily_quest_1()
 
                 # print('BackgroundScheduler')
                 # scheduler = BackgroundScheduler()

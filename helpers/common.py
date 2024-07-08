@@ -73,6 +73,8 @@ TESSERACT_CONFIGS_KEYS_BANK = [
     '--psm 12 --oem 3',
 ]
 
+R_DEFAULT = [0, 0, 906, 533]
+
 
 def get_date_for_log():
     return datetime.now().strftime('%Y_%m_%d')
@@ -462,9 +464,9 @@ def dungeons_replay():
     sleep(0.3)
 
 
-def dungeons_start():
-    BUTTON_START = [850, 475, [187, 130, 5]]
-    await_click([BUTTON_START], msg="await 'Button Start'", timeout=1, mistake=10)
+def dungeons_start(x=850, y=475):
+    BUTTON_START = [x, y, [187, 130, 5]]
+    await_click([BUTTON_START], msg="await 'Button Start'", timeout=1, mistake=10, wait_limit=2)
 
 
 def dungeons_click_stage_select():
@@ -474,8 +476,8 @@ def dungeons_click_stage_select():
     sleep(2)
 
 
-def dungeons_start_battle():
-    log('Function: dungeons_start_battle')
+def dungeons_continue_battle():
+    log('Function: dungeons_continue_battle')
     # @TODO Duplication
     STAGE_ENTER = [890, 200, [93, 25, 27]]
     if pixels_wait([STAGE_ENTER], msg="await 'Stage enter'", mistake=10, wait_limit=2)[0]:
@@ -518,7 +520,7 @@ def checkbox_toggle(x, y, state=True):
     RGB_CHECK_ICON = [108, 237, 255]
 
     pixel = [x, y, RGB_CHECK_ICON]
-    if pixels_wait([STAGE_ENTER], msg="Waiting for entering the stage", mistake=10)[0]:
+    if pixels_wait([STAGE_ENTER], msg="Waiting for entering the stage", mistake=10, wait_limit=2)[0]:
         is_checked = pixel_check_new(pixel, mistake=10)
         if state and not is_checked or not state and is_checked:
             x = pixel[0]
@@ -756,7 +758,7 @@ def find_bank_arena_classic(region=None):
 
 def find_bank_arena_tag(region=None):
     if not region:
-        region = [0, 30, 906, 50]
+        region = R_DEFAULT
 
     return find_needle('bank_arena_tag.jpg', region=region)
 
@@ -788,17 +790,35 @@ def find_guardian_ring():
 
 
 def find_doom_tower_golden_keys():
-    return find_needle('bank_keys_golden.jpg', confidence=.65)
+    return find_needle('doom_tower/bank_keys_golden.jpg', confidence=.65)
 
 
 def find_doom_tower_silver_keys():
-    return find_needle('bank_keys_silver.jpg', confidence=.65)
+    return find_needle('doom_tower/bank_keys_silver.jpg', confidence=.65)
 
 
 def find_doom_tower_next_floor_regular(region=None):
     if region is None:
         region = [130, 70, 700, 460]
     return find_needle('doom_tower/next_floor_regular.jpg', confidence=.7, region=region)
+
+
+def find_doom_tower_locked_floor(region=None):
+    if region is None:
+        region = R_DEFAULT
+    return find_needle('doom_tower/floor_locked.jpg', confidence=.7, region=region)
+
+
+def find_doom_tower_edge_top(region=None):
+    if region is None:
+        region = R_DEFAULT
+    return find_needle('doom_tower/swipe_edge_top.jpg', confidence=.9, region=region)
+
+
+def find_doom_tower_edge_bottom(region=None):
+    if region is None:
+        region = R_DEFAULT
+    return find_needle('doom_tower/swipe_edge_bottom.jpg', confidence=.9, region=region)
 
 
 def find_hero_filter_default(region=None, confidence=.7, retries=None):
@@ -840,6 +860,12 @@ def find_victory_opponent_left(region=None):
     if region is None:
         region = [390, 32, 160, 50]
     return find_needle('live_arena/victory_opponent_left.jpg', confidence=.7, region=region)
+
+
+def find_checkbox_locked(region=None):
+    if region is None:
+        region = R_DEFAULT
+    return find_needle('checkbox_locked.jpg', confidence=.8, region=region)
 
 
 def battles_click():

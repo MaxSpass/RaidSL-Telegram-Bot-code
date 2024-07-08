@@ -71,7 +71,7 @@ class IronTwins(Location):
             return
 
         while self._is_available():
-            dungeons_start_battle()
+            dungeons_continue_battle()
 
             self._check_refill()
             if self.terminate:

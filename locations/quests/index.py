@@ -1,4 +1,5 @@
 import pyautogui
+from pyautogui import ImageNotFoundException
 import random
 from classes.Location import Location
 from locations.hero_filter.index import *
@@ -247,7 +248,7 @@ class Quests(Location):
                     sleep(2)
                     if dungeons_is_able():
                         for k in range(times):
-                            self.dungeons_start_battle()
+                            self.dungeons_continue_battle()
                             self.waiting_battle_end_regular(f'{msg_stage} | Battle end')
                             counter += 1
 
@@ -377,18 +378,24 @@ class Quests(Location):
 
                                     cropped_image = crop(scaled_image, region=(28, 30, 25, 25))
 
-                                    _brew = pyautogui.locateCenterOnScreen(
-                                        cropped_image,
-                                        region=SIDEBAR_REGION_AREA,
-                                        confidence=BREW_CONFIDENCE
-                                    )
+                                    try:
+                                        # Causes an issue sometimes: ImageNotFoundException: Could not locate the
+                                        # image (highest confidence = 0.480)
+                                        _brew = pyautogui.locateCenterOnScreen(
+                                            cropped_image,
+                                            region=SIDEBAR_REGION_AREA,
+                                            confidence=BREW_CONFIDENCE
+                                        )
 
-                                    if _brew is not None:
-                                        beer_points.append({
-                                            'name': AFFINITIES[k]['name'],
-                                            'x': _brew[0],
-                                            'y': _brew[1],
-                                        })
+                                        if _brew is not None:
+                                            beer_points.append({
+                                                'name': AFFINITIES[k]['name'],
+                                                'x': _brew[0],
+                                                'y': _brew[1],
+                                            })
+                                    except ImageNotFoundException:
+                                        error = traceback.format_exc()
+                                        log_save(error)
 
                                 if len(beer_points):
                                     sorted_beers = sort_by_closer_axis(beer_points)

@@ -156,7 +156,7 @@ class FactionWars(Location):
                                     self._prepare_run(_name, expect=expect)
 
                                     while not self._get_result_by_name(_name)["completed"]:
-                                        dungeons_start_battle()
+                                        dungeons_continue_battle()
 
                                         self.waiting_battle_end_regular(f"{self.NAME} | {_name}")
                                         sleep(1)
