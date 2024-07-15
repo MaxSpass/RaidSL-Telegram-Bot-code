@@ -1,6 +1,7 @@
 import math
 import pyautogui
-from pyautogui import ImageNotFoundException
+from pyautogui import ImageNotFoundException as ImageNotFoundExceptionPyautogui
+from pyscreeze import ImageNotFoundException
 import time
 import random
 import os
@@ -169,6 +170,15 @@ def is_close(box1, box2, threshold=5):
             abs(box1.top - box2.top) < threshold)
 
 
+def is_close_in_boxes(box, boxes, threshold=20):
+    res = False
+    for i in range(len(boxes)):
+        if is_close(box, boxes[i], threshold):
+            res = True
+            break
+    return res
+
+
 def filter_close_boxes(boxes, threshold=10):
     """Filter out boxes that are very close to each other."""
     filtered_boxes = []
@@ -178,8 +188,15 @@ def filter_close_boxes(boxes, threshold=10):
     return filtered_boxes
 
 
-def capture_by_source(src, region, confidence=.8, grayscale=False, return_boxes=False):
+def capture_by_source(src, region, confidence=.8, grayscale=False, return_boxes=False, flip=False):
     src = os.path.normpath(src)
+
+    if flip:
+        original_img = cv2.imread(src)
+        flip_image = cv2.flip(original_img, 1)
+        flipped_needle_img_rgb = cv2.cvtColor(flip_image, cv2.COLOR_BGR2RGB)
+        # Convert the flipped image to a Pillow Image
+        src = Image.fromarray(flipped_needle_img_rgb)
 
     try:
         if return_boxes:
@@ -195,6 +212,8 @@ def capture_by_source(src, region, confidence=.8, grayscale=False, return_boxes=
         else:
             return pyautogui.locateCenterOnScreen(src, region=region, confidence=confidence, grayscale=grayscale)
     except ImageNotFoundException:
+        pass
+    except ImageNotFoundExceptionPyautogui:
         pass
 
     return None
@@ -678,10 +697,13 @@ def find_needle(
         retries=0,
         retry_interval=1,
         should_move_out_cursor=False,
-        return_boxes=False
+        return_boxes=False,
+        flip=False,
 ):
     if region is None:
         region = [0, 0, 900, 530]
+        # region = [0, 0, 1000, 1500]
+        # region = [0, 0, 1900, 1000]
     if confidence is None:
         confidence = .8
     if should_move_out_cursor:
@@ -703,7 +725,7 @@ def find_needle(
 
     # show_pyautogui_image(path_image)
     def _find_needles():
-        return capture_by_source(path_image, region, confidence=confidence, return_boxes=return_boxes)
+        return capture_by_source(path_image, region, confidence=confidence, return_boxes=return_boxes, flip=flip)
 
     position = _find_needles()
     while retries > 0 \
@@ -834,7 +856,7 @@ def find_hero_slot_active(region):
 
 
 def find_popup_detector():
-    return find_needle('popups/error_detector.jpg', region=[425, 110, 60, 150])
+    return find_needle('popups/popup_error.jpg', region=[425, 110, 60, 150])
 
 
 def find_button(variant, size='big', region=None, return_boxes=False):
@@ -866,6 +888,12 @@ def find_checkbox_locked(region=None):
     if region is None:
         region = R_DEFAULT
     return find_needle('checkbox_locked.jpg', confidence=.8, region=region)
+
+
+def find_needle_popup_attention(region=None):
+    if region is None:
+        region = [0, 0, 906, 533]
+    return find_needle('popups/popup_attention.jpg', region)
 
 
 def battles_click():
@@ -988,6 +1016,14 @@ def transform_image_run_cost(img):
 
 def transform_image_levels(img):
     return transform_image_accurate(img, 80, 230)
+
+
+def transform_btn_primary(img):
+    return transform_image_accurate(img, 150, 200)
+
+
+def transform_btn_secondary(img):
+    return transform_image_accurate(img, 110, 200)
 
 
 def parse_dealt_damage(variants):
@@ -1137,11 +1173,11 @@ def read_text(
             cv2.imshow(title, img)
             cv2.waitKey()
 
-        text = pytesseract.image_to_string(img, config=configs[i])
+        text = pytesseract.image_to_string(img, config=configs[i], lang='eng')
         res.append(text.strip())
         sleep(timeout)
 
-    log(res)
+    # log(res)
     if parser:
         res = parser(res)
     # log(res)
@@ -1439,3 +1475,103 @@ def same_pixels_line_list(pixels, long=3, axis='x'):
 
 def get_time_future(**kwargs):
     return datetime.now() + timedelta(**kwargs)
+
+
+def detect_buttons(confidence=.9, crop=5):
+    buttons_data = [
+        # {'needle': 'popups/button_primary_medium.jpg', 'transform_predicate': transform_btn_primary},
+        # {'needle': 'popups/button_primary_big.jpg', 'transform_predicate': transform_btn_primary},
+        # {'needle': 'popups/button_primary_large.jpg', 'transform_predicate': transform_btn_primary},
+        #
+        # {'needle': 'popups/button_secondary_medium.jpg', 'transform_predicate': transform_btn_secondary},
+        # {'needle': 'popups/button_secondary_big.jpg', 'transform_predicate': transform_btn_secondary},
+        # {'needle': 'popups/button_secondary_large.jpg', 'transform_predicate': transform_btn_secondary},
+    ]
+
+    buttons = []
+    boxes = []
+    for i in range(len(buttons_data)):
+        _needle = buttons_data[i]['needle']
+        _transform_predicate = buttons_data[i]['transform_predicate']
+
+        boxes_origin = find_needle(_needle, confidence=confidence, return_boxes=True)
+        print('boxes_origin', boxes_origin)
+        if boxes_origin and len(boxes_origin):
+            boxes_flip = find_needle(_needle, confidence=confidence, return_boxes=True, flip=True)
+            # print('boxes_flip', boxes_flip)
+            if boxes_flip and len(boxes_flip):
+
+                if len(boxes_origin) == len(boxes_flip):
+                    for j in range(len(boxes_origin)):
+                        # print('boxes_origin', boxes_origin[j])
+                        # print('boxes_flip', boxes_flip[j])
+                        if not is_close_in_boxes(boxes_origin[j], boxes):
+                            # ValueError: Coordinate 'right' is less than 'left'
+                            if boxes_flip[j].left > boxes_origin[j].left:
+                                boxes.append(boxes_origin[j])
+
+                                _region = [
+                                    int(boxes_origin[j].left + crop * 2),
+                                    int(boxes_origin[j].top + crop),
+                                    int(boxes_flip[j].left - boxes_origin[j].left - crop * 4),
+                                    int(boxes_origin[j].height - crop * 2)
+                                ]
+
+                                _text = read_text(region=_region, transform_predicate=_transform_predicate)
+
+                                if _text:
+                                    buttons.append({
+                                        'text': _text,
+                                        'region': _region
+                                    })
+
+    return buttons
+
+
+def detect_buttons_new(confidence=.7, crop=5):
+    buttons_data = [
+        {
+            'needle': 'popups/button_primary_generic.jpg',
+            'transform_predicate': transform_btn_primary,
+            'variant': 'primary',
+            'width': 180,
+            'height': 54,
+        },
+        {
+            'needle': 'popups/button_secondary_generic.jpg',
+            'transform_predicate': transform_btn_secondary,
+            'variant': 'secondary',
+            'width': 180,
+            'height': 54,
+        },
+    ]
+
+    buttons = []
+    boxes = []
+    for i in range(len(buttons_data)):
+        _needle = buttons_data[i]['needle']
+        _transform_predicate = buttons_data[i]['transform_predicate']
+        _variant = buttons_data[i]['variant']
+        _width = buttons_data[i]['width']
+        _height = buttons_data[i]['height']
+
+        boxes_origin = find_needle(_needle, confidence=confidence, return_boxes=True)
+
+        if boxes_origin and len(boxes_origin):
+
+            for j in range(len(boxes_origin)):
+                if not is_close_in_boxes(boxes_origin[j], boxes):
+                    boxes.append(boxes_origin[j])
+                    x = int(boxes_origin[j].left)
+                    y = int(boxes_origin[j].top)
+
+                    _region = [x + crop * 2, y, _width - crop * 4, _height]
+                    _text = read_text(region=_region, transform_predicate=_transform_predicate)
+                    if _text:
+                        buttons.append({
+                            'text': _text.lower(),
+                            'variant': _variant,
+                            'region': _region
+                        })
+
+    return buttons

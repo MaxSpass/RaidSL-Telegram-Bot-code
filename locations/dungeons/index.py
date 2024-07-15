@@ -124,22 +124,24 @@ class Dungeons(Location):
         self._distribute_energy()
         self.log(f'Bank: {self.bank}')
 
-        if not self.terminate:
-            for i in range(len(self.dungeons)):
-                self._initialize(self.dungeons[i])
-                self.log(f"Starting {self.current['name']}")
-                self._enter()
+        for i in range(len(self.dungeons)):
+            if self.terminate:
+                break
 
-                cost = read_run_cost()
-                self.log(f'Energy cost: {cost}')
+            self._initialize(self.dungeons[i])
+            self.log(f"Starting {self.current['name']}")
+            self._enter()
 
-                while self._able_attacking(cost):
-                    self.log('Start battle')
-                    self.attack()
-                    self.current['energy'] -= cost
+            cost = read_run_cost()
+            self.log(f'Energy cost: {cost}')
 
-                if not FAKE_BATTLE:
-                    self._exit_location()
+            while self._able_attacking(cost):
+                self.log('Start battle')
+                self.attack()
+                self.current['energy'] -= cost
+
+            if not FAKE_BATTLE:
+                self._exit_location()
 
     # @TODO These responsibility must be on the different scope
     def _get_available_energy(self):
@@ -225,7 +227,7 @@ class Dungeons(Location):
             }
 
     def _able_attacking(self, cost):
-        return bool(cost) and self.current['energy'] >= cost
+        return bool(cost) and self.current['energy'] >= cost and not self.terminate
 
     def _save_result(self, condition):
         _id = self.current['id']

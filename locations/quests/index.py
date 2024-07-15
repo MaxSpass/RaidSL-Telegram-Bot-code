@@ -164,6 +164,9 @@ class Quests(Location):
 
         if len(self.quests_ids):
             for quest_id in self.quests_ids:
+                if self.terminate:
+                    break
+
                 self.handle_quest(quest_id)
         else:
             self.log("All daily quests are already done")

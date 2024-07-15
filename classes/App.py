@@ -201,7 +201,7 @@ def make_title(input_string):
 class App(Foundation):
 
     COMMANDS_GAME_PATH_DEPENDANT = ['restart', 'launch', 'relogin', 'prepare']
-    COMMANDS_COMMON = ['report', 'screen', 'click']
+    COMMANDS_COMMON = ['report', 'screen', 'click', 'stop']
 
     def __init__(self):
         Foundation.__init__(self, name='App')
@@ -228,6 +228,7 @@ class App(Foundation):
                 'description': 'Re-Launch the Game',
                 'handler': self.task('launch', self.launch, task_type='aside'),
             },
+            # @TODO Does not work properly when it's running right after bot starts
             'relogin': {
                 'description': 'Re-log in',
                 'handler': self.task('relogin', self.relogin, task_type='aside'),
@@ -243,6 +244,10 @@ class App(Foundation):
             'click': {
                 'description': 'Click by provided coordinates: x, y',
                 'handler': self.task('click', self._click, task_type='sync'),
+            },
+            'stop': {
+                'description': 'Terminates instances and clears the queue',
+                'handler': self.task('stop', self._stop, task_type='sync'),
             },
             'report': {
                 'description': 'Report',
@@ -383,6 +388,7 @@ class App(Foundation):
         sys.exit(0)
 
     def relogin(self, *args):
+        # @TODO Does not work as expected, needs to be clarified
         if not is_logged_out():
             return False
 
@@ -467,6 +473,20 @@ class App(Foundation):
         image_bytes.seek(0)
 
         return image_bytes
+
+    def _stop(self, *args):
+        # Needs when bot is starting
+        sleep(1)
+
+        # Terminates all instances
+        for key, value in self.entries.items():
+            instance = value['instance']
+            instance.terminate = True
+
+        # Empty the queue
+        queue = self.taskManager.queue
+        while not queue.empty():
+            queue.get()
 
     def _click(self, upd, ctx):
         response = []

@@ -14,7 +14,7 @@ class TestFeature(Location):
 
     def _run(self, props=None):
         counter = 0
-        while counter < self.seconds:
+        while counter < self.seconds and not self.terminate:
             self.log(counter)
             counter += 1
             sleep(1)

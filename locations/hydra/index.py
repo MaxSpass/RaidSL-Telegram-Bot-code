@@ -238,7 +238,7 @@ class Hydra(Location):
         else:
             self.log("Can't continue")
 
-        return can_continue
+        return can_continue and not self.terminate
 
     def _certain_hydra_or_all_hydra_screens(self):
         # wait_limit = 3600 * 5
@@ -467,6 +467,9 @@ class Hydra(Location):
                 close_popup()
 
         for i in range(len(self.runs)):
+            if self.terminate:
+                break
+
             if 'skip' in self.runs[i] and bool(self.runs[i]['skip']):
                 continue
 
@@ -478,6 +481,9 @@ class Hydra(Location):
             # keys = self.results[stage]['keys']
 
             if stage in HYDRA_LOCATIONS:
+                if self.terminate:
+                    break
+
                 screens = self._certain_hydra_or_all_hydra_screens()
 
                 if screens[0]:

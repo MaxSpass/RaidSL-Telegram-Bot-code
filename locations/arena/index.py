@@ -13,7 +13,21 @@ PAID_REFILL_LIMIT = 0
 OUTPUT_ITEMS_AMOUNT = 10
 
 
+def callback_refresh(*args):
+    sleep(3)
+    for index in range(2):
+        swipe_new('top', 560, 200, 300, speed=.2, instant_move=True)
+    sleep(2)
+
+
 class ArenaFactory(Location):
+    E_BUTTON_REFRESH = {
+        "name": "Refresh button",
+        "expect": lambda: pixel_check_new(button_refresh, mistake=5),
+        "callback": callback_refresh,
+        "interval": 5,
+    }
+
     name = None
     item_height = None
     button_locations = None
@@ -131,15 +145,16 @@ class ArenaFactory(Location):
             click(_x, _y)
             self._refill()
 
-        if not self.terminate:
-            self.log('Refreshing...')
-            await_click([button_refresh], msg='Refresh button', mistake=10)
-            sleep(3)
-
-            for index in range(2):
-                swipe_new('top', 560, 200, 300, speed=.2, instant_move=True)
-
-            sleep(2)
+        self.awaits([self.E_BUTTON_REFRESH, self.E_TERMINATE])
+        # if not self.terminate:
+        #     self.log('Refreshing...')
+        #     await_click([button_refresh], msg='Refresh button', mistake=10)
+        #     sleep(3)
+        #
+        #     for index in range(2):
+        #         swipe_new('top', 560, 200, 300, speed=.2, instant_move=True)
+        #
+        #     sleep(2)
 
     def _refill(self):
         refilled = False
@@ -216,6 +231,9 @@ class ArenaFactory(Location):
                 swipe_new('bottom', 580, 254, self.item_height, speed=.5)
 
         for i in range(len(self.item_locations)):
+            if self.terminate:
+                break
+
             el = self.item_locations[i]
             swipes = el['swipes']
             position = el['position']

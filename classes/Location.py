@@ -29,6 +29,12 @@ class Location(Foundation):
         self.results = None
         self.refill = 0
 
+        self.E_TERMINATE = {
+            "name": "Terminate",
+            "interval": 3,
+            "expect": lambda: self.terminate
+        }
+
     # @TODO Temp commented
     #     # @TODO Should add time
     #     if self.NAME in LOCATIONS_WITH_STORAGE:

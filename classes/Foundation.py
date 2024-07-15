@@ -44,13 +44,20 @@ class Foundation:
         "name": "Battle end",
         "interval": 2,
         "expect": lambda: pixel_check_new([28, 88, [255, 255, 255]], mistake=3),
+        "callback": lambda *args: sleep(.3),
     }
-    E_CONNECTION_ERROR = {
-        "name": "No connection",
+    E_POPUP_CONNECTION_ERROR = {
+        "name": "No connection popup",
         "interval": 300,
         "blocking": False,
         "expect": lambda: bool(find_popup_detector()),
         "callback": callback_retry,
+    }
+    E_POPUP_ATTENTION = {
+        'name': 'Attention popup',
+        'interval': .5,
+        'wait_limit': 2,
+        'expect': lambda: bool(find_needle_popup_attention()),
     }
     E_BUTTON_BATTLE_START = {
         "name": "Button battle start",
@@ -61,6 +68,7 @@ class Foundation:
         "callback": lambda *args: click(
             x=P_BUTTON_BATTLE_START[0],
             y=P_BUTTON_BATTLE_START[1],
+            smart=True
         ),
     }
     E_NO_AURA_SKILL = {
@@ -183,16 +191,36 @@ class Foundation:
         # @TODO Duplication
         STAGE_ENTER = [890, 200, [93, 25, 27]]
 
-        if pixel_check_new(STAGE_ENTER, mistake=10):
-            self.awaits([self.E_BUTTON_BATTLE_START, self.E_NO_AURA_SKILL])
-        else:
-            dungeons_replay()
+        # @TODO In progress
+        # self.awaits([self.E_POPUP_ATTENTION])
+
+        def _continue():
+            if pixel_check_new(STAGE_ENTER, mistake=10):
+                self.awaits([self.E_BUTTON_BATTLE_START, self.E_NO_AURA_SKILL])
+            else:
+                dungeons_replay()
+
+        # @TODO In progress
+        # def _popup_attention_callback(*args):
+        #     close_popup()
+        #     sleep(1)
+        #     _continue()
+
+        _continue()
+
+        # @TODO In progress
+        # E_POPUP_ATTENTION_PREPARED = prepare_event(self.E_POPUP_ATTENTION, {
+        #     'callback': _popup_attention_callback
+        # })
+        #
+        # self.awaits([E_POPUP_ATTENTION_PREPARED])
+        # print('End')
 
     def waiting_battle_end_regular(self, msg, timeout=5, battle_time_limit=None):
         # @TODO rename 'timeout' into 'interval'
         log(f"Waiting battle End: {msg}")
 
-        _events = [self.E_BATTLE_END, self.E_CONNECTION_ERROR]
+        _events = [self.E_BATTLE_END, self.E_POPUP_CONNECTION_ERROR]
 
         if battle_time_limit is not None:
             if type(battle_time_limit) is int:

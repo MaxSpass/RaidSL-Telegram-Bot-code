@@ -20,10 +20,14 @@ from locations.dungeons.index import *
 # from locations.hero_preset.index import HeroPreset
 # from locations.doom_tower.index import *
 # from in_progress import *
-
 # from apscheduler.schedulers.background import BackgroundScheduler
 # from datetime import datetime
 # import pytz
+
+# from PIL import Image, ImageOps
+# import cv2
+# from io import BytesIO
+# import queue
 
 pyautogui.FAILSAFE = False
 is_prod = is_production()
@@ -98,6 +102,24 @@ def schedule(seconds, predicate=None):
 
 
 def main():
+    # foundation = Foundation(name='test')
+    # foundation.dungeons_continue_battle()
+    # return
+
+    # print(find_needle_popup_attention())
+    # return
+
+    # print(pyautogui.pixel(804, 604))
+    # debug_save_screenshot(region=[667, 227, 20, 20], quality=100)
+    # return
+
+    # buttons = detect_buttons_new()
+    # if len(buttons):
+    #     print('***BUTTONS***')
+    #     for i in range(len(buttons)):
+    #         print(buttons[i])
+    # return
+
     # debug_save_screenshot(region=[615, 390, 26, 50], quality=100)
     # print(not find_checkbox_locked())
     # return

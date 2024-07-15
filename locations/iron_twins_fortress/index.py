@@ -57,7 +57,7 @@ class IronTwins(Location):
             close_popup()
 
     def _is_available(self):
-        return self.results.count(True) < self.keys or dungeons_is_able()
+        return self.results.count(True) < self.keys or dungeons_is_able() and not self.terminate
 
     def _apply_props(self, props=None):
         if props:
