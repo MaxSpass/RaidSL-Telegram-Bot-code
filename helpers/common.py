@@ -674,8 +674,8 @@ def click_on_progress_info(delay=0.5):
     # keys/coins info
     all_resources = await_needle('all_resources.jpg', region=[0, 0, 900, 100])
     if all_resources:
-        x = all_resources[0]
-        y = all_resources[1]
+        x = int(all_resources[0])
+        y = int(all_resources[1])
         click(x, y)
         sleep(delay)
 
@@ -855,7 +855,7 @@ def find_hero_slot_active(region):
     return find_needle('hero_slot_active.jpg', region=region, confidence=.65, retries=2)
 
 
-def find_popup_detector():
+def find_popup_error_detector():
     return find_needle('popups/popup_error.jpg', region=[425, 110, 60, 150])
 
 
@@ -1027,16 +1027,6 @@ def transform_btn_secondary(img):
 
 
 def parse_dealt_damage(variants):
-    # only digits
-
-    # img = cv2.imread(filename)
-    # gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    # scaled_image = cv2.resize(gray, None, fx=7.0, fy=7.0)
-    # thresh = cv2.threshold(scaled_image, 175, 255, cv2.THRESH_BINARY_INV)[1]
-    # kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
-    # opening = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
-    # text = pytesseract.image_to_string(opening, lang='eng')
-
     def _parse(s):
         arr = re.split(r'\D+', s)
         # removing empty lines
@@ -1142,14 +1132,17 @@ def read_text(
         title='match',
         grayscale=True,
         scale=2,
-        transform_predicate=None
+        transform_predicate=None,
+        lang=None
 ):
     # debug = True
     res = []
     screenshot = None
-
     if configs is None:
         configs = TESSERACT_CONFIGS_DEFAULT
+
+    if lang is None:
+        lang = 'eng'
 
     if not update_screenshot:
         screenshot = pyautogui.screenshot(region=region)
@@ -1173,7 +1166,7 @@ def read_text(
             cv2.imshow(title, img)
             cv2.waitKey()
 
-        text = pytesseract.image_to_string(img, config=configs[i], lang='eng')
+        text = pytesseract.image_to_string(img, config=configs[i], lang=lang)
         res.append(text.strip())
         sleep(timeout)
 
@@ -1528,7 +1521,7 @@ def detect_buttons(confidence=.9, crop=5):
     return buttons
 
 
-def detect_buttons_new(confidence=.7, crop=5):
+def detect_buttons_new(confidence=.7, crop=5, lang=None):
     buttons_data = [
         {
             'needle': 'popups/button_primary_generic.jpg',
@@ -1566,7 +1559,7 @@ def detect_buttons_new(confidence=.7, crop=5):
                     y = int(boxes_origin[j].top)
 
                     _region = [x + crop * 2, y, _width - crop * 4, _height]
-                    _text = read_text(region=_region, transform_predicate=_transform_predicate)
+                    _text = read_text(region=_region, transform_predicate=_transform_predicate, lang=lang)
                     if _text:
                         buttons.append({
                             'text': _text.lower(),
@@ -1575,3 +1568,28 @@ def detect_buttons_new(confidence=.7, crop=5):
                         })
 
     return buttons
+
+
+def find_detected_button(button_for_click, buttons):
+    res = None
+    if len(buttons):
+        for i in range(len(buttons)):
+            button = buttons[i]
+            for k, v in button_for_click.items():
+
+                # @TODO Test
+                # if button.get(k) == 're-log in':
+                #     button[k] = '123123@!#re-log invqwev'
+
+                if button.get(k) and v in button.get(k):
+                    res = button
+                    log(f"Found detected button with the text '{button['text']}'")
+
+                    break
+    return res
+
+
+def click_detected_button(button):
+    x = button['region'][0]
+    y = button['region'][1]
+    click(x, y, random_click=10, smart=True)

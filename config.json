@@ -2,6 +2,7 @@
   "start_immediate": 1,
   "game_path": "C:/Users/user/AppData/Local/PlariumPlay/PlariumPlay.exe",
   "telegram_token": "6722044970:AAGZ5EtkQPVFpSzHqhKeAiCf3sXD-PRX6_w",
+  "lang": "eng",
   "tasks": [
     {
       "task": "rewards",
@@ -11,8 +12,8 @@
       "task": "arena_live",
       "enable": 1,
       "props": {
-        "refill": 1,
-        "idle_after_defeat": 45,
+        "refill": 0,
+        "idle_after_defeat": 30,
         "pool": [
           {
             "name": "Armanz",

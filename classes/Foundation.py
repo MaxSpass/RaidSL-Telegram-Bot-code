@@ -46,11 +46,17 @@ class Foundation:
         "expect": lambda: pixel_check_new([28, 88, [255, 255, 255]], mistake=3),
         "callback": lambda *args: sleep(.3),
     }
+    E_POPUP_ERROR = {
+        "name": "Error popup",
+        "interval": 3,
+        'blocking': False,
+        "expect": lambda: bool(find_popup_error_detector()),
+    }
     E_POPUP_CONNECTION_ERROR = {
         "name": "No connection popup",
         "interval": 300,
         "blocking": False,
-        "expect": lambda: bool(find_popup_detector()),
+        "expect": lambda: bool(find_popup_error_detector()),
         "callback": callback_retry,
     }
     E_POPUP_ATTENTION = {

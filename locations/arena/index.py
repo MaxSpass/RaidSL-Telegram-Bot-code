@@ -14,6 +14,7 @@ OUTPUT_ITEMS_AMOUNT = 10
 
 
 def callback_refresh(*args):
+    click(button_refresh[0], button_refresh[1])
     sleep(3)
     for index in range(2):
         swipe_new('top', 560, 200, 300, speed=.2, instant_move=True)
@@ -101,7 +102,7 @@ class ArenaFactory(Location):
 
     def _enter(self):
         click_on_progress_info()
-        click(600, self.x_axis_info)
+        click(600, self.x_axis_info, smart=True)
         sleep(1)
 
         self.obtain()

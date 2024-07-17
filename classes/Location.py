@@ -2,7 +2,7 @@ from classes.EventDispatcher import EventDispatcher
 from classes.Duration import Duration
 from classes.Foundation import Foundation
 from classes.Debug import Debug
-from helpers.common import close_popup_recursive, log
+from helpers.common import close_popup_recursive, log, find_popup_error_detector
 from datetime import datetime
 
 LOCATIONS_WITH_STORAGE = [
@@ -10,6 +10,7 @@ LOCATIONS_WITH_STORAGE = [
     'Arena Tag',
     'Arena Live',
 ]
+
 
 class Location(Foundation):
     def __init__(self, name, app, report_predicate=None):
@@ -80,7 +81,6 @@ class Location(Foundation):
         else:
             log(text)
 
-
     def report(self):
         report_list = self.report_predicate() if self.report_predicate else []
 
@@ -116,7 +116,8 @@ class Location(Foundation):
             self.log('is already completed')
             return
 
-        self.app.relogin()
+        if find_popup_error_detector():
+            self.app.relogin()
 
         self.update = upd
         self.context = ctx

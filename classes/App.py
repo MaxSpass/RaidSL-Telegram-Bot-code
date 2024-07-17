@@ -56,7 +56,7 @@ INSTANCES_MAP = {
     'test_feature': TestFeature,
     'test_await': TestAwait,
 }
-
+SUPPORTED_LANGUAGES = ['eng', 'deu', 'ukr', 'rus']
 
 # EMULATE_NETWORK_ERROR = False
 
@@ -198,8 +198,11 @@ def make_title(input_string):
     return input_string.replace('_', ' ').title()
 
 
-class App(Foundation):
+def expect_relogin(lang):
+    # @TODO Rework text hardcode
+    return find_detected_button({'text': 're-log in'}, detect_buttons_new(lang=lang))
 
+class App(Foundation):
     COMMANDS_GAME_PATH_DEPENDANT = ['restart', 'launch', 'relogin', 'prepare']
     COMMANDS_COMMON = ['report', 'screen', 'click', 'stop']
 
@@ -217,6 +220,39 @@ class App(Foundation):
         # self.storage = Storage(name='storage', folder='temp')
         self.read_config()
         self.commands = self.get_commands()
+
+        self.E_INDEX_PAGE = {
+            'name': "Burger menu",
+            'interval': 2,
+            'expect': lambda: bool(find_needle_burger()),
+        }
+
+        self.E_TERMINATE_GAME = {
+            'name': "Terminate Game",
+            'interval': 120,
+            'delay': 120,
+            'limit': 1,
+            'blocking': False,
+            "expect": lambda: True,
+            'callback': lambda *args: self.restart(terminate_list=[PROCESS_GAME_NAME]),
+        }
+
+        self.E_TERMINATE_ALL = {
+            'name': "Terminate All",
+            'interval': 300,
+            'delay': 300,
+            'limit': 1,
+            'blocking': False,
+            'expect': lambda: True,
+            'callback': self.restart,
+        }
+
+        self.E_POPUP_RELOGIN_ERROR = prepare_event(self.E_POPUP_ERROR, {
+            "limit": 1,
+            "wait_limit": 2,
+            "expect": lambda: expect_relogin(lang=self.config['lang']) if self.config['lang'] else is_logged_out(),
+            "callback": lambda *args: click_detected_button(*args) if self.config['lang'] else click(350, 294)
+        })
 
     def get_commands(self):
         return {
@@ -267,7 +303,8 @@ class App(Foundation):
             'tasks': [],
             'presets': [],
             'after_each': [],
-            'game_path': ''
+            'game_path': '',
+            'lang': None
         }
 
         # Temp properties
@@ -279,6 +316,11 @@ class App(Foundation):
 
         if 'telegram_token' in config_json:
             _config['telegram_token'] = str(config_json['telegram_token'])
+
+        if 'lang' in config_json:
+            _lang = str(config_json['lang']).lower()
+            if _lang in SUPPORTED_LANGUAGES:
+                _config['lang'] = _lang
 
         # Tasks
         tasks_length = len(config_json['tasks'])
@@ -388,53 +430,16 @@ class App(Foundation):
         sys.exit(0)
 
     def relogin(self, *args):
-        # @TODO Does not work as expected, needs to be clarified
-        if not is_logged_out():
-            return False
 
-        log('Re-logging into the app')
+        self.awaits(events=[
+            self.E_POPUP_RELOGIN_ERROR,
+            self.E_INDEX_PAGE,
+            self.E_TERMINATE_GAME,
+            self.E_TERMINATE_ALL,
+        ])
 
-        click(350, 294)
-
-        E_INDEX_PAGE = {
-            'name': "Index page",
-            'interval': 2,
-            'expect': lambda: bool(find_needle_burger()),
-        }
-
-        E_TERMINATE_GAME = {
-            'name': "Terminate Game",
-            'interval': 60,
-            'delay': 60,
-            'limit': 1,
-            'blocking': False,
-            "expect": lambda: True,
-            'callback': lambda *args: self.restart(terminate_list=[PROCESS_GAME_NAME]),
-        }
-
-        E_TERMINATE_ALL = {
-            'name': "Terminate All",
-            'interval': 300,
-            'delay': 300,
-            'limit': 1,
-            'blocking': False,
-            'expect': lambda: True,
-            'callback': self.restart,
-        }
-
-        self.awaits(events=[E_INDEX_PAGE, E_TERMINATE_GAME, E_TERMINATE_ALL])
-        sleep(3)
-
-        # burger = find_needle_burger()
-        # while burger is None and counter < limit:
-        #     time.sleep(timeout)
-        #     counter += timeout
-        #     burger = find_needle_burger()
-        #
-        # if burger:
-        #     sleep(3)
-        # else:
-        #     self.restart()
+        sleep(5)
+        close_popup_recursive()
 
         return True
 
@@ -583,13 +588,7 @@ class App(Foundation):
         if game_path:
             subprocess.run(f"{game_path} -gameid=101 -tray-start")
             sleep(3)
-            def _wait_game_window():
-                while not is_index_page(logger=False):
-                    log('Waiting the game window')
-                    sleep(5)
-
-            self.prepare(predicate=_wait_game_window)
-
+            self.prepare()
             log('Game window is ready')
         else:
             return "No 'game_path' provided field in the config"
@@ -611,10 +610,14 @@ class App(Foundation):
 
     def prepare(self, *args, predicate=None):
         self.window = resize_window()
-        # self.window_region = None
+
         if predicate is not None:
             predicate()
+
+        self.awaits([self.E_INDEX_PAGE])
+
         self.window_axis = calibrate_window(self.window_axis)
+        print('window_axis', self.window_axis)
 
     def get_entry(self, command_name):
         return self.entries[command_name] \
