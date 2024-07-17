@@ -122,6 +122,7 @@ class Location(Foundation):
         self.update = upd
         self.context = ctx
         self.terminate = False
+        self.stop = False
         self.run_counter += 1
         self.duration.start()
 

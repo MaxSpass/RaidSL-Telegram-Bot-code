@@ -487,6 +487,7 @@ class App(Foundation):
         for key, value in self.entries.items():
             instance = value['instance']
             instance.terminate = True
+            instance.stop = True
 
         # Empty the queue
         queue = self.taskManager.queue
