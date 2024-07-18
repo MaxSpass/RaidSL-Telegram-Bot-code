@@ -8,10 +8,6 @@ P_BUTTON_BATTLE_START = [850, 475, RGB_PRIMARY]
 P_POPUP_BUTTON_SECONDARY_LEFT = [270, 310, RGB_SECONDARY]
 P_POPUP_BUTTON_SECONDARY_RIGHT = [480, 310, RGB_SECONDARY]
 
-NOT_FOUND_EVENT = 'EVENT_NOT_FOUND'
-DUMMY_RESPONSE = {"name": NOT_FOUND_EVENT, "data": None}
-
-
 def callback_retry(*args):
     log('Trying to reconnect...')
     button = find_button(variant='primary', region=[130, 110, 640, 350])
@@ -40,33 +36,36 @@ def skip_battle_arena(*args):
 
 
 class Foundation:
+    EVENT_NOT_FOUND = 'EVENT_NOT_FOUND'
+    DUMMY_RESPONSE = {"name": EVENT_NOT_FOUND, "data": None}
+
     E_BATTLE_END = {
-        "name": "Battle end",
+        "name": "BattleEnd",
         "interval": 2,
         "expect": lambda: pixel_check_new([28, 88, [255, 255, 255]], mistake=3),
         "callback": lambda *args: sleep(.3),
     }
     E_POPUP_ERROR = {
-        "name": "Error popup",
+        "name": "ErrorPopup",
         "interval": 3,
         'blocking': False,
         "expect": lambda: bool(find_popup_error_detector()),
     }
     E_POPUP_CONNECTION_ERROR = {
-        "name": "No connection popup",
+        "name": "NoConnectionPopup",
         "interval": 300,
         "blocking": False,
         "expect": lambda: bool(find_popup_error_detector()),
         "callback": callback_retry,
     }
     E_POPUP_ATTENTION = {
-        'name': 'Attention popup',
+        'name': 'AttentionPopup',
         'interval': .5,
         'wait_limit': 2,
         'expect': lambda: bool(find_needle_popup_attention()),
     }
     E_BUTTON_BATTLE_START = {
-        "name": "Button battle start",
+        "name": "ButtonBattleStart",
         "interval": 1,
         "limit": 1,
         "blocking": False,
@@ -78,7 +77,7 @@ class Foundation:
         ),
     }
     E_NO_AURA_SKILL = {
-        "name": "No aura skill",
+        "name": "NoAuraSkill",
         "interval": 1,
         "limit": 1,
         "wait_limit": 3,
@@ -93,7 +92,7 @@ class Foundation:
         ),
     }
     E_SKIP_BATTLE = {
-        'name': 'Skip battle',
+        'name': 'SkipBattle',
         'interval': 900,
         'delay': 900,
         'blocking': False,
@@ -110,7 +109,7 @@ class Foundation:
 
     def awaits(self, events, interval=1):
         if self.stop:
-            return DUMMY_RESPONSE
+            return self.DUMMY_RESPONSE
 
         response = None
         counter = 0
@@ -191,7 +190,7 @@ class Foundation:
             # Manages list index
             counter = counter + 1 if counter < len(events) - 1 else 0
 
-        return response if response is not None else DUMMY_RESPONSE
+        return response if response is not None else self.DUMMY_RESPONSE
 
     def dungeons_continue_battle(self):
         # @TODO Duplication

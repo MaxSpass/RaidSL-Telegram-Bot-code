@@ -94,6 +94,7 @@ class ArenaLive(Location):
         "expect": lambda: pixels_every(
             same_pixels_line(cant_find_opponent_button_cancel), lambda p: pixel_check_new(p, mistake=5)
         ),
+        "blocking": False,
         "interval": 3,
     }
     E_OPPONENT_LEFT = {
@@ -150,9 +151,12 @@ class ArenaLive(Location):
         "blocking": False,
         "limit": 1,
     }
-
-    x_config = 600
-    y_config = 175
+    E_INDICATOR_ACTIVE = {
+        "name": "Indicator Active",
+        "limit": 1,
+        "wait_limit": 15,
+        "expect": find_indicator_active,
+    }
 
     def __init__(self, app, props=None):
         Location.__init__(self, name='Arena Live', app=app, report_predicate=self._report)
@@ -195,14 +199,14 @@ class ArenaLive(Location):
 
         click_on_progress_info()
         # live arena
-        click(self.x_config, self.y_config)
+        click(600, 175)
         sleep(3)
 
     def _run(self, props=None):
         if props is not None:
             self._apply_props(props=props)
 
-        if find_indicator_active() is not None:
+        def callback_starting(*args):
             self.log('Active')
             has_pool = bool(len(self.pool))
             if has_pool:
@@ -223,9 +227,14 @@ class ArenaLive(Location):
 
             else:
                 self.log("Terminated | The 'pool' property is NOT specified")
-        else:
+
+        E_INDICATOR_ACTIVE_WITH_CALLBACK = prepare_event(self.E_INDICATOR_ACTIVE, {
+            "callback": callback_starting
+        })
+
+        if self.awaits([E_INDICATOR_ACTIVE_WITH_CALLBACK])['name'] == self.EVENT_NOT_FOUND:
             self.log('NOT Active')
-            close_popup_recursive()
+
 
     def _apply_props(self, props):
         if 'pool' in props:
@@ -366,7 +375,7 @@ class ArenaLive(Location):
 
             return res
 
-        def force_stop(*args):
+        def callback_force_stop(*args):
             self.log("OPPONENT LEFT THE BATTLE")
             self.stop = True
             self._save_result(True)
@@ -379,13 +388,33 @@ class ArenaLive(Location):
                 if self.idle_after_defeat:
                     sleep(self.idle_after_defeat)
 
+        def callback_cant_find_opponent(*args):
+            _x = cant_find_opponent_button_cancel[0]
+            _y = cant_find_opponent_button_cancel[1]
+            click(_x, _y)
+            sleep(1)
+            self._click_on_find_opponent()
+
+        def callback_indicator_inactive(*args):
+            self.log('Inactive')
+            self.terminate = True
+            self.stop = True
+
+        E_CANT_FIND_OPPONENT_WITH_CALLBACK = prepare_event(self.E_CANT_FIND_OPPONENT, {
+            "callback": callback_cant_find_opponent
+        })
+
         E_OPPONENT_LEFT_WITH_CALLBACK = prepare_event(self.E_OPPONENT_LEFT, {
-            "callback": force_stop,
+            "callback": callback_force_stop,
         })
 
         def await_start_events():
             return self.awaits(
-                events=[self.E_PICK_FIRST, self.E_PICK_SECOND, self.E_CANT_FIND_OPPONENT],
+                events=[
+                    self.E_PICK_FIRST,
+                    self.E_PICK_SECOND,
+                    E_CANT_FIND_OPPONENT_WITH_CALLBACK
+                ],
                 interval=.1
             )
 
@@ -408,24 +437,26 @@ class ArenaLive(Location):
             return self.awaits(events=[self.E_BATTLE_START_LIVE, self.E_VICTORY, self.E_DEFEAT])
 
         start_events = await_start_events()
-        opponent_found = False
-        while not opponent_found and not self.terminate:
-            # for "can't find opponent" cases
-            if self.E_CANT_FIND_OPPONENT['name'] == start_events['name']:
-                x_find = cant_find_opponent_button_cancel[0]
-                y_find = cant_find_opponent_button_cancel[1]
-                click(x_find, y_find)
-                sleep(.5)
-                self._click_on_find_opponent()
-                start_events = await_start_events()
-            else:
-                self.log('Starts battle: ' + str(self.battles_counter))
-                opponent_found = True
+
+        # @TODO Refactor
+        # opponent_found = False
+        # while not opponent_found and not self.terminate:
+        #     # for "can't find opponent" cases
+        #     if E_CANT_FIND_OPPONENT_WITH_CALLBACK['name'] == start_events['name']:
+        #         x_find = cant_find_opponent_button_cancel[0]
+        #         y_find = cant_find_opponent_button_cancel[1]
+        #         click(x_find, y_find)
+        #         sleep(.5)
+        #         self._click_on_find_opponent()
+        #         start_events = await_start_events()
+        #     else:
+        #         self.log('Starts battle: ' + str(self.battles_counter))
+        #         opponent_found = True
 
         self.log(start_events['name'])
 
         pattern = ARCHIVE_PATTERN_FIRST[:]
-        if start_events['name'] == self.E_PICK_SECOND['name']:
+        if self.E_PICK_SECOND['name'] == start_events['name']:
             pattern.reverse()
 
         stage_1_events = await_stage_1()

@@ -221,14 +221,22 @@ class App(Foundation):
         self.read_config()
         self.commands = self.get_commands()
 
-        self.E_INDEX_PAGE = {
-            'name': "Burger menu",
+        self.INDEX_PAGE_DETECTED = {
+            'name': "Index+",
             'interval': 2,
-            'expect': lambda: bool(find_needle_burger()),
+            'expect': find_needle_burger,
+        }
+
+        self.INDEX_PAGE_NOT_DETECTED = {
+            'name': "Index-",
+            'interval': .5,
+            'blocking': False,
+            'expect': lambda: not find_needle_burger(),
+            'callback': lambda *args: close_popup()
         }
 
         self.E_TERMINATE_GAME = {
-            'name': "Terminate Game",
+            'name': "TerminateGame",
             'interval': 120,
             'delay': 120,
             'limit': 1,
@@ -238,7 +246,7 @@ class App(Foundation):
         }
 
         self.E_TERMINATE_ALL = {
-            'name': "Terminate All",
+            'name': "TerminateAll",
             'interval': 300,
             'delay': 300,
             'limit': 1,
@@ -253,7 +261,7 @@ class App(Foundation):
             "expect": lambda: expect_relogin(lang=self.config['lang']) if self.config['lang'] else is_logged_out(),
             "callback": lambda *args: click_detected_button(*args) if self.config['lang'] else click(350, 294)
         })
-
+        
     def get_commands(self):
         return {
             'restart': {
@@ -292,10 +300,15 @@ class App(Foundation):
         }
 
     def _screenshot(self, upd, ctx):
-        if not bool(self.window):
-            self.prepare()
+        # @TODO Bug
+        # if not bool(self.window):
+        #     self.prepare()
 
-        return ctx.bot.send_photo(chat_id=upd.message.chat_id, photo=self.screen())
+        if bool(self.window):
+            return ctx.bot.send_photo(chat_id=upd.message.chat_id, photo=self.screen())
+        else:
+            upd.message.reply_text('No window found')
+            return False
 
     def _prepare_config(self, config_json):
         _config = {
@@ -433,7 +446,8 @@ class App(Foundation):
 
         self.awaits(events=[
             self.E_POPUP_RELOGIN_ERROR,
-            self.E_INDEX_PAGE,
+            self.INDEX_PAGE_DETECTED,
+            self.INDEX_PAGE_NOT_DETECTED,
             self.E_TERMINATE_GAME,
             self.E_TERMINATE_ALL,
         ])
@@ -615,7 +629,7 @@ class App(Foundation):
         if predicate is not None:
             predicate()
 
-        self.awaits([self.E_INDEX_PAGE])
+        self.awaits([self.INDEX_PAGE_DETECTED, self.INDEX_PAGE_NOT_DETECTED])
 
         self.window_axis = calibrate_window(self.window_axis)
         print('window_axis', self.window_axis)
@@ -664,41 +678,3 @@ class App(Foundation):
             self.scheduler.add_job(predicate, 'cron', hour=tf.hour, minute=tf.minute, second=tf.second)
 
         self.scheduler.start()
-
-    # def run(self):
-    #     self.prepare()
-    #     _dungeons = []
-    #
-    #     log('Executing automatic scenarios...')
-    #     start_time = datetime.now()
-    #
-    #     # Looping: Tasks List
-    #     for i in range(len(self.config['tasks'])):
-    #         task = self.config['tasks'][i]
-    #         task_name = task['task'].lower()
-    #         log('BOT is starting the TASK: ' + task_name.upper())
-    #
-    #         # Run instance
-    #         instance_task = self.get_entry(task_name)['instance']
-    #         instance_task.run()
-    #
-    #         # Looping: After Each List
-    #         if 'after_each' in self.config:
-    #             for j in range(len(self.config['after_each'])):
-    #                 # After Each Item
-    #                 aei = self.config['after_each'][j]
-    #                 aei_name = aei.lower()
-    #
-    #                 log('BOT is starting the "after_each" action: ' + aei_name.upper())
-    #
-    #                 instance_after_each = self.get_entry(aei_name)['instance']
-    #                 instance_after_each.run()
-    #
-    #     self.report()
-    #
-    #     duration = 'Duration: {}'.format(datetime.now() - start_time)
-    #     log('All scenarios are done!')
-    #
-    #     # self.kill()
-    #
-    #     return duration
