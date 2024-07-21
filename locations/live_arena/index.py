@@ -90,7 +90,7 @@ rewards_pixels = [
 
 class ArenaLive(Location):
     E_CANT_FIND_OPPONENT = {
-        "name": "Can't find an opponent",
+        "name": "Can'tFindAnOpponent",
         "expect": lambda: pixels_every(
             same_pixels_line(cant_find_opponent_button_cancel), lambda p: pixel_check_new(p, mistake=5)
         ),
@@ -98,16 +98,16 @@ class ArenaLive(Location):
         "interval": 3,
     }
     E_OPPONENT_LEFT = {
-        "name": "Opponent left the battle",
+        "name": "OpponentLeftTheBattle",
         "expect": lambda: bool(find_victory_opponent_left()),
         "interval": .5,
     }
     E_PICK_FIRST = {
-        "name": "Pick first",
+        "name": "PickFirst",
         "expect": lambda: pixel_check_new(first, mistake=5),
     }
     E_PICK_SECOND = {
-        "name": "Pick second",
+        "name": "PickSecond",
         "expect": lambda: pixel_check_new(second, mistake=5),
     }
     E_VICTORY = {
@@ -120,42 +120,48 @@ class ArenaLive(Location):
     }
 
     E_STAGE_1 = {
-        "name": "Stage 1 | Picking characters",
+        "name": "Stage 1 | PickingCharacters",
         "expect": lambda: pixel_check_new(stage_1, mistake=10),
         "interval": 2,
     }
     E_PICKING_PROCESS = {
-        "name": "Picking characters process",
+        "name": "PickingCharactersProcess",
         "expect": lambda: pixel_check_new(first, mistake=10),
         "interval": 2,
     }
     E_STAGE_2 = {
-        "name": "Stage 2 | Ban hero",
+        "name": "Stage 2 | BanHero",
         "expect": lambda: pixel_check_new(stage_2, mistake=10),
         "interval": 2,
     }
     E_STAGE_3 = {
-        "name": "Stage 3 | Choosing leader",
+        "name": "Stage 3 | ChoosingLeader",
         "expect": lambda: pixel_check_new(stage_3, mistake=10),
         "interval": 2,
     }
     E_CHOOSING_LEADER = {
-        "name": "Choosing leader process",
+        "name": "ChoosingLeaderProcess",
         "expect": lambda: pixel_check_new(first, mistake=10),
         "interval": 2,
     }
     E_BATTLE_START_LIVE = {
-        "name": "Battle start Live",
+        "name": "BattleStartLive",
         "expect": lambda: pixel_check_new(battle_start_turn, mistake=20),
         "callback": enable_auto_play,
         "blocking": False,
         "limit": 1,
     }
     E_INDICATOR_ACTIVE = {
-        "name": "Indicator Active",
+        "name": "IndicatorActive",
+        "expect": find_indicator_active,
         "limit": 1,
         "wait_limit": 15,
-        "expect": find_indicator_active,
+    }
+    E_INDICATOR_INACTIVE = {
+        "name": "IndicatorInactive",
+        "expect": find_indicator_inactive,
+        "limit": 1,
+        "interval": 10,
     }
 
     def __init__(self, app, props=None):
@@ -408,12 +414,17 @@ class ArenaLive(Location):
             "callback": callback_force_stop,
         })
 
+        E_INDICATOR_INACTIVE_WITH_CALLBACK = prepare_event(self.E_INDICATOR_INACTIVE, {
+            "callback": callback_indicator_inactive
+        })
+
         def await_start_events():
             return self.awaits(
                 events=[
                     self.E_PICK_FIRST,
                     self.E_PICK_SECOND,
-                    E_CANT_FIND_OPPONENT_WITH_CALLBACK
+                    E_CANT_FIND_OPPONENT_WITH_CALLBACK,
+                    E_INDICATOR_INACTIVE_WITH_CALLBACK,
                 ],
                 interval=.1
             )

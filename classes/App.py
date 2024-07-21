@@ -89,7 +89,7 @@ def get_game_windows():
     return get_windows(GAME_WINDOW)
 
 
-def resize_window():
+def resize_window(x_move=0, y_move=0):
     win = None
     wins = get_game_windows()
     if len(wins):
@@ -97,7 +97,7 @@ def resize_window():
         win.activate()
         time.sleep(.5)
         win.resizeTo(WINDOW_SIZE[0], WINDOW_SIZE[1])
-        win.moveTo(0, 0)
+        win.moveTo(int(x_move), int(y_move))
         time.sleep(.5)
     else:
         log("No RAID window found")
@@ -117,6 +117,7 @@ def calibrate_window(window_axis=None):
         close_popup_recursive()
 
         if window_axis is not None:
+            print('window_axis', window_axis)
             x = window_axis['x']
             y = window_axis['y']
         else:
@@ -279,7 +280,7 @@ class App(Foundation):
             },
             'prepare': {
                 'description': 'Prepares the Game window',
-                'handler': self.task('prepare', self.prepare, task_type='aside'),
+                'handler': self.task('prepare', lambda *args: self.prepare(calibrate=False), task_type='sync'),
             },
             'screen': {
                 'description': 'Capture and send a screenshot',
@@ -623,16 +624,22 @@ class App(Foundation):
         else:
             return "No 'game_path' provided field in the config"
 
-    def prepare(self, *args, predicate=None):
-        self.window = resize_window()
+    def prepare(self, predicate=None, calibrate=True):
+        x_move = self.window_axis['x'] if self.window_axis and 'x' in self.window_axis else 0
+        y_move = self.window_axis['y'] if self.window_axis and 'y' in self.window_axis else 0
+        self.window = resize_window(x_move=x_move, y_move=y_move)
 
         if predicate is not None:
             predicate()
 
-        self.awaits([self.INDEX_PAGE_DETECTED, self.INDEX_PAGE_NOT_DETECTED])
+        self.awaits([
+            self.E_POPUP_RELOGIN_ERROR,
+            self.INDEX_PAGE_DETECTED,
+            self.INDEX_PAGE_NOT_DETECTED
+        ])
 
-        self.window_axis = calibrate_window(self.window_axis)
-        print('window_axis', self.window_axis)
+        if calibrate:
+            self.window_axis = calibrate_window(self.window_axis)
 
     def get_entry(self, command_name):
         return self.entries[command_name] \

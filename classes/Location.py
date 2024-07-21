@@ -97,7 +97,7 @@ class Location(Foundation):
         return '\n'.join(report_list)
 
     def enter(self):
-        close_popup_recursive()
+        self.app.prepare(calibrate=False)
         self.event_dispatcher.publish('enter')
 
     def finish(self):

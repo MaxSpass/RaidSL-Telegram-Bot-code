@@ -874,8 +874,13 @@ def find_button(variant, size='big', region=None, return_boxes=False):
 
 
 def find_indicator_active():
-    region = [260, 390, 120, 60]
+    region = [250, 360, 150, 100]
     return find_needle('live_arena/indicator_active.jpg', confidence=.6, region=region)
+
+
+def find_indicator_inactive():
+    region = [250, 360, 150, 100]
+    return find_needle('live_arena/indicator_inactive.jpg', confidence=.6, region=region)
 
 
 def find_victory_opponent_left(region=None):
@@ -1144,8 +1149,11 @@ def read_text(
     if lang is None:
         lang = 'eng'
 
-    if not update_screenshot:
-        screenshot = pyautogui.screenshot(region=region)
+    try:
+        if not update_screenshot:
+            screenshot = pyautogui.screenshot(region=region)
+    except ValueError:
+        log_save(str(region))
 
     for i in range(len(configs)):
         if update_screenshot:
