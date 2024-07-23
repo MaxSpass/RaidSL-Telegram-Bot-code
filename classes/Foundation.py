@@ -7,6 +7,8 @@ RGB_SECONDARY = [22, 124, 156]
 P_BUTTON_BATTLE_START = [850, 475, RGB_PRIMARY]
 P_POPUP_BUTTON_SECONDARY_LEFT = [270, 310, RGB_SECONDARY]
 P_POPUP_BUTTON_SECONDARY_RIGHT = [480, 310, RGB_SECONDARY]
+P_STAGE_ENTER = [890, 200, [93, 25, 27]]
+P_START_ON_AUTO = [710, 410, [108, 237, 255]]
 
 def callback_retry(*args):
     log('Trying to reconnect...')
@@ -72,8 +74,7 @@ class Foundation:
         "expect": lambda: pixel_check_new(P_BUTTON_BATTLE_START, mistake=10),
         "callback": lambda *args: click(
             x=P_BUTTON_BATTLE_START[0],
-            y=P_BUTTON_BATTLE_START[1],
-            smart=True
+            y=P_BUTTON_BATTLE_START[1]
         ),
     }
     E_NO_AURA_SKILL = {
@@ -96,8 +97,22 @@ class Foundation:
         'interval': 900,
         'delay': 900,
         'blocking': False,
-        'expect': lambda: bool(detect_pause_button()),
+        'expect': detect_pause_button,
         'callback': skip_battle_arena
+    }
+    E_AUTO_PLAY_ENABLE = {
+        'name': 'AutoPlayEnable',
+        'expect': lambda: pixel_check_new(P_STAGE_ENTER, mistake=10) and not pixel_check_new(P_START_ON_AUTO, mistake=10),
+        'interval': .5,
+        'wait_limit': 1,
+        'limit': 1,
+        'callback': lambda *args: click(P_START_ON_AUTO[0], P_START_ON_AUTO[1])
+    }
+    E_PAUSE_ICON_DETECTED = {
+        'name': 'PauseIconDetected',
+        'expect': detect_pause_button,
+        'interval': 2,
+        'limit': 1,
     }
 
     def __init__(self, name, events=None):
@@ -193,14 +208,11 @@ class Foundation:
         return response if response is not None else self.DUMMY_RESPONSE
 
     def dungeons_continue_battle(self):
-        # @TODO Duplication
-        STAGE_ENTER = [890, 200, [93, 25, 27]]
-
         # @TODO In progress
         # self.awaits([self.E_POPUP_ATTENTION])
 
         def _continue():
-            if pixel_check_new(STAGE_ENTER, mistake=10):
+            if pixel_check_new(P_STAGE_ENTER, mistake=10):
                 self.awaits([self.E_BUTTON_BATTLE_START, self.E_NO_AURA_SKILL])
             else:
                 dungeons_replay()

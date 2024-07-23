@@ -50,7 +50,12 @@ class HeroPreset():
             PRESET_CHECKBOX_LOCKED_SIZE
         ]
 
-        return dominant_color_hue(region=region, rank=1)
+        # checks is already blocked
+        if not find_team_preset_locked(region=region):
+            return dominant_color_hue(region=region, rank=1)
+
+        log('Team Preset is already locked')
+        return False
 
     def open(self):
         # avoid sudden notification in this area

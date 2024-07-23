@@ -73,6 +73,10 @@ DEFAULT_ACCEPT_DAMAGE = 0
 DEFAULT_PRIORITY = {'head_of_decay': 2, 'head_of_blight': 1}
 DEFAULT_RUNS_LIMIT = 2
 DEFAULT_RUNS_LIMIT_MAX = 10
+HYDRA_TEAM_SLOTS = [
+    [125, 125], [205, 125], [285, 125],
+    [125, 235], [205, 235], [285, 235],
+]
 
 button_battle = [860, 460, [187, 130, 5]]
 button_start = [860, 460, [187, 130, 5]]
@@ -104,6 +108,20 @@ class Hydra(Location):
 
         self.event_dispatcher.subscribe('enter', self._enter)
         self.event_dispatcher.subscribe('run', self._run)
+
+        self.E_SCREEN_ALL_HYDRA = {
+            'name': "AllHydras",
+            'interval': 2,
+            'expect': lambda: pixel_check_new(screen_all_hydra, mistake=10),
+        }
+        self.E_SCREEN_CERTAIN_HYDRA = {
+            'name': "CertainHydra",
+            'interval': 2,
+            'expect': lambda: pixel_check_new(screen_certain_hydra, mistake=10)
+        }
+        self.E_PAUSE_ICON_DETECTED_WITH_CALLBACK = prepare_event(self.E_PAUSE_ICON_DETECTED, {
+            'callback': lambda *args: self.scan()
+        })
 
     def _report(self):
         res_list = []
@@ -326,7 +344,8 @@ class Hydra(Location):
         if 'team_preset' in run:
             self.current['team_preset'] = int(run['team_preset'])
         if 'min_damage' in run:
-            self.current['min_damage'] = int(run['min_damage'])
+            min_dmg_for_last_reward = HYDRA_LOCATIONS[self.current['stage']]['min_damage']
+            self.current['min_damage'] = int(run['min_damage']) if 'min_damage' in run else min_dmg_for_last_reward
         if 'priority' in run:
             self.current['priority'] = run['priority']
 
@@ -422,8 +441,49 @@ class Hydra(Location):
         sleep(5)
 
     def attack(self):
-        def hydra_enter(data):
-            self.log('Internal method called - hydra_enter')
+        # E_SCREEN_ALL_HYDRA_WITH_CALLBACK_1 = prepare_event(self.E_SCREEN_ALL_HYDRA, {
+        #     'callback': callback_terminate
+        # })
+        #
+        # E_SCREEN_CERTAIN_HYDRA_WITH_CALLBACK_1 = prepare_event(self.E_SCREEN_CERTAIN_HYDRA, {
+        #     'callback': callback_screen_certain_hydra_1
+        # })
+        #
+        # E_SCREEN_CERTAIN_HYDRA_WITH_CALLBACK_2 = prepare_event(self.E_SCREEN_CERTAIN_HYDRA, {
+        #     'callback': callback_screen_certain_hydra_2
+        # })
+
+        is_picked = is_team_provided(HYDRA_TEAM_SLOTS)
+
+        def callback_terminate(*args):
+            self.log('callback_terminate')
+            self.terminate = True
+            self.stop = True
+
+        def callback_screen_certain_hydra_1(*args):
+            self.log('callback_screen_certain_hydra_1')
+            global is_picked
+
+            if 'team_preset' in self.current:
+                is_picked = hero_preset.choose(self.current['team_preset'])
+
+            if is_picked:
+                self.awaits([self.E_AUTO_PLAY_ENABLE])
+                self.awaits([self.E_BUTTON_BATTLE_START])
+                self.awaits([self.E_PAUSE_ICON_DETECTED_WITH_CALLBACK])
+            else:
+                callback_terminate()
+                # self.terminate = True
+
+        def callback_screen_certain_hydra_2(*args):
+            self.log('callback_screen_certain_hydra_2')
+            if is_picked:
+                self.log("Checking hydra screen after each iteration")
+                close_popup()
+
+        def callback_screen_all_hydra_1(*args):
+            self.log('callback_screen_all_hydra_1')
+            data = HYDRA_LOCATIONS[self.current['stage']]
             swipes = data['swipes']
             x = data['x']
             y = data['y']
@@ -433,38 +493,18 @@ class Hydra(Location):
 
             click(x, y)
 
-            await_click([button_battle], timeout=1, mistake=10)
+            self.awaits([
+                prepare_event(self.E_SCREEN_ALL_HYDRA, {
+                    'callback': callback_terminate,
+                }),
+                prepare_event(self.E_BUTTON_BATTLE_START, {
+                    'delay': 3,
+                })
+            ])
 
             # @TODO Skip not started clash
-            if True:
-                await_click([clash_not_started], timeout=1, mistake=10, wait_limit=2)
-
-        def hydra_start():
-            # True is by default, because team_preset is optional
-            is_picked = True
-
-            while self._while_stage_available():
-                self.log('Internal method called - hydra_start')
-                # skips then logic, when all_hydra_screen appears
-                is_certain = self._certain_hydra_or_all_hydra_screens()[0]
-                if is_certain:
-                    if 'team_preset' in self.current:
-                        is_picked = hero_preset.choose(self.current['team_preset'])
-
-                    if is_picked:
-                        if not pixel_check_new(start_on_auto, mistake=10):
-                            click(start_on_auto[0], start_on_auto[1])
-
-                        await_click([button_start], timeout=1, mistake=10)
-
-                        if pixels_wait([BUTTON_PAUSE_ICON], timeout=2, mistake=10, msg='Pause icon', wait_limit=100)[0]:
-                            self.log('Battle just started')
-                            self.scan()
-
-            # depending on the case: saved damage/regroup the team
-            if self._certain_hydra_or_all_hydra_screens()[0] and is_picked:
-                self.log("Checking hydra screen after each iteration")
-                close_popup()
+            # if True:
+            #     await_click([clash_not_started], timeout=1, mistake=10, wait_limit=2)
 
         for i in range(len(self.runs)):
             if self.terminate:
@@ -475,21 +515,36 @@ class Hydra(Location):
 
             self.current = self._prepare_run_props(self.runs[i])
             stage = self.current['stage']
-            # team_preset = self.current['team_preset']
-
-            # damage = self.results[stage]['damage']
-            # keys = self.results[stage]['keys']
 
             if stage in HYDRA_LOCATIONS:
                 if self.terminate:
                     break
 
-                screens = self._certain_hydra_or_all_hydra_screens()
+                self.awaits([
+                    prepare_event(self.E_SCREEN_ALL_HYDRA, {
+                        'callback': callback_screen_all_hydra_1
+                    })
+                ])
 
-                if screens[0]:
-                    self.log('All Hydra')
-                elif screens[1]:
-                    self.log('Certain Hydra')
-                    hydra_enter(HYDRA_LOCATIONS[stage])
+                # True is by default, because team_preset is optional
+                # is_picked = True
 
-                hydra_start()
+                while self._while_stage_available():
+                    self.log('Internal method called - hydra_start')
+                    # skips then logic, when all_hydra_screen appears
+
+                    self.awaits([
+                        prepare_event(self.E_SCREEN_ALL_HYDRA, {
+                            'callback': callback_terminate
+                        }),
+                        prepare_event(self.E_SCREEN_CERTAIN_HYDRA, {
+                            'callback': callback_screen_certain_hydra_1
+                        }),
+                    ])
+
+                # depending on the case: saved damage/regroup the team
+                self.awaits([
+                    prepare_event(self.E_SCREEN_CERTAIN_HYDRA, {
+                        'callback': callback_screen_certain_hydra_2
+                    })
+                ])

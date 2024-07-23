@@ -901,6 +901,18 @@ def find_needle_popup_attention(region=None):
     return find_needle('popups/popup_attention.jpg', region)
 
 
+def find_team_preset_checked(region):
+    return find_needle('team_preset_checked.jpg',  region, confidence=.9)
+
+
+def find_team_preset_disabled(region):
+    return find_needle('team_preset_disabled.jpg',  region, confidence=.9)
+
+
+def find_team_preset_locked(region):
+    return find_needle('team_preset_locked.jpg',  region)
+
+
 def battles_click():
     battle_button = find_needle_battles()
     if battle_button is not None:
@@ -1601,3 +1613,10 @@ def click_detected_button(button):
     x = button['region'][0]
     y = button['region'][1]
     click(x, y, random_click=10, smart=True)
+
+
+def is_team_provided(array):
+    # array = [[1, 2], [3, 4]]
+    RGB_NO_TEAM_PROVIDED = [49, 54, 49]
+    list_axis = list(map(lambda a: a + [RGB_NO_TEAM_PROVIDED], array))
+    return pixels_every(list_axis, lambda p: not pixel_check_new(p))

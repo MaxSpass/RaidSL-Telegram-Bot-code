@@ -226,6 +226,7 @@ class App(Foundation):
             'name': "Index+",
             'interval': 2,
             'expect': find_needle_burger,
+            'callback': lambda *args: close_popup_recursive(timeout=2.5)
         }
 
         self.INDEX_PAGE_NOT_DETECTED = {

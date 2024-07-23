@@ -127,7 +127,7 @@ class FactionWars(Location):
                 if available:
                     self.log(f"Crypt is available: {_name}")
 
-                    await_click([pixel], mistake=10)
+                    await_click([pixel], mistake=20)
                     sleep(1)
 
                     stage_lvl = self._get_stage_by_id(_id)
