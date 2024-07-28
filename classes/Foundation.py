@@ -20,7 +20,6 @@ def callback_retry(*args):
 
 def skip_battle_arena(*args):
     log('Long battle detected')
-    debug_save_screenshot(suffix_name='Long battle detected')
     # @TODO Duplicate
     BUTTON_PAUSE_ICON = [866, 66, [216, 206, 156]]
     if await_click([BUTTON_PAUSE_ICON], mistake=5)[0]:
@@ -51,24 +50,24 @@ class Foundation:
         "name": "ErrorPopup",
         "interval": 3,
         'blocking': False,
-        "expect": lambda: bool(find_popup_error_detector()),
+        "expect": find_popup_error_detector,
     }
     E_POPUP_CONNECTION_ERROR = {
         "name": "NoConnectionPopup",
         "interval": 300,
         "blocking": False,
-        "expect": lambda: bool(find_popup_error_detector()),
+        "expect": find_popup_error_detector,
         "callback": callback_retry,
     }
     E_POPUP_ATTENTION = {
         'name': 'AttentionPopup',
         'interval': .5,
         'wait_limit': 2,
-        'expect': lambda: bool(find_needle_popup_attention()),
+        'expect': find_needle_popup_attention,
     }
     E_BUTTON_BATTLE_START = {
         "name": "ButtonBattleStart",
-        "interval": 1,
+        "interval": .5,
         "limit": 1,
         "blocking": False,
         "expect": lambda: pixel_check_new(P_BUTTON_BATTLE_START, mistake=10),
@@ -117,13 +116,13 @@ class Foundation:
 
     def __init__(self, name, events=None):
         self.name = name
-        self.stop = False
+        self.stop_awaits = False
 
     def log(self, msg):
         log(f'{self.name} | {msg}')
 
-    def awaits(self, events, interval=1):
-        if self.stop:
+    def awaits(self, events, interval=1, delay=1):
+        if self.stop_awaits:
             return self.DUMMY_RESPONSE
 
         response = None
@@ -137,6 +136,8 @@ class Foundation:
 
         start_call_time = datetime.now()
         current_time = None
+
+        sleep(delay)
 
         def _check_limit(e):
             name = e['name']
@@ -162,7 +163,7 @@ class Foundation:
                 if 'delay' in e \
                 else True
 
-        while response is None and not self.stop:
+        while response is None and not self.stop_awaits:
             _e = events[counter]
             current_time = datetime.now()
 
@@ -181,11 +182,11 @@ class Foundation:
 
                     # Call the function and update last call time
                     time_tracker[_name] = datetime.now()
-                    # print(_name)
 
                     res = _expect()
                     if bool(res):
                         log(f'Event occurred: {_name}')
+                        # print(_name, bool(res))
 
                         if _blocking:
                             response = {"name": _name, "data": res}

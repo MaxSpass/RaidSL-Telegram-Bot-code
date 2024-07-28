@@ -164,7 +164,7 @@ class Quests(Location):
 
         if len(self.quests_ids):
             for quest_id in self.quests_ids:
-                if self.terminate:
+                if self.terminated:
                     break
 
                 self.handle_quest(quest_id)

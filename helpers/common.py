@@ -723,7 +723,9 @@ def find_needle(
         scaled_image = cv2.resize(physical_image, (width, height))
         path_image = scaled_image
 
-    # show_pyautogui_image(path_image)
+    # For test
+    # show_pyautogui_image(pyautogui.screenshot(region=region))
+
     def _find_needles():
         return capture_by_source(path_image, region, confidence=confidence, return_boxes=return_boxes, flip=flip)
 
@@ -851,8 +853,8 @@ def find_hero_filter_small(region=None, confidence=.7, retries=None):
     return find_needle('filter_small.png', region=region, confidence=confidence, retries=retries)
 
 
-def find_hero_slot_active(region):
-    return find_needle('hero_slot_active.jpg', region=region, confidence=.65, retries=2)
+def find_hero_slot_empty(region):
+    return find_needle('hero_slot_empty.jpg', region=region, confidence=.65, retries=2)
 
 
 def find_popup_error_detector():
@@ -923,7 +925,7 @@ def battles_click():
         log('Battle button is not found')
 
 
-def close_popup():
+def close_popup(*args):
     close_popup_button = find_needle_close_popup()
     if close_popup_button is not None:
         x = close_popup_button[0]
@@ -944,7 +946,7 @@ def close_popup():
     return [close_popup_button, special_offer_button]
 
 
-def close_popup_recursive(timeout=2, delay=1):
+def close_popup_recursive(*args, timeout=2, delay=1):
     def _check():
         res = close_popup()
         return res[0] is not None or res[1]
@@ -1066,6 +1068,8 @@ def parse_dealt_damage(variants):
                     int_damage = int_damage / 1000
                 elif multiplier == 'B':
                     int_damage = int_damage * 1000
+                elif multiplier == 'M':
+                    int_damage = int_damage
         except Exception:
             error = traceback.format_exc()
             log_save(error)

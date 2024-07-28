@@ -6,7 +6,8 @@ from classes.Foundation import *
 from locations.dungeons.index import *
 # from locations.hero_filter.index import *
 # from locations.quests.index import QUEST_DAILY_DATA
-# from locations.test.index import *
+# from locations.hydra.index import *
+from locations.live_arena.index import *
 # from telegram.ext import CommandHandler
 # import pyautogui
 # import os.path
@@ -19,7 +20,6 @@ from locations.dungeons.index import *
 # from locations.faction_wars.index import *
 # from locations.hero_preset.index import HeroPreset
 # from locations.doom_tower.index import *
-# from in_progress import *
 # from apscheduler.schedulers.background import BackgroundScheduler
 # from datetime import datetime
 # import pytz
@@ -102,6 +102,40 @@ def schedule(seconds, predicate=None):
 
 
 def main():
+    # debug_save_screenshot(region=[0, 0, 920, 530], quality=100)
+    # return
+
+    # live_arena = ArenaLive(app=None)
+    #
+    # live_arena.awaits([
+    #     live_arena.E_FILLED_HERO_SLOT
+    # ])
+    # print('Done')
+    # return
+
+
+    # print(find_victory_opponent_left())
+    # return
+
+    # # foundation.awaits([
+    # #     hydra.E_SCREEN_ALL_HYDRA
+    # # ])
+    # print('occurred')
+    # return
+
+
+    # print(find_indicator_active())
+    # return
+
+    # hero_preset = HeroPreset()
+    # hero_preset.choose(1)
+
+    # print(pixel_check_new(start_on_auto, mistake=10))
+    # return
+    # debug_save_screenshot(region=[34, 483, 25, 25], quality=100)
+    # print(find_indicator_inactive())
+    # return
+
     # foundation = Foundation(name='test')
     # foundation.dungeons_continue_battle()
     # return
@@ -113,7 +147,36 @@ def main():
     # debug_save_screenshot(region=[667, 227, 20, 20], quality=100)
     # return
 
-    # buttons = detect_buttons_new()
+    # f = Foundation(name='Test')
+    # f.awaits([f.E_AUTO_PLAY_ENABLE])
+    # print('done')
+    # return
+
+    # buttons = detect_buttons_new(lang=None)
+    # # hardcode
+    # required_button = find_detected_button({'text': 're-log in'}, buttons)
+    # if required_button:
+    #     print('required_button', required_button)
+    #     # click_detected_button(required_button)
+
+    # def expect():
+    #     return find_detected_button({'text': 're-log in'}, detect_buttons_new(lang=None))
+    #
+    # f.awaits([{
+    #     "name": "test",
+    #     "expect": lambda: expect(),
+    #     "callback": lambda res: print(res)
+    # }])
+
+    # response = f.awaits([{
+    #     "name": "test",
+    #     "expect": lambda: find_popup_error_detector(),
+    #     "callback": lambda res: print(res)
+    # }])
+    #
+    # print('response', response)
+    # return
+
     # if len(buttons):
     #     print('***BUTTONS***')
     #     for i in range(len(buttons)):
@@ -152,8 +215,6 @@ def main():
 
     # print(find_doom_tower_next_floor_regular())
     # disable_auto_climb()
-
-    # debug_save_screenshot(region=[698, 37, 22, 22], quality=100)
 
     # for i in range(6):
     #     # Arena classic
@@ -270,7 +331,9 @@ def main():
         try:
             if app.config['start_immediate']:
                 app.start()
-                # app.get_instance('daily_quests').daily_quest_1()
+                # print('App is started')
+                # sleep(5)
+                # app.get_instance('arena_live').attack()
 
                 # print('BackgroundScheduler')
                 # scheduler = BackgroundScheduler()

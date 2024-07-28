@@ -39,7 +39,6 @@ class ArenaFactory(Location):
     max_swipe = None
     refill = None
     results = None
-    terminate = None
 
     def __init__(
             self,
@@ -119,12 +118,12 @@ class ArenaFactory(Location):
             # @TODO Test
             sleep(1)
 
-        while self.terminate is False:
+        while self.terminated is False:
             self.attack()
 
             last_results = self._get_last_results()
 
-            if self.terminate is False:
+            if self.terminated is False:
                 # at least one 'Defeat' or continued battles - should refresh
                 if last_results.count(False) > 0 or len(last_results) < OUTPUT_ITEMS_AMOUNT:
                     self._refresh_arena()
@@ -147,15 +146,6 @@ class ArenaFactory(Location):
             self._refill()
 
         self.awaits([self.E_BUTTON_REFRESH, self.E_TERMINATE])
-        # if not self.terminate:
-        #     self.log('Refreshing...')
-        #     await_click([button_refresh], msg='Refresh button', mistake=10)
-        #     sleep(3)
-        #
-        #     for index in range(2):
-        #         swipe_new('top', 560, 200, 300, speed=.2, instant_move=True)
-        #
-        #     sleep(2)
 
     def _refill(self):
         refilled = False
@@ -175,7 +165,7 @@ class ArenaFactory(Location):
                 refilled = True
             else:
                 self.log('No more refill')
-                self.terminate = True
+                self.terminated = True
         elif pixels_wait([refill_free], msg='Free refill sacs', mistake=10, timeout=1, wait_limit=2)[0]:
             self.log('Free coins are available')
             click_on_refill()
@@ -232,7 +222,7 @@ class ArenaFactory(Location):
                 swipe_new('bottom', 580, 254, self.item_height, speed=.5)
 
         for i in range(len(self.item_locations)):
-            if self.terminate:
+            if self.terminated:
                 break
 
             el = self.item_locations[i]
@@ -260,7 +250,7 @@ class ArenaFactory(Location):
                 if self._refill():
                     click_on_battle()
 
-                if self.terminate:
+                if self.terminated:
                     self.log('Terminated')
                     break
 

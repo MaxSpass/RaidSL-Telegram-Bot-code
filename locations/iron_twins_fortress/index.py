@@ -52,12 +52,12 @@ class IronTwins(Location):
 
         if ruby_button is not None:
             # self.completed = True
-            self.terminate = True
+            self.terminated = True
             self.completed = True
             close_popup()
 
     def _is_available(self):
-        return self.results.count(True) < self.keys or dungeons_is_able() and not self.terminate
+        return self.results.count(True) < self.keys or dungeons_is_able() and not self.terminated
 
     def _apply_props(self, props=None):
         if props:
@@ -66,7 +66,7 @@ class IronTwins(Location):
 
     def attack(self):
         self._check_refill()
-        if self.terminate:
+        if self.terminated:
             self.log('Terminated')
             return
 
@@ -74,7 +74,7 @@ class IronTwins(Location):
             dungeons_continue_battle()
 
             self._check_refill()
-            if self.terminate:
+            if self.terminated:
                 self.log('Terminated')
                 break
 
@@ -85,5 +85,5 @@ class IronTwins(Location):
             self.completed = self.results.count(True) >= self.keys
 
         # @TODO Test
-        if not self.terminate:
+        if not self.terminated:
             dungeons_click_stage_select()

@@ -65,7 +65,7 @@ class DoomTower(Location):
                 self.attack()
 
     def _can_continue(self):
-        return self.keys_golden > 0 or self.keys_silver > 1 and not self.terminate
+        return self.keys_golden > 0 or self.keys_silver > 1 and not self.terminated
 
     def _wait_stage_enter(self):
         return pixels_wait([self.STAGE_ENTER], msg='Stage enter', timeout=1, mistake=10, wait_limit=3)[0]
@@ -74,7 +74,7 @@ class DoomTower(Location):
         counter = 0
         needle_position = None
         sleep(1.5)
-        while counter < limit and not self.terminate:
+        while counter < limit and not self.terminated:
             if find_doom_tower_edge_top():
                 break
             elif needle_predicate:
@@ -91,7 +91,7 @@ class DoomTower(Location):
         counter = 0
         needle_position = None
         sleep(1.5)
-        while counter < limit and not self.terminate:
+        while counter < limit and not self.terminated:
             if find_doom_tower_edge_bottom():
                 break
             elif needle_predicate:
@@ -128,7 +128,7 @@ class DoomTower(Location):
     def find_boss_position(self):
         position = None
         for i in range(len(self.bosses)):
-            if self.terminate:
+            if self.terminated:
                 break
 
             id_boss = self.bosses[i]
@@ -163,7 +163,7 @@ class DoomTower(Location):
                 counter = 1
 
                 if cost and self.keys_golden:
-                    while self.keys_golden >= cost and not self.terminate:
+                    while self.keys_golden >= cost and not self.terminated:
                         if not self.FAKE_BATTLE:
                             dungeons_start()
                             self.waiting_battle_end_regular(f"Regular Floor Battle: {str(counter)}")
@@ -204,7 +204,7 @@ class DoomTower(Location):
 
                 self.log(f"Cost: {str(cost)}")
                 if cost and self.keys_silver:
-                    while self.keys_silver >= cost and not self.terminate:
+                    while self.keys_silver >= cost and not self.terminated:
                         if not self.FAKE_BATTLE:
                             dungeons_continue_battle()
                             self.waiting_battle_end_regular(f"Boss Floor Battle: {str(counter)}")
@@ -238,7 +238,7 @@ class DoomTower(Location):
 
         # Using Golden Keys
         for j in range(len(iterations_data)):
-            if self.terminate:
+            if self.terminated:
                 break
 
             if self.keys_golden > 0:
@@ -254,7 +254,7 @@ class DoomTower(Location):
             self.swipe_top(needle_predicate=find_doom_tower_locked_floor)
             position_boss = None
             for i in range(len(self.bosses)):
-                if self.terminate:
+                if self.terminated:
                     break
 
                 id_boss = self.bosses[i]

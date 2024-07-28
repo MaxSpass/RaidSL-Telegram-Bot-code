@@ -21,7 +21,7 @@ class Location(Foundation):
         self.report_predicate = report_predicate
         self.update = None
         self.context = None
-        self.terminate = False
+        self.terminated = False
         self.completed = False
         self.event_dispatcher = EventDispatcher()
         self.duration = Duration()
@@ -33,7 +33,7 @@ class Location(Foundation):
         self.E_TERMINATE = {
             "name": "Terminate",
             "interval": 3,
-            "expect": lambda: self.terminate
+            "expect": lambda: self.terminated
         }
 
     # @TODO Temp commented
@@ -74,6 +74,13 @@ class Location(Foundation):
     #                 'duration_record': duration_record
     #             }
     #         )
+
+    def terminate(self, *args, terminated=True, stop=True, predicate=None):
+        self.log('Termination')
+        self.terminated = terminated
+        self.stop_awaits = stop
+        if predicate:
+            predicate()
 
     def send_message(self, text):
         if self.update is not None:
@@ -117,17 +124,18 @@ class Location(Foundation):
             return
 
         if find_popup_error_detector():
+            self.log('Relogin')
             self.app.relogin()
 
         self.update = upd
         self.context = ctx
-        self.terminate = False
-        self.stop = False
+        self.terminated = False
+        self.stop_awaits = False
         self.run_counter += 1
         self.duration.start()
 
         self.enter()
-        if not self.terminate:
+        if not self.terminated:
             self.event_dispatcher.publish('run', *args)
         self.finish()
         # @TODO Test

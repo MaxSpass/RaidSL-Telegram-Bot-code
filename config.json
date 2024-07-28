@@ -2,7 +2,6 @@
   "start_immediate": 1,
   "game_path": "C:/Users/user/AppData/Local/PlariumPlay/PlariumPlay.exe",
   "telegram_token": "6722044970:AAGZ5EtkQPVFpSzHqhKeAiCf3sXD-PRX6_w",
-  "lang": "eng",
   "tasks": [
     {
       "task": "rewards",
@@ -12,7 +11,7 @@
       "task": "arena_live",
       "enable": 1,
       "props": {
-        "refill": 0,
+        "refill": 1,
         "idle_after_defeat": 30,
         "pool": [
           {
@@ -138,9 +137,9 @@
         "runs_limit": 5,
         "runs": [
           {
-            "stage": 2,
-            "team_preset": 3,
-            "min_damage": 35,
+            "stage": 4,
+            "team_preset": 1,
+            "min_damage": 350,
             "skip": 0,
             "priority": {
               "head_of_decay": 2,
@@ -166,9 +165,9 @@
             }
           },
           {
-            "stage": 4,
-            "team_preset": 1,
-            "min_damage": 350,
+            "stage": 2,
+            "team_preset": 3,
+            "min_damage": 35,
             "skip": 0,
             "priority": {
               "head_of_decay": 2,

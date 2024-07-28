@@ -125,7 +125,7 @@ class Dungeons(Location):
         self.log(f'Bank: {self.bank}')
 
         for i in range(len(self.dungeons)):
-            if self.terminate:
+            if self.terminated:
                 break
 
             self._initialize(self.dungeons[i])
@@ -208,7 +208,7 @@ class Dungeons(Location):
                 self.bank = 0
 
             if self.bank < self.DUNGEON_BANK_MIN_LIMIT:
-                self.terminate = True
+                self.terminated = True
                 self.log(f"Bank is critically low")
                 return
 
@@ -227,7 +227,7 @@ class Dungeons(Location):
             }
 
     def _able_attacking(self, cost):
-        return bool(cost) and self.current['energy'] >= cost and not self.terminate
+        return bool(cost) and self.current['energy'] >= cost and not self.terminated
 
     def _save_result(self, condition):
         _id = self.current['id']

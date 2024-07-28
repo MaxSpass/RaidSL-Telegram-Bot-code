@@ -226,7 +226,7 @@ class App(Foundation):
             'name': "Index+",
             'interval': 2,
             'expect': find_needle_burger,
-            'callback': lambda *args: close_popup_recursive(timeout=2.5)
+            'callback': close_popup_recursive,
         }
 
         self.INDEX_PAGE_NOT_DETECTED = {
@@ -234,7 +234,7 @@ class App(Foundation):
             'interval': .5,
             'blocking': False,
             'expect': lambda: not find_needle_burger(),
-            'callback': lambda *args: close_popup()
+            'callback': close_popup,
         }
 
         self.E_TERMINATE_GAME = {
@@ -454,9 +454,6 @@ class App(Foundation):
             self.E_TERMINATE_ALL,
         ])
 
-        sleep(5)
-        close_popup_recursive()
-
         return True
 
     def get_window_region(self):
@@ -502,7 +499,7 @@ class App(Foundation):
         # Terminates all instances
         for key, value in self.entries.items():
             instance = value['instance']
-            instance.terminate = True
+            instance.terminated = True
             instance.stop = True
 
         # Empty the queue

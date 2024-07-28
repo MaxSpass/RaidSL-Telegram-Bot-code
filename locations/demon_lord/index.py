@@ -64,7 +64,7 @@ class DemonLord(Location):
         ruby_button = find_needle_refill_ruby()
 
         if ruby_button is not None:
-            self.terminate = True
+            self.terminated = True
 
     def obtain(self):
         global DEFAULT_STAGES
@@ -99,7 +99,7 @@ class DemonLord(Location):
     def attack(self):
         global DEMON_LORD_REWARD_COORDINATES
         # attack
-        while len(self.stages) and not self.terminate:
+        while len(self.stages) and not self.terminated:
             # zero-indexed Demon Lord level is always next
             stage = self.stages[0]
             x = DEMON_LORD_REWARD_COORDINATES[stage][0]
@@ -115,7 +115,7 @@ class DemonLord(Location):
 
             # terminates the loop
             self._check_refill()
-            if self.terminate:
+            if self.terminated:
                 break
 
             # click on start

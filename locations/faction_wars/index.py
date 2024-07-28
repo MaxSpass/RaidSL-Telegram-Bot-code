@@ -106,7 +106,7 @@ class FactionWars(Location):
         self._swipe_left_border()
 
         for i in range(len(self.slides)):
-            if self.terminate:
+            if self.terminated:
                 break
 
             slide = self.slides[i]
@@ -115,7 +115,7 @@ class FactionWars(Location):
                 self._swipe_right_border()
 
             for j in range(len(slide)):
-                if self.terminate:
+                if self.terminated:
                     break
 
                 _crypt = slide[j]
@@ -161,7 +161,7 @@ class FactionWars(Location):
 
                                     self._prepare_run(_name, expect=expect)
 
-                                    while not self._get_result_by_name(_name)["completed"] and not self.terminate:
+                                    while not self._get_result_by_name(_name)["completed"] and not self.terminated:
                                         dungeons_continue_battle()
 
                                         self.waiting_battle_end_regular(f"{self.NAME} | {_name}")
@@ -243,14 +243,14 @@ class FactionWars(Location):
 
     def _swipe_left_border(self, times=2):
         for i in range(times):
-            if self.terminate:
+            if self.terminated:
                 break
 
             swipe('left', 50, 400, 800, speed=0.3)
 
     def _swipe_right_border(self, times=2):
         for k in range(times):
-            if self.terminate:
+            if self.terminated:
                 break
 
             swipe('right', 850, 200, 690, speed=1)
