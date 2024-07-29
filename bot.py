@@ -2,7 +2,7 @@ import threading
 from helpers.common import log, log_save
 import traceback
 from telegram.ext import Updater, CommandHandler, CallbackContext
-from telegram.error import NetworkError
+from telegram.error import NetworkError, BadRequest
 
 
 EMULATE_NETWORK_ERROR = False
@@ -32,11 +32,38 @@ class TelegramBOT(threading.Thread):
             self.updater = Updater(token=self.token, use_context=True)
             # Get the dispatcher to register handlers
             self.dp = self.updater.dispatcher
+
+
+            print(self.updater.bot)
+
             # Register the /start command
             for i in range(len(self.commands)):
                 command = self.commands[i]['command']
                 handler = self.commands[i]['handler']['callback']
                 self.dp.add_handler(CommandHandler(command, handler))
+            #
+            # # Get a list of all chats your bot is a member of
+            # updates = self.updater.bot.get_updates()
+            # print('updates', updates)
+            # # Iterate over each chat and send the message
+            # for update in updates:
+            #     chat_id = update.message.chat_id
+            #     try:
+            #         self.updater.bot.send_message(chat_id=chat_id, text='Done')
+            #     except Exception:
+            #         error = traceback.format_exc()
+            #         log_save(error)
+
+            # # Get a list of all chats your bot is a member of
+            # chats = self.updater.bot.get_updates()
+            # # Iterate over each chat and send the message
+            # for chat_id in chats:
+            #     chat_id = update.message.chat_id
+            #     try:
+            #         self.updater.bot.send_message(chat_id=chat_id, text='Done')
+            #     except BadRequest:
+            #         error = traceback.format_exc()
+            #         log_save(error)
 
     def _all_commands(self):
         commands = list(map(lambda x: f"/{x['command']} - {x['description']}", self.commands))

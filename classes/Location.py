@@ -75,10 +75,10 @@ class Location(Foundation):
     #             }
     #         )
 
-    def terminate(self, *args, terminated=True, stop=True, predicate=None):
+    def terminate(self, *args, terminated=True, break_loops=False, predicate=None):
         self.log('Termination')
         self.terminated = terminated
-        self.stop_awaits = stop
+        self.break_loops = break_loops
         if predicate:
             predicate()
 
@@ -130,7 +130,7 @@ class Location(Foundation):
         self.update = upd
         self.context = ctx
         self.terminated = False
-        self.stop_awaits = False
+        self.break_loops = False
         self.run_counter += 1
         self.duration.start()
 

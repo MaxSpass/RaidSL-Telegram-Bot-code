@@ -243,7 +243,7 @@ class ArenaLive(Location):
         # Additional check for avoiding further proceeding
         if not pixel_check_new(index_indicator_active, mistake=10):
             self.log("IndexPage indicator is NOT active")
-            self.terminated = True
+            self.terminate()
             return
 
         click_on_progress_info()
@@ -262,13 +262,14 @@ class ArenaLive(Location):
                 self.obtain()
 
                 while self._is_available():
+                    self.break_loops = False
+
                     self._claim_free_refill_coins()
                     self._claim_chest()
 
                     if self._refill():
                         break
 
-                    self.stop_awaits = False
                     self.attack()
 
                 self.obtain()
@@ -318,24 +319,18 @@ class ArenaLive(Location):
 
     def _click_on_find_opponent(self):
         if not await_click([find_opponent], msg="Click on find opponent", mistake=20, wait_limit=65)[0]:
-            self.terminated = True
+            self.terminate()
 
     def _is_available(self):
-        if find_indicator_active() is None:
-            self.terminated = True
+        if not find_indicator_active():
+            self.terminate()
 
         return not self.terminated
 
     def _save_result(self, result):
         self.results.append(result)
-        s = ''
-
-        if result:
-            s += 'WIN'
-        else:
-            s += 'DEFEAT'
-
-        self.log(s)
+        result_msg = 'WIN' if result else 'DEFEAT'
+        self.log(result_msg)
 
     def _refill(self):
         self._click_on_find_opponent()
@@ -352,7 +347,7 @@ class ArenaLive(Location):
                 self._click_on_find_opponent()
             else:
                 self.log('No more refill')
-                self.terminated = True
+                self.terminate()
         elif pixels_wait([refill_free], msg='Free refill sacs', mistake=10, timeout=1, wait_limit=2)[0]:
             self.log('Free coins are available')
             # wait and click on refill_free
@@ -363,6 +358,9 @@ class ArenaLive(Location):
 
     def obtain(self):
         for i in range(len(rewards_pixels)):
+            if self.terminated:
+                break
+
             pixel = rewards_pixels[i]
             if pixel_check_new(pixel, mistake=30):
                 x = pixel[0]
@@ -410,24 +408,24 @@ class ArenaLive(Location):
             if role is None:
                 role = self.current['sorted_pool'][0]['role']
 
-            while self.current['next_char'] is None and not self.stop_awaits:
+            while self.current['next_char'] is None and not self.break_loops:
                 # Opponent leaves the battle while picking the character
                 if find_victory_opponent_left():
                     self.E_VICTORY['callback']()
-                    debug_save_screenshot(suffix_name='leaves while picking')
+                    debug_save_screenshot(suffix_name='left while picking')
                     break
 
                 i, char = find(self.current['sorted_pool'], lambda x: x.get('role') == role)
                 index_to_remove = 0
 
-                if char and not self.stop_awaits:
+                if char and not self.break_loops:
                     hero_filter.choose(title=char['name'], wait_after=.5)
 
                     _slot = LIVE_ARENA_HERO_SLOTS[self.current['slots_counter']]
                     _region = [_slot[0], _slot[1], EMPTY_SLOT_WIDTH, EMPTY_SLOT_HEIGHT]
                     # show_pyautogui_image(pyautogui.screenshot(region=_region))
                     _position_empty = find_hero_slot_empty(region=_region)
-                    if _position_empty is None and not self.stop_awaits:
+                    if _position_empty is None and not self.break_loops:
                         self.current['next_char'] = char
 
                     # if not pixel_check_new(LIVE_ARENA_HERO_SLOTS[self.current['slots_counter']], mistake=10):
@@ -472,7 +470,7 @@ class ArenaLive(Location):
         if self.E_STAGE_1['name'] == stage_1_events['name']:
             sleep(.5)
             for i in range(len(pattern)):
-                if self.stop_awaits:
+                if self.break_loops:
                     break
 
                 pick_process_events = await_pick()
@@ -481,7 +479,7 @@ class ArenaLive(Location):
 
                     # picking heroes logic
                     for j in range(pattern[i]):
-                        if self.stop_awaits:
+                        if self.break_loops:
                             break
 
                         unit = find_character()

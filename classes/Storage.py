@@ -1,5 +1,6 @@
 from helpers.common import folder_ensure
-from tinydb import TinyDB, Query
+# @TEMP Commented
+# from tinydb import TinyDB, Query
 from datetime import datetime, timedelta
 import os
 import json
@@ -29,7 +30,9 @@ class Storage:
             output = os.path.normpath(folder)
             folder_ensure(output)
         self.path = os.path.join(output if output is not None else '', f"{name}.json")
-        self.db = TinyDB(self.path)
+        self.db = None
+        # @TEMP Commented
+        # self.db = TinyDB(self.path)
 
     def exists(self, title, date=today()):
         Entity = Query()

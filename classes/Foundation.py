@@ -116,13 +116,13 @@ class Foundation:
 
     def __init__(self, name, events=None):
         self.name = name
-        self.stop_awaits = False
+        self.break_loops = False
 
     def log(self, msg):
         log(f'{self.name} | {msg}')
 
     def awaits(self, events, interval=1, delay=1):
-        if self.stop_awaits:
+        if self.break_loops:
             return self.DUMMY_RESPONSE
 
         response = None
@@ -163,7 +163,7 @@ class Foundation:
                 if 'delay' in e \
                 else True
 
-        while response is None and not self.stop_awaits:
+        while response is None and not self.break_loops:
             _e = events[counter]
             current_time = datetime.now()
 

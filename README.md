@@ -25,22 +25,23 @@
 
 [PyGetWindow-DOCS](https://github.com/asweigart/PyGetWindow)
 
-# Epics
-
-- [ ] Quests (Daily, Weekly, Monthly)
-- [ ] Demon lord
-- [ ] Hydra
-- [ ] Arena
-- [ ] Tag arena
-- [ ] Faction wars
-- [ ] Doom tower
-- [ ] Souls guard
-
-# System helpers
-
-- [ ] Cache system
-- [ ] Log system
-
-# Services
-
-- [ ] Messaging assistant
+# TODO
+  - [x] Arena Live
+  - [x] Arena Classic
+  - [x] Arena Tag
+  - [x] Demon lord
+  - [x] Dungeons
+  - [x] Doom tower
+  - [x] Hydra
+  - [x] Faction wars
+  - [x] Twin Fortress guard
+  - [x] Rewards
+  - [x] Report
+  - [x] Screen
+  - [x] Restart/Launch
+  - [x] Quests "Daily"
+  - [ ] Quests "Weekly"
+  - [ ] Quests "Monthly"
+  - [x] Telegram Bot :: Integration
+  - [x] Telegram Bot :: Async commands
+  - [ ] GUI
