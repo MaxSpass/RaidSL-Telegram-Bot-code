@@ -42,13 +42,6 @@ def main():
                 # sleep(5)
                 # app.get_instance('arena_live').attack()
 
-                # print('BackgroundScheduler')
-                # scheduler = BackgroundScheduler()
-                # schedule_predicate = app.commands['report']['cb']
-                # date_now = datetime.now()
-                # scheduler.add_job(schedule_predicate, 'cron', hour=date_now.hour, minute=date_now.minute, second=date_now.second+30)
-                # scheduler.start()
-
             if has_telegram_token:
                 telegram_bot = TelegramBOT({
                     'token': app.config['telegram_token']
@@ -101,13 +94,6 @@ def main():
                 for i in range(len(commands)):
                     print(commands[i])
                     telegram_bot.add(commands[i])
-
-                # daily_quests = app.get_instance('daily_quests')
-                # doom_tower = app.get_instance('doom_tower')
-                # daily_quests.daily_quest_2()
-
-                # @TODO
-                # app.schedule(predicate=lambda: print('Scheduled callback'))
 
                 telegram_bot.listen()
                 telegram_bot.updater.idle()

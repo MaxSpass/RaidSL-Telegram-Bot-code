@@ -5,7 +5,7 @@
 
 # Setting up the project
 - clone the repository
-- rename .env.example to .env and provide necessary variables
+- rename `.env.example` to `.env` and provide necessary variables
 - run `python -m venv venv`
 - run `venv\Scripts\activate` (on Windows only)
 - run `pip install -r requirements.txt`
