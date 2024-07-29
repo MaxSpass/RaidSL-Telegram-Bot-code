@@ -77,15 +77,12 @@ def copy_config():
 
 def build():
     # subprocess.call(r"pyinstaller --onefile --collect-submodules vendor main.py")
-
     # subprocess.call(fr"pyinstaller --distpath {bot_path} main.spec")
-
     # subprocess.call(r"pyinstaller --onedir --distpath ./dist main.py")
     # subprocess.call(r"pyinstaller main.py")
-    subprocess.call(r"pyinstaller main.spec")
-
     # subprocess.call(r"pyinstaller --distpath ./test main-one-file.spec")
     # subprocess.call(r"pyinstaller --distpath ./dist main.spec")
+    subprocess.call(r"pyinstaller main.spec")
 
 
 def copy_files():
