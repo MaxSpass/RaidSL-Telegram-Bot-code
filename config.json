@@ -1,7 +1,7 @@
 {
   "start_immediate": 1,
-  "game_path": "C:/Users/user/AppData/Local/PlariumPlay/PlariumPlay.exe",
-  "telegram_token": "6722044970:AAGZ5EtkQPVFpSzHqhKeAiCf3sXD-PRX6_w",
+  "game_path": "",
+  "telegram_token": "",
   "tasks": [
     {
       "task": "rewards",

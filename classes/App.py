@@ -16,10 +16,8 @@ from locations.quests.index import *
 from locations.test.index import *
 from locations.test_await.index import *
 from constants.index import *
-# import atexit
 import signal
 import sys
-# import pytesseract
 import subprocess
 import psutil
 import os
@@ -27,19 +25,7 @@ import cv2
 import numpy as np
 from PIL import Image
 from io import BytesIO
-# @TODO Temp commented
-# from apscheduler.schedulers.background import BackgroundScheduler
-# import pytz
 from datetime import datetime
-
-# from telegram.error import NetworkError
-
-# GAME_WINDOW = 'Raid: Shadow Legends'
-# PROCESS_GAME_NAME = 'Raid.exe'
-# WINDOW_TOP_BAR_HEIGHT = 25
-# BORDER_WIDTH = 7
-# CONFIG_PATH = "config.json"
-# WINDOW_SIZE = [920, 540]
 
 INSTANCES_MAP = {
     'arena_live': ArenaLive,
@@ -322,15 +308,16 @@ class App(Foundation):
             'lang': None
         }
 
-        # Temp properties
-        if 'game_path' in config_json and bool(config_json['game_path']):
-            _config['game_path'] = os.path.normpath(str(config_json['game_path']))
-
         if 'start_immediate' in config_json:
             _config['start_immediate'] = bool(config_json['start_immediate'])
 
+        if 'game_path' in config_json and bool(config_json['game_path']):
+            GAME_PATH = os.getenv('GAME_PATH')
+            _config['game_path'] = GAME_PATH if GAME_PATH else os.path.normpath(str(config_json['game_path']))
+
         if 'telegram_token' in config_json:
-            _config['telegram_token'] = str(config_json['telegram_token'])
+            TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
+            _config['telegram_token'] = TELEGRAM_BOT_TOKEN if TELEGRAM_BOT_TOKEN else str(config_json['telegram_token'])
 
         if 'lang' in config_json:
             _lang = str(config_json['lang']).lower()

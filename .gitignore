@@ -2,9 +2,8 @@
 /dist/
 
 # Ignore the virtual environment directory
-botenv/
 venv/
-.env/
+.env
 
 # Ignore Python cache files
 __pycache__/
