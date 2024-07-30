@@ -28,6 +28,7 @@ class DoomTower(Location):
         Location.__init__(self, name='Doom Tower', app=app, report_predicate=self._report)
 
         self.bosses = []
+        self.difficulties = DOOM_TOWER_DIFFICULTIES
         self.keys_golden = 0
         self.keys_silver = 0
         self.current = None
@@ -57,10 +58,10 @@ class DoomTower(Location):
     def _run(self, props=None):
         self.read_keys()
 
-        for d in range(len(DOOM_TOWER_DIFFICULTIES)):
+        for d in range(len(self.difficulties)):
             if self._can_continue():
                 # mistake=200 for ignoring different backgrounds
-                dungeon_select_difficulty(DOOM_TOWER_DIFFICULTIES[d], mistake=200)
+                dungeon_select_difficulty(self.difficulties[d], mistake=200)
                 sleep(5)
                 self.attack()
 
@@ -108,6 +109,10 @@ class DoomTower(Location):
         if props:
             if 'bosses' in props:
                 self.bosses = list(map(lambda x: str(x), props['bosses']))
+            if 'difficulties' in props:
+                self.difficulties = list(filter(
+                    lambda x: str(x) if str(x) in DOOM_TOWER_DIFFICULTIES else False, props['difficulties']
+                ))
 
     def read_keys(self):
         # self.keys_golden = 10

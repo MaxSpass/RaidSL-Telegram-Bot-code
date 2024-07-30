@@ -390,13 +390,13 @@ class ArenaLive(Location):
         return res
 
     def attack(self):
-        self.log('Attack | Pool Length: ' + str(len(self.current['sorted_pool'])))
-
         self.current['counter'] += 1
         self.current['battle_time'] = get_time_for_log(s='_')
         self.current['sorted_pool'] = copy.deepcopy(self.pool)
         self.current['team'] = []
         self.current['slots_counter'] = 0
+
+        self.log('Attack | Pool Length: ' + str(len(self.current['sorted_pool'])))
 
         def find_character(role=None):
             self.log(f"Current pool length: {len(self.current['sorted_pool'])}")
@@ -410,8 +410,8 @@ class ArenaLive(Location):
 
             while self.current['next_char'] is None and not self.break_loops:
                 # Opponent leaves the battle while picking the character
-                if find_victory_opponent_left():
-                    self.E_VICTORY['callback']()
+                if self.E_OPPONENT_LEFT['expect']():
+                    self.E_OPPONENT_LEFT['callback']()
                     debug_save_screenshot(suffix_name='left while picking')
                     break
 

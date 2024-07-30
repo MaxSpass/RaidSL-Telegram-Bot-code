@@ -75,7 +75,7 @@ class Location(Foundation):
     #             }
     #         )
 
-    def terminate(self, *args, terminated=True, break_loops=False, predicate=None):
+    def terminate(self, *args, terminated=True, break_loops=True, predicate=None):
         self.log('Termination')
         self.terminated = terminated
         self.break_loops = break_loops

@@ -240,7 +240,8 @@
       "task": "doom_tower",
       "enable": 1,
       "props": {
-        "bosses": [1, 4, 2]
+        "bosses": [1, 4, 2],
+        "difficulties": ["hard", "normal"]
       }
     },
     {

@@ -587,7 +587,9 @@ class App(Foundation):
     def launch(self, *args):
         game_path = self.config['game_path']
         if game_path:
-            subprocess.run(f"{game_path} -gameid=101 -tray-start")
+            # @TODO Test
+            subprocess.run(['cmd', '/c', 'start', '', f"{os.path.normpath(game_path)} -gameid=101 -tray-start"], check=True)
+            # subprocess.run(f"{game_path} -gameid=101 -tray-start")
             sleep(3)
             self.prepare()
             log('Game window is ready')
