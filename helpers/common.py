@@ -904,15 +904,21 @@ def find_needle_popup_attention(region=None):
 
 
 def find_team_preset_checked(region):
-    return find_needle('team_preset_checked.jpg',  region, confidence=.9)
+    return find_needle('team_preset_checked.jpg', region, confidence=.9)
 
 
 def find_team_preset_disabled(region):
-    return find_needle('team_preset_disabled.jpg',  region, confidence=.9)
+    return find_needle('team_preset_disabled.jpg', region, confidence=.9)
 
 
 def find_team_preset_locked(region):
-    return find_needle('team_preset_locked.jpg',  region)
+    return find_needle('team_preset_locked.jpg', region)
+
+
+def find_boss_reward_crate(region=None):
+    if region is None:
+        region = [0, 0, 906, 533]
+    return find_needle('boss_crate.jpg', region)
 
 
 def battles_click():
@@ -1494,58 +1500,7 @@ def get_time_future(**kwargs):
     return datetime.now() + timedelta(**kwargs)
 
 
-def detect_buttons(confidence=.9, crop=5):
-    buttons_data = [
-        # {'needle': 'popups/button_primary_medium.jpg', 'transform_predicate': transform_btn_primary},
-        # {'needle': 'popups/button_primary_big.jpg', 'transform_predicate': transform_btn_primary},
-        # {'needle': 'popups/button_primary_large.jpg', 'transform_predicate': transform_btn_primary},
-        #
-        # {'needle': 'popups/button_secondary_medium.jpg', 'transform_predicate': transform_btn_secondary},
-        # {'needle': 'popups/button_secondary_big.jpg', 'transform_predicate': transform_btn_secondary},
-        # {'needle': 'popups/button_secondary_large.jpg', 'transform_predicate': transform_btn_secondary},
-    ]
-
-    buttons = []
-    boxes = []
-    for i in range(len(buttons_data)):
-        _needle = buttons_data[i]['needle']
-        _transform_predicate = buttons_data[i]['transform_predicate']
-
-        boxes_origin = find_needle(_needle, confidence=confidence, return_boxes=True)
-        print('boxes_origin', boxes_origin)
-        if boxes_origin and len(boxes_origin):
-            boxes_flip = find_needle(_needle, confidence=confidence, return_boxes=True, flip=True)
-            # print('boxes_flip', boxes_flip)
-            if boxes_flip and len(boxes_flip):
-
-                if len(boxes_origin) == len(boxes_flip):
-                    for j in range(len(boxes_origin)):
-                        # print('boxes_origin', boxes_origin[j])
-                        # print('boxes_flip', boxes_flip[j])
-                        if not is_close_in_boxes(boxes_origin[j], boxes):
-                            # ValueError: Coordinate 'right' is less than 'left'
-                            if boxes_flip[j].left > boxes_origin[j].left:
-                                boxes.append(boxes_origin[j])
-
-                                _region = [
-                                    int(boxes_origin[j].left + crop * 2),
-                                    int(boxes_origin[j].top + crop),
-                                    int(boxes_flip[j].left - boxes_origin[j].left - crop * 4),
-                                    int(boxes_origin[j].height - crop * 2)
-                                ]
-
-                                _text = read_text(region=_region, transform_predicate=_transform_predicate)
-
-                                if _text:
-                                    buttons.append({
-                                        'text': _text,
-                                        'region': _region
-                                    })
-
-    return buttons
-
-
-def detect_buttons_new(confidence=.7, crop=5, lang=None):
+def detect_buttons(confidence=.7, crop=5, lang=None):
     buttons_data = [
         {
             'needle': 'popups/button_primary_generic.jpg',

@@ -1,7 +1,11 @@
 from helpers.common import *
+from classes.Foundation import RGB_SECONDARY
 from locations.hero_preset.index import *
 from classes.Location import Location
 import pyautogui
+
+P_POPUP_CLASH_NOT_STARTED_BTN_CANCEL = [270, 350, RGB_SECONDARY]
+P_POPUP_CLASH_NOT_STARTED_BTN_CONTINUE = [480, 350, RGB_SECONDARY]
 
 AVATAR_FRAME_WIDTH = 38
 AVATAR_FRAME_HEIGHT = 56
@@ -109,19 +113,46 @@ class Hydra(Location):
         self.event_dispatcher.subscribe('enter', self._enter)
         self.event_dispatcher.subscribe('run', self._run)
 
-        self.E_SCREEN_ALL_HYDRA = {
-            'name': "AllHydras",
+        self.E_SCREEN_BOSS = {
+            'name': "BossScreen",
             'interval': 2,
-            'expect': lambda: pixel_check_new(screen_all_hydra, mistake=10),
+            # @TODO Test (Don't like the solution)
+            # 'expect': lambda: pixel_check_new(screen_all_hydra, mistake=10),
+            'expect': lambda: find_boss_reward_crate() and not find_popup_error_detector(),
         }
-        self.E_SCREEN_CERTAIN_HYDRA = {
-            'name': "CertainHydra",
+        self.E_SCREEN_HYDRA = {
+            'name': "HydraScreen",
             'interval': 2,
             'expect': lambda: pixel_check_new(screen_certain_hydra, mistake=10)
         }
+        self.E_CLASH_NOT_STARTED = {
+            'name': "ClashNotStarted",
+            'interval': 1,
+            'limit': 1,
+            'wait_limit': 5,
+            'blocking': False,
+            # @TODO Find generic way
+            'expect': find_popup_error_detector,
+            'callback': self._cb_clash_not_started
+        }
         self.E_PAUSE_ICON_DETECTED_WITH_CALLBACK = prepare_event(self.E_PAUSE_ICON_DETECTED, {
-            'callback': lambda *args: self.scan()
+            'callback': self.scan
         })
+
+    def _cb_clash_not_started(self, *args):
+        if self.app.config['lang']:
+            # Reliable search of button with "continue" text
+            btn_continue = find_detected_button({'text': 'continue'}, detect_buttons(lang=self.app.config['lang']))
+            if btn_continue:
+                click_detected_button(btn_continue)
+        else:
+            # Not Reliable checking for two buttons (one of them with "continue" text)
+            if same_pixels_line_list([
+                P_POPUP_CLASH_NOT_STARTED_BTN_CANCEL,
+                P_POPUP_CLASH_NOT_STARTED_BTN_CONTINUE
+            ]):
+                await_click([P_POPUP_CLASH_NOT_STARTED_BTN_CONTINUE], mistake=10)
+
 
     def _report(self):
         res_list = []
@@ -353,7 +384,7 @@ class Hydra(Location):
                     limit = DEFAULT_RUNS_LIMIT_MAX
                 self.runs_limit = limit
 
-    def scan(self):
+    def scan(self, *args):
         self.log('Scanning all heads...')
         queue = []
         reset = False
@@ -433,22 +464,21 @@ class Hydra(Location):
         sleep(5)
 
     def attack(self):
-        # E_SCREEN_ALL_HYDRA_WITH_CALLBACK_1 = prepare_event(self.E_SCREEN_ALL_HYDRA, {
+        # E_SCREEN_ALL_HYDRA_WITH_CALLBACK_1 = prepare_event(self.E_SCREEN_BOSS, {
         #     'callback': self.terminate
         # })
         #
-        # E_SCREEN_CERTAIN_HYDRA_WITH_CALLBACK_1 = prepare_event(self.E_SCREEN_CERTAIN_HYDRA, {
+        # E_SCREEN_CERTAIN_HYDRA_WITH_CALLBACK_1 = prepare_event(self.E_SCREEN_HYDRA, {
         #     'callback': callback_screen_certain_hydra_1
         # })
         #
-        # E_SCREEN_CERTAIN_HYDRA_WITH_CALLBACK_2 = prepare_event(self.E_SCREEN_CERTAIN_HYDRA, {
+        # E_SCREEN_CERTAIN_HYDRA_WITH_CALLBACK_2 = prepare_event(self.E_SCREEN_HYDRA, {
         #     'callback': callback_screen_certain_hydra_2
         # })
 
         is_picked = is_team_provided(HYDRA_TEAM_SLOTS)
 
         def callback_screen_certain_hydra_1(*args):
-            # self.log('callback_screen_certain_hydra_1')
             global is_picked
 
             if 'team_preset' in self.current:
@@ -465,26 +495,26 @@ class Hydra(Location):
             #     self.terminate()
 
         def callback_screen_certain_hydra_2(*args):
-            # self.log('callback_screen_certain_hydra_2')
             if is_picked:
                 self.log("Checking hydra screen after each iteration")
                 close_popup()
 
         def callback_screen_all_hydra_1(*args):
-            # self.log('callback_screen_all_hydra_1')
             data = HYDRA_LOCATIONS[self.current['stage']]
             swipes = data['swipes']
             x = data['x']
             y = data['y']
 
+            swipe('top', 616, 120, 250, speed=.3, sleep_after_end=.3)
             for i in range(swipes):
                 swipe('bottom', 616, 400, 350, speed=.3, sleep_after_end=.3)
 
             click(x, y)
 
             self.awaits([
+                self.E_CLASH_NOT_STARTED,
                 self.E_BUTTON_BATTLE_START,
-                prepare_event(self.E_SCREEN_ALL_HYDRA, {
+                prepare_event(self.E_SCREEN_BOSS, {
                     'callback': self.terminate,
                     'delay': 2,
                     'wait_limit': 5,
@@ -509,7 +539,7 @@ class Hydra(Location):
                     break
 
                 self.awaits([
-                    prepare_event(self.E_SCREEN_ALL_HYDRA, {
+                    prepare_event(self.E_SCREEN_BOSS, {
                         'callback': callback_screen_all_hydra_1
                     })
                 ])
@@ -521,10 +551,10 @@ class Hydra(Location):
                 while self._while_stage_available():
                     # skips then logic, when all_hydra_screen appears
                     self.awaits([
-                        prepare_event(self.E_SCREEN_ALL_HYDRA, {
+                        prepare_event(self.E_SCREEN_BOSS, {
                             'callback': self.terminate
                         }),
-                        prepare_event(self.E_SCREEN_CERTAIN_HYDRA, {
+                        prepare_event(self.E_SCREEN_HYDRA, {
                             'callback': callback_screen_certain_hydra_1
                         }),
                     ])
@@ -532,7 +562,7 @@ class Hydra(Location):
                 if not self.current['skip']:
                     # depending on the case: saved damage/regroup the team
                     self.awaits([
-                        prepare_event(self.E_SCREEN_CERTAIN_HYDRA, {
+                        prepare_event(self.E_SCREEN_HYDRA, {
                             'callback': callback_screen_certain_hydra_2,
                             'wait_limit': 10,
                         })

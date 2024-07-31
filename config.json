@@ -247,31 +247,6 @@
     {
       "task": "daily_quests",
       "enable": 1
-    },
-    {
-      "task": "test_feature",
-      "title": "3sec",
-      "enable": 1,
-      "props": {
-        "seconds": 3
-      }
-    },
-    {
-      "task": "test_feature",
-      "title": "15min",
-      "enable": 1,
-      "props": {
-        "seconds": 900
-      }
-    },
-    {
-      "task": "test_feature",
-      "title": "60min",
-      "enable": 1
-    },
-    {
-      "task": "test_await",
-      "enable": 1
     }
   ],
   "presets": [
@@ -286,18 +261,7 @@
       ]
     },
     {
-      "name": "noon with sand devil",
-      "commands": [
-        "demon_lord",
-        "rewards",
-        "doom_tower",
-        "arena_classic",
-        "daily_quests",
-        "dungeon_sand_devil"
-      ]
-    },
-    {
-      "name": "night",
+      "name": "primary",
       "commands": [
         "arena_live",
         "arena_classic",
@@ -315,7 +279,7 @@
       ]
     },
     {
-      "name": "night with sand devil",
+      "name": "primary with sand devil",
       "commands": [
         "arena_live",
         "arena_classic",
@@ -334,7 +298,7 @@
       ]
     },
     {
-      "name": "night with minotaur",
+      "name": "primary with minotaur",
       "commands": [
         "arena_live",
         "arena_classic",

@@ -4,9 +4,12 @@ import numpy as np
 
 RGB_PRIMARY = [187, 130, 5]
 RGB_SECONDARY = [22, 124, 156]
-P_BUTTON_BATTLE_START = [850, 475, RGB_PRIMARY]
-P_POPUP_BUTTON_SECONDARY_LEFT = [270, 310, RGB_SECONDARY]
-P_POPUP_BUTTON_SECONDARY_RIGHT = [480, 310, RGB_SECONDARY]
+P_BATTLE_BTN_START = [850, 475, RGB_PRIMARY]
+
+# @TODO Redundant (incorrect for other cases)
+P_POPUP_NO_AURA_SKILL_BTN_CANCEL = [270, 310, RGB_SECONDARY]
+P_POPUP_NO_AURA_SKILL_BTN_CONTINUE = [480, 310, RGB_SECONDARY]
+
 P_STAGE_ENTER = [890, 200, [93, 25, 27]]
 P_START_ON_AUTO = [710, 410, [108, 237, 255]]
 
@@ -70,10 +73,10 @@ class Foundation:
         "interval": .5,
         "limit": 1,
         "blocking": False,
-        "expect": lambda: pixel_check_new(P_BUTTON_BATTLE_START, mistake=10),
+        "expect": lambda: pixel_check_new(P_BATTLE_BTN_START, mistake=10),
         "callback": lambda *args: click(
-            x=P_BUTTON_BATTLE_START[0],
-            y=P_BUTTON_BATTLE_START[1]
+            x=P_BATTLE_BTN_START[0],
+            y=P_BATTLE_BTN_START[1]
         ),
     }
     E_NO_AURA_SKILL = {
@@ -82,12 +85,12 @@ class Foundation:
         "limit": 1,
         "wait_limit": 3,
         "expect": lambda: same_pixels_line_list([
-            P_POPUP_BUTTON_SECONDARY_LEFT,
-            P_POPUP_BUTTON_SECONDARY_RIGHT,
+            P_POPUP_NO_AURA_SKILL_BTN_CANCEL,
+            P_POPUP_NO_AURA_SKILL_BTN_CONTINUE,
         ]),
         "callback": lambda *args: click(
-            x=P_POPUP_BUTTON_SECONDARY_RIGHT[0],
-            y=P_POPUP_BUTTON_SECONDARY_RIGHT[1],
+            x=P_POPUP_NO_AURA_SKILL_BTN_CONTINUE[0],
+            y=P_POPUP_NO_AURA_SKILL_BTN_CONTINUE[1],
             smart=True
         ),
     }

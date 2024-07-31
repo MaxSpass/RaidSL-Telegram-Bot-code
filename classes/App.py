@@ -187,7 +187,7 @@ def make_title(input_string):
 
 def expect_relogin(lang):
     # @TODO Rework text hardcode
-    return find_detected_button({'text': 're-log in'}, detect_buttons_new(lang=lang))
+    return find_detected_button({'text': 're-log in'}, detect_buttons(lang=lang))
 
 class App(Foundation):
     COMMANDS_GAME_PATH_DEPENDANT = ['restart', 'launch', 'relogin', 'prepare']
@@ -588,8 +588,8 @@ class App(Foundation):
         game_path = self.config['game_path']
         if game_path:
             # @TODO Test
-            subprocess.run(['cmd', '/c', 'start', '', f"{os.path.normpath(game_path)} -gameid=101 -tray-start"], check=True)
-            # subprocess.run(f"{game_path} -gameid=101 -tray-start")
+            # subprocess.run(['cmd', '/c', 'start', '', f"{os.path.normpath(game_path)} -gameid=101 -tray-start"], check=True)
+            subprocess.run(f"{game_path} -gameid=101 -tray-start")
             sleep(3)
             self.prepare()
             log('Game window is ready')
