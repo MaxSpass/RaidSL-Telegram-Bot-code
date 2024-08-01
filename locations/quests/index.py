@@ -153,8 +153,7 @@ class Quests(Location):
             sleep(1.5)
 
     def _finish(self, *args):
-        rewards = self.app.entries['rewards']['instance'] \
-            if 'rewards' in self.app.entries else None
+        rewards = self.app.get_instance('rewards')
 
         if rewards:
             rewards.run(self.update, self.context)
@@ -668,29 +667,21 @@ class Quests(Location):
         close_popup_recursive()
 
     def daily_quest_4(self, quest_id='4'):
-        no_task_text = "No task 'dungeon_sand_devil' defined, using 'daily_quest_8' instead"
-
-        dungeon_sand_devil = self.app.entries['dungeon_sand_devil']['instance'] \
-            if 'dungeon_sand_devil' in self.app.entries else None
-
-        if dungeon_sand_devil:
-            dungeon_sand_devil.run(self.update, self.context, props={"locations": [{"id": 6}], "bank": 40})
-        else:
-            self.send_message(no_task_text)
-            self.daily_quest_8()
-
-        self.results.append(quest_id)
+        close_popup_recursive()
+        self._attack_campaign(quest_id, stage=6, times=13)
+        close_popup_recursive()
 
     def daily_quest_5(self, quest_id='5'):
         no_task_text = "No task 'arena_classic' defined"
-        arena_classic = self.app.entries['arena_classic']['instance'] \
-            if 'arena_classic' in self.app.entries else None
+        arena_classic = self.app.get_instance('arena_classic')
 
+        close_popup_recursive()
         if arena_classic:
             arena_classic.run(self.update, self.context)
             self.results.append(quest_id)
         else:
             self.send_message(no_task_text)
+        close_popup_recursive()
 
     def daily_quest_6(self, quest_id='6'):
         global MARKET_SHARDS_REGION

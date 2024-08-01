@@ -202,6 +202,8 @@ class App(Foundation):
         self.window_axis = None
         self.entries = {}
         self.taskManager = TaskManager()
+        self.timeManager = TimeMgr()
+        self.startUTCTime = self.utc_day()
         self.scheduler = None
         # @TODO Temp commented
         # self.storage = Storage(name='storage', folder='temp')
@@ -249,7 +251,7 @@ class App(Foundation):
             "expect": lambda: expect_relogin(lang=self.config['lang']) if self.config['lang'] else is_logged_out(),
             "callback": lambda *args: click_detected_button(*args) if self.config['lang'] else click(350, 294)
         })
-        
+
     def get_commands(self):
         return {
             'restart': {
@@ -397,6 +399,10 @@ class App(Foundation):
     def load_config(self, config):
         self.config = self._prepare_config(config)
         log('Load App Config')
+
+    def utc_day(self):
+        dt = self.timeManager.timestamp_to_datetime(datetime.utcnow())
+        return f"{dt['day']}-{dt['month']}-{dt['year']}"
 
     def read_config(self):
         try:

@@ -119,8 +119,15 @@ class Location(Foundation):
         # self.results.append([True, False])
 
     def run(self, upd, ctx, *args):
+        utc_dt = self.app.utc_day()
+        if self.app.startUTCTime != utc_dt:
+            self.app.startUTCTime = utc_dt
+            self.completed = False
+            self.log("'completed' state was reset")
+            # @TODO Should relaunch the config again when it's needed
+
         if self.completed:
-            self.log('is already completed')
+            self.log('already completed', predicate=self.send_message)
             return
 
         if find_popup_error_detector():

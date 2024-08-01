@@ -121,8 +121,11 @@ class Foundation:
         self.name = name
         self.break_loops = False
 
-    def log(self, msg):
-        log(f'{self.name} | {msg}')
+    def log(self, msg, predicate=None):
+        log_msg = f'{self.name} | {msg}'
+        log(log_msg)
+        if predicate:
+            predicate(log_msg)
 
     def awaits(self, events, interval=1, delay=1):
         if self.break_loops:
