@@ -119,7 +119,7 @@ class Location(Foundation):
         # self.results.append([True, False])
 
     def run(self, upd, ctx, *args):
-        utc_dt = self.app.utc_day()
+        utc_dt = self.app.utc_date()
         if self.app.startUTCTime != utc_dt:
             self.app.startUTCTime = utc_dt
             self.completed = False

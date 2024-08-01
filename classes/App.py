@@ -203,7 +203,7 @@ class App(Foundation):
         self.entries = {}
         self.taskManager = TaskManager()
         self.timeManager = TimeMgr()
-        self.startUTCTime = self.utc_day()
+        self.startUTCTime = self.utc_date()
         self.scheduler = None
         # @TODO Temp commented
         # self.storage = Storage(name='storage', folder='temp')
@@ -400,7 +400,7 @@ class App(Foundation):
         self.config = self._prepare_config(config)
         log('Load App Config')
 
-    def utc_day(self):
+    def utc_date(self):
         dt = self.timeManager.timestamp_to_datetime(datetime.utcnow())
         return f"{dt['day']}-{dt['month']}-{dt['year']}"
 
