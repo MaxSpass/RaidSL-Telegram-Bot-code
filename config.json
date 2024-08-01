@@ -2,6 +2,7 @@
   "start_immediate": 1,
   "game_path": "",
   "telegram_token": "",
+  "lang": "",
   "tasks": [
     {
       "task": "rewards",

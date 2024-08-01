@@ -87,6 +87,7 @@ def build():
 
 def copy_files():
     shutil.copytree('images/needles', 'dist/main/images/needles')
+    shutil.copytree('translations', 'dist/main/translations')
     shutil.copy('config.json', 'dist/main')
 
 

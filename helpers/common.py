@@ -1398,23 +1398,19 @@ def is_number(s):
         return False
 
 
-def is_logged_out():
-    _is_logged_out = True
+def detect_same_variant_buttons_and_return_one(index=0, length=1):
+    # ATTENTION -> NOT RELIABLE APPROACH
+    if find_popup_error_detector():
+        buttons = detect_buttons()
+        buttons_len = len(buttons)
+        if buttons_len and buttons_len == length:
+            for b in range(len(buttons)):
+                if buttons[b]['variant'] != 'secondary':
+                    return False
 
-    rgb = [16, 126, 158]
-    pixels = [
-        # Re-log In button
-        [350, 294, rgb],
-        # Support button
-        [550, 294, rgb],
-    ]
+            return buttons[index]
 
-    for i in range(len(pixels)):
-        if not pixel_check_new(pixels[i], mistake=10):
-            _is_logged_out = False
-            break
-
-    return _is_logged_out
+    return False
 
 
 def is_production():

@@ -43,6 +43,13 @@ INSTANCES_MAP = {
     'test_await': TestAwait,
 }
 SUPPORTED_LANGUAGES = ['eng', 'deu', 'ukr', 'rus']
+LANGUAGES_MATRIX = [
+    ['eng', None, 'deu'],
+    [None, None, None],
+    [None, None, None],
+    ['ukr', 'rus', None],
+    [None],
+]
 
 # EMULATE_NETWORK_ERROR = False
 
@@ -91,7 +98,6 @@ def resize_window(x_move=0, y_move=0):
 
 
 def calibrate_window(window_axis=None):
-    log('Preparing the window')
     BURGER_POSITION = [15, 282]
     is_prepared = False
     x = 0
@@ -185,9 +191,6 @@ def make_title(input_string):
     return input_string.replace('_', ' ').title()
 
 
-def expect_relogin(lang):
-    # @TODO Rework text hardcode
-    return find_detected_button({'text': 're-log in'}, detect_buttons(lang=lang))
 
 class App(Foundation):
     COMMANDS_GAME_PATH_DEPENDANT = ['restart', 'launch', 'relogin', 'prepare']
@@ -204,10 +207,16 @@ class App(Foundation):
         self.taskManager = TaskManager()
         self.timeManager = TimeMgr()
         self.startUTCTime = self.utc_date()
+        self.lang = None
+        self.translations = None
         self.scheduler = None
+
         # @TODO Temp commented
         # self.storage = Storage(name='storage', folder='temp')
+
+        # Order is matters
         self.read_config()
+        self.load_translations()
         self.commands = self.get_commands()
 
         self.INDEX_PAGE_DETECTED = {
@@ -248,9 +257,16 @@ class App(Foundation):
         self.E_POPUP_RELOGIN_ERROR = prepare_event(self.E_POPUP_ERROR, {
             "limit": 1,
             "wait_limit": 2,
-            "expect": lambda: expect_relogin(lang=self.config['lang']) if self.config['lang'] else is_logged_out(),
-            "callback": lambda *args: click_detected_button(*args) if self.config['lang'] else click(350, 294)
+            "expect": self._expect_relogin,
+            "callback": lambda *args: len(args) and click_detected_button(args[0])
         })
+
+    def _expect_relogin(self):
+        # Should return same format for both cases
+        if self.lang:
+            return find_detected_button({'text': self.translations['relogin']}, detect_buttons(lang=self.lang))
+        else:
+            return detect_same_variant_buttons_and_return_one(index=0, length=2)
 
     def get_commands(self):
         return {
@@ -321,10 +337,11 @@ class App(Foundation):
             TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
             _config['telegram_token'] = TELEGRAM_BOT_TOKEN if TELEGRAM_BOT_TOKEN else str(config_json['telegram_token'])
 
-        if 'lang' in config_json:
-            _lang = str(config_json['lang']).lower()
-            if _lang in SUPPORTED_LANGUAGES:
-                _config['lang'] = _lang
+        _lang = str(config_json['lang']).lower() if 'lang' in config_json else None
+        LANG = os.getenv('LANG')
+        self.lang = LANG if LANG in SUPPORTED_LANGUAGES \
+            else _lang if _lang in SUPPORTED_LANGUAGES \
+            else None
 
         # Tasks
         tasks_length = len(config_json['tasks'])
@@ -406,10 +423,10 @@ class App(Foundation):
 
     def read_config(self):
         try:
-            with open(CONFIG_PATH) as config_file:
+            with open(CONFIG_PATH, encoding='utf-8') as config_file:
                 config = json.load(config_file)
                 self.config = self._prepare_config(config)
-                log('Config is processed')
+                self.log('Config is processed')
 
         except SystemError:
             log('An error occurred while reading ' + CONFIG_PATH + ' file')
@@ -577,6 +594,17 @@ class App(Foundation):
         if len(response):
             return upd.message.reply_text('\n'.join(response))
 
+    def determine_language(self):
+        close_popup_recursive()
+
+        click(40, 70, smart=True)
+
+        if await_click([[150, 346, [8, 73, 107]]], mistake=5, msg='Language Tab', timeout=1)[0]:
+            self.lang = self.detect_language()
+            self.log(f"Language detected: '{self.lang}'")
+
+        close_popup_recursive()
+
     def start(self):
         # atexit.register(self.report)
         signal.signal(signal.SIGINT, self.kill)
@@ -632,7 +660,14 @@ class App(Foundation):
         ])
 
         if calibrate:
+            self.log('Calibrating the window')
             self.window_axis = calibrate_window(self.window_axis)
+
+        if not self.lang:
+            self.log('Determining the language')
+            self.determine_language()
+
+        self.load_translations()
 
     def get_entry(self, command_name):
         return self.entries[command_name] \
@@ -668,13 +703,36 @@ class App(Foundation):
             'type': task_type,
         })
 
-    def schedule(self, predicate=None):
-        # @TODO Temp commented
-        # if self.scheduler is None:
-        #     self.scheduler = BackgroundScheduler()
+    def load_translations(self):
+        if self.lang and not self.translations:
+            PATH_TRANSLATIONS = f"./translations/{self.lang}.json"
+            try:
+                with open(PATH_TRANSLATIONS, encoding='utf-8') as translations_file:
+                    self.translations = json.load(translations_file)
+                    self.log(f"Translations loaded: '{self.lang}'")
+            except SystemError:
+                log('An error occurred while reading ' + PATH_TRANSLATIONS + ' file')
 
-        if predicate is not None:
-            tf = get_time_future(seconds=20)
-            self.scheduler.add_job(predicate, 'cron', hour=tf.hour, minute=tf.minute, second=tf.second)
+    def detect_language(self):
+        RGB_NOT_SELECTED_BUTTON = [17, 51, 67]
+        x_offset = 209
+        y_offset = 93
+        btn_width = 208
+        btn_height = 53
+        x_gutter = 19
+        y_gutter = 15
 
-        self.scheduler.start()
+        lang = None
+
+        for row in range(len(LANGUAGES_MATRIX)):
+            for cell in range(len(LANGUAGES_MATRIX[row])):
+                lang_btn = LANGUAGES_MATRIX[row][cell]
+                if lang_btn and lang_btn in SUPPORTED_LANGUAGES:
+                    x_btn = int(x_offset + (btn_width + x_gutter) * cell) + 10
+                    y_btn = int(y_offset + (btn_height + y_gutter) * row) + 2
+
+                    if not rgb_check(RGB_NOT_SELECTED_BUTTON, pyautogui.pixel(x_btn, y_btn), mistake=10):
+                        lang = lang_btn
+                        break
+
+        return lang

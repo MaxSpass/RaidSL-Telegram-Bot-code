@@ -3,13 +3,14 @@ from helpers.common import log, log_save
 import traceback
 from telegram.ext import Updater, CommandHandler, CallbackContext
 from telegram.error import NetworkError, BadRequest
-
+from classes.Foundation import *
 
 EMULATE_NETWORK_ERROR = False
 
-class TelegramBOT(threading.Thread):
+class TelegramBOT(threading.Thread, Foundation):
     def __init__(self, props=None):
         threading.Thread.__init__(self)
+        Foundation.__init__(self, name='Telegram Bot')
         self.token = props['token'] if 'token' in props and bool(props['token']) else None
 
         if not self.token:
@@ -33,15 +34,12 @@ class TelegramBOT(threading.Thread):
             # Get the dispatcher to register handlers
             self.dp = self.updater.dispatcher
 
-
-            print(self.updater.bot)
-
             # Register the /start command
             for i in range(len(self.commands)):
                 command = self.commands[i]['command']
                 handler = self.commands[i]['handler']['callback']
                 self.dp.add_handler(CommandHandler(command, handler))
-            #
+
             # # Get a list of all chats your bot is a member of
             # updates = self.updater.bot.get_updates()
             # print('updates', updates)
@@ -132,7 +130,8 @@ class TelegramBOT(threading.Thread):
     def listen(self):
         # Start the Bot
         self.updater.start_polling()
-        log('An App is waiting for some command')
+        self.log(f"Ready for work: https://t.me/{self.updater.bot['username']}")
+
         # Run the bot until you send a signal to stop (e.g., Ctrl+C)
         self.updater.idle()
         log('Idle is started')

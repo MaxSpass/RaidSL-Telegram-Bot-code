@@ -1,3 +1,5 @@
+import pyautogui
+
 from bot import TelegramBOT
 from classes.App import *
 from locations.live_arena.index import *
@@ -21,7 +23,7 @@ else:
 
 
 def main():
-    # debug_save_screenshot(region=[0, 0, 920, 530], quality=100)
+    # debug_save_screenshot(region=[845, 251, 42, 42], quality=100)
     # return
 
     if is_prod:
@@ -92,7 +94,6 @@ def main():
                 commands = regular_command + presets_commands
 
                 for i in range(len(commands)):
-                    print(commands[i])
                     telegram_bot.add(commands[i])
 
                 telegram_bot.listen()
