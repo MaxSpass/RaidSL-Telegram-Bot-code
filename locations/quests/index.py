@@ -675,13 +675,13 @@ class Quests(Location):
         no_task_text = "No task 'arena_classic' defined"
         arena_classic = self.app.get_instance('arena_classic')
 
-        close_popup_recursive()
         if arena_classic:
+            close_popup_recursive()
             arena_classic.run(self.update, self.context)
             self.results.append(quest_id)
+            close_popup_recursive()
         else:
             self.send_message(no_task_text)
-        close_popup_recursive()
 
     def daily_quest_6(self, quest_id='6'):
         global MARKET_SHARDS_REGION
