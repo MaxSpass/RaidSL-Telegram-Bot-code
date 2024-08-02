@@ -115,25 +115,33 @@ class Location(Foundation):
         self.log(message_done)
         self.event_dispatcher.publish('finish')
         self.send_message(message_done)
+
         # @TODO Test
         # self.results.append([True, False])
 
     def run(self, upd, ctx, *args):
-        utc_dt = self.app.utc_date()
-        if self.app.startUTCTime != utc_dt:
-            self.app.startUTCTime = utc_dt
-            self.completed = False
-            self.log("'completed' state was reset")
-            # @TODO Should relaunch the config again when it's needed
+        # Resets 'completed' state next day
+        if len(self.duration.durations):
+            first_call_time = self.duration.durations[0][0]
+            if first_call_time:
+                date_first_call = self.app.utc_date(first_call_time)
+                date_current = self.app.utc_date()
+                if date_first_call != date_current:
+                    self.completed = False
+                    self.log("'completed' state was reset")
+                    # @TODO Should relaunch the config again when it's needed
 
+        # Terminates when it's 'completed'
         if self.completed:
-            self.log('already completed', predicate=self.send_message)
+            self.log('Already completed', predicate=self.send_message)
             return
 
+        # Re-Login when it's needed
         if find_popup_error_detector():
             self.log('Relogin')
             self.app.relogin()
 
+        # Defines important variables
         self.update = upd
         self.context = ctx
         self.terminated = False
@@ -145,5 +153,6 @@ class Location(Foundation):
         if not self.terminated:
             self.event_dispatcher.publish('run', *args)
         self.finish()
+
         # @TODO Test
         # self.event_dispatcher.publish('update_results')

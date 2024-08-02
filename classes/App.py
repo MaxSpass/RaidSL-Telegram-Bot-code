@@ -206,7 +206,6 @@ class App(Foundation):
         self.entries = {}
         self.taskManager = TaskManager()
         self.timeManager = TimeMgr()
-        self.startUTCTime = self.utc_date()
         self.lang = None
         self.translations = None
         self.scheduler = None
@@ -417,9 +416,11 @@ class App(Foundation):
         self.config = self._prepare_config(config)
         log('Load App Config')
 
-    def utc_date(self):
-        dt = self.timeManager.timestamp_to_datetime(datetime.utcnow())
-        return f"{dt['day']}-{dt['month']}-{dt['year']}"
+    def utc_date(self, dt=None):
+        if dt is None:
+            dt = datetime.utcnow()
+        dt_parsed = self.timeManager.timestamp_to_datetime(dt)
+        return f"{dt_parsed['day']}-{dt_parsed['month']}-{dt_parsed['year']}"
 
     def read_config(self):
         try:

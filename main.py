@@ -1,5 +1,3 @@
-import pyautogui
-
 from bot import TelegramBOT
 from classes.App import *
 from locations.live_arena.index import *

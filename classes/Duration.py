@@ -26,7 +26,7 @@ class Duration:
     def _update(self, stage, duration=None):
         # variant = start | end
         if duration is None:
-            duration = datetime.now()
+            duration = datetime.utcnow()
         self.durations[len(self.durations) - 1][stage] = duration
 
     def _create(self):
