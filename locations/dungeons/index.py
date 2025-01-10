@@ -1,5 +1,6 @@
 from helpers.common import *
 from classes.Location import Location
+from classes.Foundation import RGB_PRIMARY
 
 # when fake battle is needed
 FAKE_BATTLE = False
@@ -12,8 +13,9 @@ DUNGEON_DRAGON = "Dragon's Lair"
 DUNGEON_FIRE = "Fire Knight's Castle"
 DUNGEON_SAND_DEVIL = "Sand Devil's Necropolis"
 DUNGEON_PHANTOM = "Phantom Shogun's Grove"
+DUNGEON_SECRET = "Secret Dungeon"
 
-DUNGEON_NO_DIFFICULTIES = ['1', '6', '7']
+DUNGEON_NO_DIFFICULTIES = ['1', '6', '7', '8']
 DUNGEON_NO_SUPER_RAID = ['1']
 
 DUNGEON_DATA = [
@@ -24,7 +26,20 @@ DUNGEON_DATA = [
     {'id': '5', 'name': DUNGEON_FIRE},
     {'id': '6', 'name': DUNGEON_SAND_DEVIL},
     {'id': '7', 'name': DUNGEON_PHANTOM},
+    {'id': '8', 'name': DUNGEON_SECRET},
 ]
+
+# These values are calculated based on swipe arguments: x=500, y=450, distance=400, speed=0.25, instant_move=True
+DUNGEON_SWIPES_TO_BOTTOM = {
+    '1': {'normal': 3},
+    '2': {'normal': 6, 'hard': 2},
+    '3': {'normal': 6, 'hard': 2},
+    '4': {'normal': 6, 'hard': 2},
+    '5': {'normal': 6, 'hard': 2},
+    '6': {'normal': 6},
+    '7': {'normal': 6},
+    '8': {'normal': 7},
+}
 
 DUNGEON_LOCATIONS = {
     '1': {'swipe': 1, 'click': {'x': 420, 'y': 300}},
@@ -34,8 +49,16 @@ DUNGEON_LOCATIONS = {
     '5': {'swipe': 2, 'click': {'x': 490, 'y': 300}},
     '6': {'swipe': 2, 'click': {'x': 650, 'y': 170}},
     '7': {'swipe': 2, 'click': {'x': 810, 'y': 340}},
+    '8': {'swipe': 1, 'click': {'x': 575, 'y': 370}},
 }
 
+DUNGEON_STAGES = {
+    'n': {'x': 860, 'y': 475},
+    'n-1': {'x': 860, 'y': 386},
+    'n-2': {'x': 860, 'y': 300},
+    'n-3': {'x': 860, 'y': 214},
+    'n-4': {'x': 860, 'y': 124},
+}
 
 class Dungeons(Location):
     REFILL_PAID = [440, 376, [255, 33, 51]]
@@ -59,8 +82,8 @@ class Dungeons(Location):
         self.locations = []
 
         # @TODO Temp dirty fix
-        self.props = props
-        # self._apply_props(props)
+        # self.props = props
+        self.apply_props(props)
         # self._distribute_energy()
 
         self.event_dispatcher.subscribe('run', self._run)
@@ -81,7 +104,10 @@ class Dungeons(Location):
         return res_list
 
     def _enter(self):
-        location = DUNGEON_LOCATIONS[str(self.current['id'])]
+        _difficulty = 'normal'
+        _id = str(self.current['id'])
+        _stage = DUNGEON_STAGES[self.current['stage']]
+        location = DUNGEON_LOCATIONS[_id]
 
         battles_click()
         sleep(1)
@@ -100,14 +126,20 @@ class Dungeons(Location):
             sleep(1)
 
         if 'difficulty' in self.current:
+            _difficulty = self.current['difficulty']
             dungeon_select_difficulty(self.current['difficulty'])
 
         # swiping bottom
-        swipe('bottom', 500, 450, 400, speed=.5)
+        swipes_to_bottom = DUNGEON_SWIPES_TO_BOTTOM[_id][_difficulty]
+        for j in range(swipes_to_bottom):
+            swipe('bottom', 280, 450, distance=400, speed=0.25, instant_move=True)
 
-        # @TODO Works with the last stage/floor only
-        click(850, 475)
-        # click(850, 375)
+        await_click(
+            [[_stage['x'], _stage['y'], RGB_PRIMARY]],
+            mistake=20,
+            msg=f"Choosing Stage: {self.current['stage']}",
+            timeout=1,
+        )
         sleep(1)
 
         if self.current['id'] not in DUNGEON_NO_SUPER_RAID:
@@ -115,14 +147,16 @@ class Dungeons(Location):
             enable_super_raid()
 
     def _run(self, props=None):
-        if props is not None:
-            self._apply_props(props=props)
-        else:
-            self._apply_props(props=self.props)
-            # self.bank = self._get_available_energy()
+        self.apply_props(props=props)
+
+        # if props is not None:
+        #     self.apply_props(props=props)
+        # else:
+        #     self.apply_props(props=self.props)
+        # self.bank = self._get_available_energy()
 
         self._distribute_energy()
-        self.log(f'Bank: {self.bank}')
+        # self.log(f'Bank: {self.bank}')
 
         for i in range(len(self.dungeons)):
             if self.terminated:
@@ -150,7 +184,8 @@ class Dungeons(Location):
         return read_available_energy()
 
     def _distribute_energy(self):
-        available_energy = self.bank
+        # @TODO Refactor
+        available_energy = self.bank if bool(self.bank) else self._get_available_energy()
         length = len(self.locations)
         if len(self.locations):
             new_dungeon = []
@@ -163,6 +198,10 @@ class Dungeons(Location):
 
                     if dungeon:
                         _dungeon = dungeon
+
+                        _dungeon['stage'] = _location['stage'] \
+                            if 'stage' in _location and _location['stage'] in DUNGEON_STAGES \
+                            else 'n'
 
                         if _id not in DUNGEON_NO_DIFFICULTIES:
                             _dungeon['difficulty'] = _location['difficulty'] \
@@ -197,17 +236,18 @@ class Dungeons(Location):
         for i in range(len(self.dungeons)):
             print(self.dungeons[i])
 
-    def _apply_props(self, props=None):
-        if props is None:
-            props = self.props
+    def apply_props(self, props=None):
+        # if props is None:
+        #     props = self.props
 
         if props is not None:
-            self.bank = int(props['bank']) if 'bank' in props and bool(props['bank']) else self._get_available_energy()
+            # self.bank = int(props['bank']) if 'bank' in props and bool(props['bank']) else self._get_available_energy()
+            self.bank = int(props['bank']) if 'bank' in props and bool(props['bank']) else None
 
-            if self.bank is None:
-                self.bank = 0
+            # if self.bank is None:
+            #     self.bank = 0
 
-            if self.bank < self.DUNGEON_BANK_MIN_LIMIT:
+            if self.bank and self.bank < self.DUNGEON_BANK_MIN_LIMIT:
                 self.terminated = True
                 self.log(f"Bank is critically low")
                 return
